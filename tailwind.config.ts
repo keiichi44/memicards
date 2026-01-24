@@ -86,6 +86,7 @@ export default {
         sans: ["var(--font-sans)"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
+        armenian: ["'Noto Serif Armenian'", "var(--font-serif)"],
       },
       keyframes: {
         "accordion-down": {
