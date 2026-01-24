@@ -1,0 +1,90 @@
+TECH STACK REQUIREMENTS
+	∙	Frontend: React (or keep existing stack from Srsly)
+	∙	State Management: Keep Srsly’s existing state management
+	∙	Storage: LocalStorage initially (should be easy to migrate to PostgreSQL/SQLite later)
+	∙	Styling: Tailwind CSS or existing Srsly styles
+	∙	Algorithm: SM-2 spaced repetition (should already be in Srsly)
+CORE FEATURES TO KEEP FROM SRSLY
+	∙	SM-2 algorithm implementation
+	∙	Card review interface with quality ratings (Again/Hard/Good/Easy)
+	∙	Daily review queue
+	∙	Basic statistics
+CUSTOM FEATURES TO ADD
+	1.	Card Structure for Armenian
+Each flashcard should have these fields:
+	∙	Front: Armenian word (in Armenian script)
+	∙	Back: Russian translation
+	∙	Example Sentence: Armenian sentence using the word (optional field)
+	∙	Association: Mnemonic/association note in Russian (optional field)
+	∙	Difficulty Star: Visual indicator if word is marked as difficult
+Input requirements:
+	∙	Support for Armenian keyboard input (Eastern Armenian)
+	∙	All fields should support Unicode Armenian characters (Ա-Ֆ, ա-ֆ)
+	2.	Batch Import Feature
+	∙	Import 50 cards at once from CSV or JSON
+	∙	CSV format: armenian,russian,sentence,association
+	∙	Bulk add to deck with single click
+	3.	Custom Review Settings
+	∙	Allow manual override of SM-2 intervals
+	∙	Preset: “Weekend learner mode”
+	∙	Higher review load on weekends (Sat-Sun)
+	∙	Lighter review load on weekdays (Mon-Fri)
+	∙	Setting to prioritize starred/difficult cards
+	4.	Armenian-Specific UI Elements
+	∙	Display Armenian text in larger, readable font (suggest: Noto Serif Armenian or similar)
+	∙	Keyboard shortcuts:
+	∙	Space: flip card
+	∙	1-4: rate card (Again/Hard/Good/Easy)
+	∙	S: star/unstar current card
+	∙	RTL-aware layout (Armenian is LTR but good to have flexibility)
+	5.	Progress Tracking
+	∙	Cards learned this week (out of 50 target)
+	∙	Retention rate graph
+	∙	“Difficult words” list (starred cards)
+	∙	Export review history to CSV
+	6.	Deck Organization
+	∙	Create weekly decks: “Week 1”, “Week 2”, etc.
+	∙	Tag system for random/unsystematic vocabulary
+	∙	Quick filter: “Due today”, “New”, “Difficult”
+NICE-TO-HAVE FEATURES
+	∙	Dark mode toggle
+	∙	Audio recording field (for pronunciation practice)
+	∙	Example sentence translation on hover
+	∙	Export deck to Anki format for backup
+	∙	PWA support for mobile use
+DATA PERSISTENCE
+	∙	Start with LocalStorage
+	∙	Structure data so migration to backend DB is straightforward
+	∙	Export/import functionality to prevent data loss
+DEPLOYMENT
+	∙	Should run on Replit
+	∙	Easy to deploy to personal server later (Docker-ready would be ideal)
+UI/UX PREFERENCES
+	∙	Clean, minimal interface
+	∙	No unnecessary animations (keep it fast)
+	∙	Mobile-responsive (but desktop is primary use case)
+	∙	Keyboard-first navigation
+INITIAL SETUP
+	1.	Fork Srsly repository
+	2.	Set up development environment
+	3.	Create sample deck with 5 Armenian cards for testing
+	4.	Implement core customizations first (card structure, Armenian input)
+	5.	Add batch import
+	6.	Add custom features
+TESTING DATA
+Include sample Armenian vocabulary for testing:
+գիրք,книга,Իմ գիրքը սեղանի վրա է։,гирька упала на книгу
+սուրճ,кофе,Ես սուրճ եմ խմում առավոտյան։,
+ջուր,вода,Խնդրում եմ ինձ ջուր տվեք։,
+SUCCESS CRITERIA
+	∙	Can add 50 Armenian cards quickly (under 5 minutes)
+	∙	SM-2 algorithm schedules reviews correctly
+	∙	Cards display Armenian script clearly
+	∙	Can complete daily reviews in 10-15 minutes
+	∙	Data persists across browser sessions
+	∙	Can export progress to CSV
+QUESTIONS TO RESOLVE DURING DEVELOPMENT
+	∙	If Srsly repo is not suitable, suggest alternative open-source SRS to fork
+	∙	Recommend best Armenian web font for readability
+	∙	Suggest optimal SM-2 parameter tweaks for 50 words/week intake
+Please fork Srsly, implement these customizations, and create a working prototype I can test immediately.​​​​​​​​​​​​​​​​
