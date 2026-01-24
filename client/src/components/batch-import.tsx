@@ -25,6 +25,7 @@ export function BatchImport({ onComplete }: BatchImportProps) {
   const [selectedDeckId, setSelectedDeckId] = useState<string>("");
   const [updateExisting, setUpdateExisting] = useState(true);
   const [csvContent, setCsvContent] = useState("");
+  const [separator, setSeparator] = useState<"," | ";">(",");
   const [result, setResult] = useState<{ imported: number; updated: number; skipped: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -63,10 +64,10 @@ export function BatchImport({ onComplete }: BatchImportProps) {
     setResult(null);
     
     try {
-      const parsedCards = parseCSV(csvContent);
+      const parsedCards = parseCSV(csvContent, separator);
       
       if (parsedCards.length === 0) {
-        setError("No valid cards found in the CSV. Make sure format is: armenian,russian,sentence,association");
+        setError(`No valid cards found in the CSV. Make sure format is: armenian${separator}russian${separator}sentence${separator}association`);
         setIsProcessing(false);
         return;
       }
@@ -84,10 +85,15 @@ export function BatchImport({ onComplete }: BatchImportProps) {
     }
   };
   
-  const sampleCSV = `armenian,russian,sentence,association
+  const sampleCSV = separator === ","
+    ? `armenian,russian,sentence,association
 գիրք,книга,Իմ գիրքը սեղանի վրա է։,гирька упала на книгу
 սուրճ,кофе,Ես սուրճ եմ խմում,
-ջուր,вода,Խնդրում եմ ինձ ջուր տվեք,`;
+ջուր,вода,Խնդրում եմ ինձ ջուր տվեք,`
+    : `armenian;russian;sentence;association
+գիրք;книга;Իմ գիրքը սեղանի վրա է։;гирька упала на книгу
+սուրճ;кофе;Ես սուրճ եմ խմում;
+ջուր;вода;Խնդրում եմ ինձ ջուր տվեք;`;
   
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -133,6 +139,22 @@ export function BatchImport({ onComplete }: BatchImportProps) {
                 No decks available. Create a deck first.
               </p>
             )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="separator-select">CSV Separator</Label>
+            <Select value={separator} onValueChange={(val) => setSeparator(val as "," | ";")}>
+              <SelectTrigger id="separator-select" data-testid="select-separator">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value=",">Comma (,)</SelectItem>
+                <SelectItem value=";">Semicolon (;)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              Choose the separator used in your CSV file
+            </p>
           </div>
           
           <div className="flex items-center justify-between">

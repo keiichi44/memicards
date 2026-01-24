@@ -265,14 +265,14 @@ function escapeCSV(value: string): string {
   return value;
 }
 
-export function parseCSV(csv: string): Array<{ armenian: string; russian: string; sentence?: string; association?: string }> {
+export function parseCSV(csv: string, separator: "," | ";" = ","): Array<{ armenian: string; russian: string; sentence?: string; association?: string }> {
   const lines = csv.trim().split("\n");
   const results: Array<{ armenian: string; russian: string; sentence?: string; association?: string }> = [];
   
   const startIndex = lines[0]?.toLowerCase().includes("armenian") ? 1 : 0;
   
   for (let i = startIndex; i < lines.length; i++) {
-    const values = parseCSVLine(lines[i]);
+    const values = parseCSVLine(lines[i], separator);
     if (values.length >= 2 && values[0].trim() && values[1].trim()) {
       results.push({
         armenian: values[0].trim(),
@@ -286,7 +286,7 @@ export function parseCSV(csv: string): Array<{ armenian: string; russian: string
   return results;
 }
 
-function parseCSVLine(line: string): string[] {
+function parseCSVLine(line: string, separator: "," | ";" = ","): string[] {
   const result: string[] = [];
   let current = "";
   let inQuotes = false;
@@ -301,7 +301,7 @@ function parseCSVLine(line: string): string[] {
       } else {
         inQuotes = !inQuotes;
       }
-    } else if (char === "," && !inQuotes) {
+    } else if (char === separator && !inQuotes) {
       result.push(current);
       current = "";
     } else {
