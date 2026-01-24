@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { ArrowLeft, Shuffle, RotateCcw } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Shuffle, RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Flashcard } from "@/components/flashcard";
 import type { Card as FlashCard } from "@shared/schema";
-import { getCards, getCardsByDeck } from "@/lib/storage";
 
 interface PracticeSessionProps {
   deckId?: string;
@@ -21,29 +21,41 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
-  const [cards, setCards] = useState<FlashCard[]>([]);
+  const [shuffledCards, setShuffledCards] = useState<FlashCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [practiceCount, setPracticeCount] = useState(0);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  const { data: allCards = [], isLoading } = useQuery<FlashCard[]>({
+    queryKey: deckId ? ["/api/cards", deckId] : ["/api/cards"],
+    queryFn: async () => {
+      const url = deckId ? `/api/cards?deckId=${deckId}` : "/api/cards";
+      const res = await fetch(url);
+      return res.json();
+    },
+  });
 
   const loadCards = useCallback(() => {
-    let allCards = deckId ? getCardsByDeck(deckId) : getCards();
-    setCards(shuffleArray(allCards));
+    setShuffledCards(shuffleArray(allCards));
     setCurrentIndex(0);
     setShowAnswer(false);
     setPracticeCount(0);
-  }, [deckId]);
+    setIsInitialized(true);
+  }, [allCards]);
 
   useEffect(() => {
-    loadCards();
-  }, [loadCards]);
+    if (!isInitialized && allCards.length > 0 && !isLoading) {
+      loadCards();
+    }
+  }, [allCards, isLoading, isInitialized, loadCards]);
 
-  const currentCard = cards[currentIndex];
+  const currentCard = shuffledCards[currentIndex];
 
   const handleNext = () => {
     setPracticeCount(prev => prev + 1);
     setShowAnswer(false);
-    if (currentIndex < cards.length - 1) {
+    if (currentIndex < shuffledCards.length - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
       setCurrentIndex(0);
@@ -51,7 +63,7 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
   };
 
   const handleShuffle = () => {
-    setCards(shuffleArray(cards));
+    setShuffledCards(shuffleArray(shuffledCards));
     setCurrentIndex(0);
     setShowAnswer(false);
   };
@@ -60,7 +72,15 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
     loadCards();
   };
 
-  if (cards.length === 0) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (shuffledCards.length === 0) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
@@ -92,7 +112,7 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
           <div>
             <h2 className="text-2xl font-semibold">Practice Mode</h2>
             <p className="text-sm text-muted-foreground">
-              Card {currentIndex + 1} of {cards.length} • {practiceCount} practiced
+              Card {currentIndex + 1} of {shuffledCards.length} • {practiceCount} practiced
             </p>
           </div>
         </div>

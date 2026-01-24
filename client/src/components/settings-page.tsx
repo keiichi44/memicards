@@ -1,57 +1,79 @@
 import { useState } from "react";
-import { Save, Download, Upload, Trash2, AlertCircle } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Save, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import type { Settings } from "@shared/schema";
-import { 
-  getSettings, 
-  saveSettings, 
-  exportAllData, 
-  importFullData, 
-  exportReviewsToCSV, 
-  getReviews,
-  getCards,
-  getDecks,
-} from "@/lib/storage";
+import type { Settings, Card as FlashCard, Deck, Review } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { exportCardsToCSV, exportReviewsToCSV } from "@/lib/storage";
 
 export function SettingsPage() {
-  const [settings, setSettings] = useState<Settings>(() => getSettings());
-  const [isSaved, setIsSaved] = useState(true);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const { toast } = useToast();
+  const [isSaved, setIsSaved] = useState(true);
+  
+  const { data: settings, isLoading: settingsLoading } = useQuery<Settings>({
+    queryKey: ["/api/settings"],
+  });
+  
+  const { data: allCards = [] } = useQuery<FlashCard[]>({
+    queryKey: ["/api/cards"],
+  });
+  
+  const { data: allDecks = [] } = useQuery<Deck[]>({
+    queryKey: ["/api/decks"],
+  });
+  
+  const { data: allReviews = [] } = useQuery<Review[]>({
+    queryKey: ["/api/reviews"],
+  });
+  
+  const totalDecks = allDecks.length;
+  
+  const [localSettings, setLocalSettings] = useState<Partial<Settings>>({});
+  
+  const updateMutation = useMutation({
+    mutationFn: async (newSettings: Partial<Settings>) => {
+      const res = await apiRequest("PATCH", "/api/settings", newSettings);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      setIsSaved(true);
+      setLocalSettings({});
+      toast({
+        title: "Settings saved",
+        description: "Your preferences have been updated.",
+      });
+    },
+  });
+  
+  if (settingsLoading || !settings) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  
+  const currentSettings = { ...settings, ...localSettings };
   
   const handleChange = <K extends keyof Settings>(key: K, value: Settings[K]) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setLocalSettings(prev => ({ ...prev, [key]: value }));
     setIsSaved(false);
   };
   
   const handleSave = () => {
-    saveSettings(settings);
-    setIsSaved(true);
-    toast({
-      title: "Settings saved",
-      description: "Your preferences have been updated.",
-    });
+    updateMutation.mutate(localSettings);
   };
   
-  const handleExportData = () => {
-    const data = exportAllData();
+  const handleExportData = async () => {
+    const res = await fetch("/api/export");
+    const data = await res.json();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -64,9 +86,22 @@ export function SettingsPage() {
     });
   };
   
+  const handleExportCards = () => {
+    const csv = exportCardsToCSV(allCards);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `cards-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    
+    toast({
+      title: "Cards exported",
+      description: `${allCards.length} cards exported to CSV.`,
+    });
+  };
+  
   const handleExportReviews = () => {
-    const reviews = getReviews();
-    const csv = exportReviewsToCSV(reviews);
+    const csv = exportReviewsToCSV(allReviews, allCards);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -75,44 +110,9 @@ export function SettingsPage() {
     
     toast({
       title: "Reviews exported",
-      description: `${reviews.length} review records exported to CSV.`,
+      description: `${allReviews.length} review records exported to CSV.`,
     });
   };
-  
-  const handleImportData = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const data = JSON.parse(event.target?.result as string);
-        importFullData(data);
-        setSettings(getSettings());
-        toast({
-          title: "Data imported",
-          description: "Your backup has been restored successfully.",
-        });
-      } catch (error) {
-        toast({
-          title: "Import failed",
-          description: "Invalid backup file format.",
-          variant: "destructive",
-        });
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = "";
-  };
-  
-  const handleResetData = () => {
-    localStorage.clear();
-    window.location.reload();
-  };
-  
-  const totalCards = getCards().length;
-  const totalDecks = getDecks().length;
-  const totalReviews = getReviews().length;
   
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -138,13 +138,13 @@ export function SettingsPage() {
             </div>
             <Switch
               id="weekend-mode"
-              checked={settings.weekendLearnerMode}
+              checked={currentSettings.weekendLearnerMode}
               onCheckedChange={(checked) => handleChange("weekendLearnerMode", checked)}
               data-testid="switch-weekend-mode"
             />
           </div>
           
-          {settings.weekendLearnerMode && (
+          {currentSettings.weekendLearnerMode && (
             <>
               <Separator />
               <div className="grid gap-4 md:grid-cols-2">
@@ -157,7 +157,7 @@ export function SettingsPage() {
                       type="number"
                       min={0}
                       max={50}
-                      value={settings.weekdayNewCards}
+                      value={currentSettings.weekdayNewCards}
                       onChange={(e) => handleChange("weekdayNewCards", parseInt(e.target.value) || 0)}
                       data-testid="input-weekday-new"
                     />
@@ -169,7 +169,7 @@ export function SettingsPage() {
                       type="number"
                       min={0}
                       max={200}
-                      value={settings.weekdayReviewCards}
+                      value={currentSettings.weekdayReviewCards}
                       onChange={(e) => handleChange("weekdayReviewCards", parseInt(e.target.value) || 0)}
                       data-testid="input-weekday-review"
                     />
@@ -184,7 +184,7 @@ export function SettingsPage() {
                       type="number"
                       min={0}
                       max={100}
-                      value={settings.weekendNewCards}
+                      value={currentSettings.weekendNewCards}
                       onChange={(e) => handleChange("weekendNewCards", parseInt(e.target.value) || 0)}
                       data-testid="input-weekend-new"
                     />
@@ -196,7 +196,7 @@ export function SettingsPage() {
                       type="number"
                       min={0}
                       max={300}
-                      value={settings.weekendReviewCards}
+                      value={currentSettings.weekendReviewCards}
                       onChange={(e) => handleChange("weekendReviewCards", parseInt(e.target.value) || 0)}
                       data-testid="input-weekend-review"
                     />
@@ -225,7 +225,7 @@ export function SettingsPage() {
             </div>
             <Switch
               id="prioritize-starred"
-              checked={settings.prioritizeStarred}
+              checked={currentSettings.prioritizeStarred}
               onCheckedChange={(checked) => handleChange("prioritizeStarred", checked)}
               data-testid="switch-prioritize-starred"
             />
@@ -240,7 +240,7 @@ export function SettingsPage() {
               type="number"
               min={10}
               max={200}
-              value={settings.weeklyCardTarget}
+              value={currentSettings.weeklyCardTarget}
               onChange={(e) => handleChange("weeklyCardTarget", parseInt(e.target.value) || 50)}
               data-testid="input-weekly-target"
             />
@@ -255,13 +255,13 @@ export function SettingsPage() {
         <CardHeader>
           <CardTitle>Data Management</CardTitle>
           <CardDescription>
-            Export, import, or reset your data
+            Export your data for backup
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 rounded-md bg-muted/50">
             <p className="text-sm">
-              <strong>Current data:</strong> {totalDecks} decks, {totalCards} cards, {totalReviews} reviews
+              <strong>Current data:</strong> {allDecks.length} decks, {allCards.length} cards, {allReviews.length} reviews
             </p>
           </div>
           
@@ -270,72 +270,28 @@ export function SettingsPage() {
               <Download className="h-4 w-4 mr-2" />
               Export All Data (JSON)
             </Button>
+            <Button variant="outline" onClick={handleExportCards} data-testid="button-export-cards">
+              <Download className="h-4 w-4 mr-2" />
+              Export Cards (CSV)
+            </Button>
             <Button variant="outline" onClick={handleExportReviews} data-testid="button-export-reviews">
               <Download className="h-4 w-4 mr-2" />
               Export Reviews (CSV)
             </Button>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="import-file">Import backup</Label>
-            <Input
-              id="import-file"
-              type="file"
-              accept=".json"
-              onChange={handleImportData}
-              data-testid="input-import-file"
-            />
-          </div>
-          
-          <Separator />
-          
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Danger Zone</AlertTitle>
-            <AlertDescription>
-              <p className="mb-2">Resetting will permanently delete all your cards, decks, and progress.</p>
-              <Button 
-                variant="destructive" 
-                size="sm"
-                onClick={() => setShowResetConfirm(true)}
-                data-testid="button-reset-data"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Reset All Data
-              </Button>
-            </AlertDescription>
-          </Alert>
         </CardContent>
       </Card>
       
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={isSaved} data-testid="button-save-settings">
-          <Save className="h-4 w-4 mr-2" />
+        <Button 
+          onClick={handleSave} 
+          disabled={isSaved || updateMutation.isPending}
+          data-testid="button-save-settings"
+        >
+          {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
           {isSaved ? "Settings Saved" : "Save Settings"}
         </Button>
       </div>
-      
-      <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete all your data including {totalCards} cards, {totalDecks} decks, 
-              and {totalReviews} review records. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleResetData} 
-              className="bg-destructive text-destructive-foreground"
-              data-testid="button-confirm-reset"
-            >
-              Yes, delete everything
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

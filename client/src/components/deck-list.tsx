@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, Folder, Play, Trash2, Edit2, RotateCcw } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Plus, Folder, Play, Trash2, Edit2, RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,10 +26,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import type { Deck } from "@shared/schema";
-import { getDecks, createDeck, updateDeck, deleteDeck, getCardsByDeck, getCards } from "@/lib/storage";
+import type { Deck, Card as FlashCard } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isDueToday, isNewCard } from "@/lib/sm2";
-import { cn } from "@/lib/utils";
+
+interface DeckWithCount extends Deck {
+  cardCount: number;
+}
 
 interface DeckListProps {
   onSelectDeck: (deckId: string) => void;
@@ -37,49 +41,93 @@ interface DeckListProps {
 }
 
 export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckListProps) {
-  const [decks, setDecks] = useState<Deck[]>(() => getDecks());
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
   const [newDeckName, setNewDeckName] = useState("");
   const [newDeckDescription, setNewDeckDescription] = useState("");
   
-  const refreshDecks = () => setDecks(getDecks());
+  const { data: decks = [], isLoading: decksLoading } = useQuery<DeckWithCount[]>({
+    queryKey: ["/api/decks"],
+  });
   
-  const allCards = getCards();
-  const totalDue = allCards.filter(isDueToday).length;
-  const totalNew = allCards.filter(isNewCard).length;
+  const { data: allCards = [] } = useQuery<FlashCard[]>({
+    queryKey: ["/api/cards"],
+  });
+  
+  const totalDue = allCards.filter(c => isDueToday(c)).length;
+  const totalNew = allCards.filter(c => isNewCard(c)).length;
+  
+  const createMutation = useMutation({
+    mutationFn: async (data: { name: string; description: string }) => {
+      const res = await apiRequest("POST", "/api/decks", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      setIsCreateOpen(false);
+      setNewDeckName("");
+      setNewDeckDescription("");
+    },
+  });
+  
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: { name: string; description: string } }) => {
+      const res = await apiRequest("PATCH", `/api/decks/${id}`, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      setEditingDeck(null);
+      setNewDeckName("");
+      setNewDeckDescription("");
+    },
+  });
+  
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/decks/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      setDeletingDeck(null);
+    },
+  });
   
   const handleCreateDeck = () => {
     if (!newDeckName.trim()) return;
-    createDeck({ name: newDeckName.trim(), description: newDeckDescription.trim() });
-    setNewDeckName("");
-    setNewDeckDescription("");
-    setIsCreateOpen(false);
-    refreshDecks();
+    createMutation.mutate({ name: newDeckName.trim(), description: newDeckDescription.trim() });
   };
   
   const handleUpdateDeck = () => {
     if (!editingDeck || !newDeckName.trim()) return;
-    updateDeck(editingDeck.id, { name: newDeckName.trim(), description: newDeckDescription.trim() });
-    setEditingDeck(null);
-    setNewDeckName("");
-    setNewDeckDescription("");
-    refreshDecks();
+    updateMutation.mutate({ 
+      id: editingDeck.id, 
+      data: { name: newDeckName.trim(), description: newDeckDescription.trim() } 
+    });
   };
   
   const handleDeleteDeck = () => {
     if (!deletingDeck) return;
-    deleteDeck(deletingDeck.id);
-    setDeletingDeck(null);
-    refreshDecks();
+    deleteMutation.mutate(deletingDeck.id);
   };
   
   const openEditDialog = (deck: Deck) => {
     setEditingDeck(deck);
     setNewDeckName(deck.name);
-    setNewDeckDescription(deck.description);
+    setNewDeckDescription(deck.description || "");
   };
+  
+  if (decksLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -157,7 +205,12 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleCreateDeck} disabled={!newDeckName.trim()} data-testid="button-confirm-create-deck">
+              <Button 
+                onClick={handleCreateDeck} 
+                disabled={!newDeckName.trim() || createMutation.isPending}
+                data-testid="button-confirm-create-deck"
+              >
+                {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Create Deck
               </Button>
             </DialogFooter>
@@ -182,10 +235,10 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {decks.map((deck) => {
-            const cards = getCardsByDeck(deck.id);
-            const dueCount = cards.filter(isDueToday).length;
-            const newCount = cards.filter(isNewCard).length;
-            const starredCount = cards.filter(c => c.isStarred).length;
+            const deckCards = allCards.filter(c => c.deckId === deck.id);
+            const dueCount = deckCards.filter(c => isDueToday(c)).length;
+            const newCount = deckCards.filter(c => isNewCard(c)).length;
+            const starredCount = deckCards.filter(c => c.isStarred).length;
             
             return (
               <Card 
@@ -228,7 +281,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge variant="outline">{cards.length} cards</Badge>
+                    <Badge variant="outline">{deckCards.length} cards</Badge>
                     {dueCount > 0 && <Badge variant="default">{dueCount} due</Badge>}
                     {newCount > 0 && <Badge variant="secondary">{newCount} new</Badge>}
                     {starredCount > 0 && <Badge variant="outline" className="text-yellow-600">{starredCount} starred</Badge>}
@@ -250,7 +303,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                     <Button 
                       variant="ghost"
                       size="icon"
-                      disabled={cards.length === 0}
+                      disabled={deckCards.length === 0}
                       onClick={(e) => {
                         e.stopPropagation();
                         onStartPractice(deck.id);
@@ -297,7 +350,12 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
             <Button variant="outline" onClick={() => setEditingDeck(null)}>
               Cancel
             </Button>
-            <Button onClick={handleUpdateDeck} disabled={!newDeckName.trim()} data-testid="button-confirm-edit-deck">
+            <Button 
+              onClick={handleUpdateDeck} 
+              disabled={!newDeckName.trim() || updateMutation.isPending}
+              data-testid="button-confirm-edit-deck"
+            >
+              {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Save Changes
             </Button>
           </DialogFooter>
@@ -314,7 +372,11 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteDeck} className="bg-destructive text-destructive-foreground" data-testid="button-confirm-delete-deck">
+            <AlertDialogAction 
+              onClick={handleDeleteDeck} 
+              className="bg-destructive text-destructive-foreground"
+              data-testid="button-confirm-delete-deck"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

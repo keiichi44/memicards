@@ -1,65 +1,94 @@
+import { pgTable, text, boolean, real, integer, timestamp } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const cardSchema = z.object({
-  id: z.string(),
-  armenian: z.string().min(1, "Armenian word is required"),
-  russian: z.string().min(1, "Russian translation is required"),
-  sentence: z.string().optional().default(""),
-  association: z.string().optional().default(""),
-  isStarred: z.boolean().default(false),
-  deckId: z.string(),
-  tags: z.array(z.string()).default([]),
-  easeFactor: z.number().default(2.5),
-  interval: z.number().default(0),
-  repetitions: z.number().default(0),
-  nextReviewDate: z.string(),
-  lastReviewDate: z.string().optional(),
-  createdAt: z.string(),
+// Drizzle Tables
+export const decks = pgTable("decks", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertCardSchema = cardSchema.omit({ id: true, createdAt: true }).extend({
-  nextReviewDate: z.string().optional(),
+export const cards = pgTable("cards", {
+  id: text("id").primaryKey(),
+  armenian: text("armenian").notNull(),
+  russian: text("russian").notNull(),
+  sentence: text("sentence").default(""),
+  association: text("association").default(""),
+  isStarred: boolean("is_starred").default(false).notNull(),
+  deckId: text("deck_id").notNull().references(() => decks.id, { onDelete: "cascade" }),
+  easeFactor: real("ease_factor").default(2.5).notNull(),
+  interval: integer("interval").default(0).notNull(),
+  repetitions: integer("repetitions").default(0).notNull(),
+  nextReviewDate: timestamp("next_review_date").notNull(),
+  lastReviewDate: timestamp("last_review_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export type Card = z.infer<typeof cardSchema>;
-export type InsertCard = z.infer<typeof insertCardSchema>;
-
-export const deckSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, "Deck name is required"),
-  description: z.string().optional().default(""),
-  createdAt: z.string(),
-  cardCount: z.number().default(0),
+export const reviews = pgTable("reviews", {
+  id: text("id").primaryKey(),
+  cardId: text("card_id").notNull().references(() => cards.id, { onDelete: "cascade" }),
+  quality: integer("quality").notNull(),
+  reviewedAt: timestamp("reviewed_at").defaultNow().notNull(),
+  previousInterval: integer("previous_interval").notNull(),
+  newInterval: integer("new_interval").notNull(),
 });
 
-export const insertDeckSchema = deckSchema.omit({ id: true, createdAt: true, cardCount: true });
+export const settings = pgTable("settings", {
+  id: integer("id").primaryKey().default(1),
+  weekendLearnerMode: boolean("weekend_learner_mode").default(false).notNull(),
+  weekdayNewCards: integer("weekday_new_cards").default(5).notNull(),
+  weekendNewCards: integer("weekend_new_cards").default(15).notNull(),
+  weekdayReviewCards: integer("weekday_review_cards").default(20).notNull(),
+  weekendReviewCards: integer("weekend_review_cards").default(50).notNull(),
+  prioritizeStarred: boolean("prioritize_starred").default(true).notNull(),
+  weeklyCardTarget: integer("weekly_card_target").default(50).notNull(),
+});
 
-export type Deck = z.infer<typeof deckSchema>;
+// Relations
+export const decksRelations = relations(decks, ({ many }) => ({
+  cards: many(cards),
+}));
+
+export const cardsRelations = relations(cards, ({ one, many }) => ({
+  deck: one(decks, {
+    fields: [cards.deckId],
+    references: [decks.id],
+  }),
+  reviews: many(reviews),
+}));
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  card: one(cards, {
+    fields: [reviews.cardId],
+    references: [cards.id],
+  }),
+}));
+
+// Insert schemas using drizzle-zod
+export const insertDeckSchema = createInsertSchema(decks).omit({ id: true, createdAt: true });
+export const insertCardSchema = createInsertSchema(cards).omit({ id: true, createdAt: true }).extend({
+  nextReviewDate: z.date().optional(),
+});
+export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, reviewedAt: true });
+export const insertSettingsSchema = createInsertSchema(settings).omit({ id: true });
+
+// Types
+export type Deck = typeof decks.$inferSelect;
 export type InsertDeck = z.infer<typeof insertDeckSchema>;
 
-export const reviewSchema = z.object({
-  id: z.string(),
-  cardId: z.string(),
-  quality: z.number().min(0).max(5),
-  reviewedAt: z.string(),
-  previousInterval: z.number(),
-  newInterval: z.number(),
-});
+export type Card = typeof cards.$inferSelect;
+export type InsertCard = z.infer<typeof insertCardSchema>;
 
-export type Review = z.infer<typeof reviewSchema>;
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = z.infer<typeof insertReviewSchema>;
 
-export const settingsSchema = z.object({
-  weekendLearnerMode: z.boolean().default(false),
-  weekdayNewCards: z.number().default(5),
-  weekendNewCards: z.number().default(15),
-  weekdayReviewCards: z.number().default(20),
-  weekendReviewCards: z.number().default(50),
-  prioritizeStarred: z.boolean().default(true),
-  weeklyCardTarget: z.number().default(50),
-});
+export type Settings = typeof settings.$inferSelect;
+export type InsertSettings = z.infer<typeof insertSettingsSchema>;
 
-export type Settings = z.infer<typeof settingsSchema>;
-
+// Batch import schema (kept as Zod)
 export const batchImportSchema = z.object({
   cards: z.array(z.object({
     armenian: z.string().min(1),
@@ -73,16 +102,18 @@ export const batchImportSchema = z.object({
 
 export type BatchImport = z.infer<typeof batchImportSchema>;
 
+// Export data schema
 export const exportDataSchema = z.object({
-  cards: z.array(cardSchema),
-  decks: z.array(deckSchema),
-  reviews: z.array(reviewSchema),
-  settings: settingsSchema,
+  cards: z.array(z.any()),
+  decks: z.array(z.any()),
+  reviews: z.array(z.any()),
+  settings: z.any(),
   exportedAt: z.string(),
 });
 
 export type ExportData = z.infer<typeof exportDataSchema>;
 
+// Card filter schema
 export const cardFilterSchema = z.object({
   filter: z.enum(["all", "due", "new", "starred"]).default("all"),
   deckId: z.string().optional(),
@@ -91,6 +122,7 @@ export const cardFilterSchema = z.object({
 
 export type CardFilter = z.infer<typeof cardFilterSchema>;
 
+// Quality rating types
 export type QualityRating = 0 | 1 | 2 | 3 | 4 | 5;
 
 export const qualityLabels: Record<QualityRating, string> = {
@@ -109,6 +141,7 @@ export const simpleQualityRatings = [
   { quality: 5 as QualityRating, label: "Easy", color: "accent" },
 ] as const;
 
+// Stats interfaces
 export interface DailyStats {
   date: string;
   cardsReviewed: number;

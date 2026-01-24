@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { Upload, FileText, AlertCircle, CheckCircle } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Upload, FileText, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -14,22 +15,47 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Deck } from "@shared/schema";
-import { getDecks, parseCSV, importCards } from "@/lib/storage";
+import { parseCSV, importCards } from "@/lib/storage";
+import { queryClient } from "@/lib/queryClient";
 
 interface BatchImportProps {
   onComplete: () => void;
 }
 
 export function BatchImport({ onComplete }: BatchImportProps) {
-  const [decks] = useState<Deck[]>(() => getDecks());
+  const { data: decks = [] } = useQuery<Deck[]>({
+    queryKey: ["/api/decks"],
+  });
+  
   const [selectedDeckId, setSelectedDeckId] = useState<string>("");
   const [updateExisting, setUpdateExisting] = useState(true);
   const [csvContent, setCsvContent] = useState("");
   const [separator, setSeparator] = useState<"," | ";">(",");
   const [result, setResult] = useState<{ imported: number; updated: number; skipped: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const importMutation = useMutation({
+    mutationFn: async () => {
+      const parsedCards = parseCSV(csvContent, separator);
+      if (parsedCards.length === 0) {
+        throw new Error(`No valid cards found in the CSV. Make sure format is: armenian${separator}russian${separator}sentence${separator}association`);
+      }
+      return importCards(parsedCards, selectedDeckId, updateExisting);
+    },
+    onSuccess: (data) => {
+      setResult(data);
+      setCsvContent("");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+    },
+    onError: (err) => {
+      setError(`Import failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+    },
+  });
   
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,41 +85,20 @@ export function BatchImport({ onComplete }: BatchImportProps) {
       return;
     }
     
-    setIsProcessing(true);
     setError(null);
     setResult(null);
-    
-    try {
-      const parsedCards = parseCSV(csvContent, separator);
-      
-      if (parsedCards.length === 0) {
-        setError(`No valid cards found in the CSV. Make sure format is: armenian${separator}russian${separator}sentence${separator}association`);
-        setIsProcessing(false);
-        return;
-      }
-      
-      const importResult = importCards(parsedCards, selectedDeckId, updateExisting);
-      setResult(importResult);
-      setCsvContent("");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (err) {
-      setError(`Import failed: ${err instanceof Error ? err.message : "Unknown error"}`);
-    } finally {
-      setIsProcessing(false);
-    }
+    importMutation.mutate();
   };
   
   const sampleCSV = separator === ","
     ? `armenian,russian,sentence,association
-գիրք,книга,Իմ գիրքը սեղանի վրա է։,гирька упала на книгу
-սուրճ,кофе,Ես սուրճ եմ խմում,
-ջուր,вода,Խնդրում եմ ինձ ջուր տվեք,`
+barev,привет,Barev! Inchpes es?,связь с barev
+girk,книга,Im girky seghani vra e,гирька на книгу
+jur,вода,Xndrum em jur tveq,`
     : `armenian;russian;sentence;association
-գիրք;книга;Իմ գիրքը սեղանի վրա է։;гирька упала на книгу
-սուրճ;кофе;Ես սուրճ եմ խմում;
-ջուր;вода;Խնդրում եմ ինձ ջուր տվեք;`;
+barev;привет;Barev! Inchpes es?;связь с barev
+girk;книга;Im girky seghani vra e;гирька на книгу
+jur;вода;Xndrum em jur tveq;`;
   
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -200,7 +205,7 @@ export function BatchImport({ onComplete }: BatchImportProps) {
             <Label htmlFor="csv-content">Or paste CSV content directly</Label>
             <Textarea
               id="csv-content"
-              placeholder="armenian,russian,sentence,association&#10;գdel,книга,Իdel,гирька упала на книгу"
+              placeholder="armenian,russian,sentence,association&#10;barev,привет,Barev! Inchpes es?,mnemonic"
               value={csvContent}
               onChange={(e) => {
                 setCsvContent(e.target.value);
@@ -238,11 +243,11 @@ export function BatchImport({ onComplete }: BatchImportProps) {
             </Button>
             <Button 
               onClick={handleImport} 
-              disabled={!selectedDeckId || !csvContent.trim() || isProcessing}
+              disabled={!selectedDeckId || !csvContent.trim() || importMutation.isPending}
               data-testid="button-import-cards"
             >
-              <FileText className="h-4 w-4 mr-2" />
-              {isProcessing ? "Importing..." : "Import Cards"}
+              {importMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
+              {importMutation.isPending ? "Importing..." : "Import Cards"}
             </Button>
           </div>
         </CardContent>

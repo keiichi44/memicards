@@ -1,22 +1,30 @@
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Star, Target, TrendingUp, Calendar, BookOpen, CheckCircle } from "lucide-react";
+import { Star, Target, TrendingUp, Calendar, BookOpen, Loader2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import type { Card as FlashCard, Review, DailyStats } from "@shared/schema";
-import { getCards, getReviews, getSettings } from "@/lib/storage";
+import type { Card as FlashCard, Review, Settings, DailyStats } from "@shared/schema";
 import { isDueToday, isNewCard, getCardStatus } from "@/lib/sm2";
 
 export function ProgressDashboard() {
-  const cards = useMemo(() => getCards(), []);
-  const reviews = useMemo(() => getReviews(), []);
-  const settings = useMemo(() => getSettings(), []);
+  const { data: cards = [], isLoading: cardsLoading } = useQuery<FlashCard[]>({
+    queryKey: ["/api/cards"],
+  });
+  
+  const { data: reviews = [] } = useQuery<Review[]>({
+    queryKey: ["/api/reviews"],
+  });
+  
+  const { data: settings } = useQuery<Settings>({
+    queryKey: ["/api/settings"],
+  });
   
   const stats = useMemo(() => {
     const totalCards = cards.length;
-    const dueToday = cards.filter(isDueToday).length;
-    const newCards = cards.filter(isNewCard).length;
+    const dueToday = cards.filter(c => isDueToday(c)).length;
+    const newCards = cards.filter(c => isNewCard(c)).length;
     const starredCards = cards.filter(c => c.isStarred).length;
     const graduatedCards = cards.filter(c => getCardStatus(c) === "graduated").length;
     const learningCards = cards.filter(c => getCardStatus(c) === "learning").length;
@@ -43,7 +51,7 @@ export function ProgressDashboard() {
       learningCards,
       weeklyProgress: {
         cardsLearned: uniqueCardsReviewedThisWeek,
-        target: settings.weeklyCardTarget,
+        target: settings?.weeklyCardTarget || 50,
         daysRemaining,
       },
       retentionRate,
@@ -89,6 +97,14 @@ export function ProgressDashboard() {
   const progressPercent = stats.weeklyProgress.target > 0 
     ? Math.min((stats.weeklyProgress.cardsLearned / stats.weeklyProgress.target) * 100, 100)
     : 0;
+  
+  if (cardsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -253,7 +269,7 @@ export function ProgressDashboard() {
                   className="flex items-center justify-between p-3 rounded-md bg-muted/50"
                 >
                   <div>
-                    <p className="font-armenian text-lg">{card.armenian}</p>
+                    <p className="font-sans text-lg">{card.armenian}</p>
                     <p className="text-sm text-muted-foreground">{card.russian}</p>
                   </div>
                   <Badge variant="outline">

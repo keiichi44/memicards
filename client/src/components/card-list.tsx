@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
-import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,7 +42,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Card as FlashCard, Deck, CardFilter } from "@shared/schema";
-import { getCardsByDeck, getDeck, createCard, updateCard, deleteCard, exportCardsToCSV } from "@/lib/storage";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { exportCardsToCSV } from "@/lib/storage";
 import { isDueToday, isNewCard, getCardStatus, formatInterval } from "@/lib/sm2";
 import { cn } from "@/lib/utils";
 
@@ -51,8 +53,6 @@ interface CardListProps {
 }
 
 export function CardList({ deckId, onBack }: CardListProps) {
-  const [cards, setCards] = useState<FlashCard[]>(() => getCardsByDeck(deckId));
-  const [deck] = useState<Deck | undefined>(() => getDeck(deckId));
   const [filter, setFilter] = useState<CardFilter["filter"]>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -66,15 +66,66 @@ export function CardList({ deckId, onBack }: CardListProps) {
     association: "",
   });
   
-  const refreshCards = () => setCards(getCardsByDeck(deckId));
+  const { data: deck } = useQuery<Deck>({
+    queryKey: ["/api/decks", deckId],
+  });
+  
+  const { data: cards = [], isLoading } = useQuery<FlashCard[]>({
+    queryKey: ["/api/cards", deckId],
+    queryFn: async () => {
+      const res = await fetch(`/api/cards?deckId=${deckId}`);
+      return res.json();
+    },
+  });
+  
+  const createMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      const res = await apiRequest("POST", "/api/cards", {
+        armenian: data.armenian.trim(),
+        russian: data.russian.trim(),
+        sentence: data.sentence.trim(),
+        association: data.association.trim(),
+        deckId,
+        isStarred: false,
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+      resetForm();
+      setIsCreateOpen(false);
+    },
+  });
+  
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<FlashCard> }) => {
+      const res = await apiRequest("PATCH", `/api/cards/${id}`, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+    },
+  });
+  
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/cards/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+      setDeletingCard(null);
+    },
+  });
   
   const filteredCards = useMemo(() => {
     let result = [...cards];
     
     if (filter === "due") {
-      result = result.filter(isDueToday);
+      result = result.filter(c => isDueToday(c));
     } else if (filter === "new") {
-      result = result.filter(isNewCard);
+      result = result.filter(c => isNewCard(c));
     } else if (filter === "starred") {
       result = result.filter(c => c.isStarred);
     }
@@ -98,46 +149,31 @@ export function CardList({ deckId, onBack }: CardListProps) {
   
   const handleCreateCard = () => {
     if (!formData.armenian.trim() || !formData.russian.trim()) return;
-    createCard({
-      armenian: formData.armenian.trim(),
-      russian: formData.russian.trim(),
-      sentence: formData.sentence.trim(),
-      association: formData.association.trim(),
-      deckId,
-      isStarred: false,
-      tags: [],
-      easeFactor: 2.5,
-      interval: 0,
-      repetitions: 0,
-    });
-    resetForm();
-    setIsCreateOpen(false);
-    refreshCards();
+    createMutation.mutate(formData);
   };
   
   const handleUpdateCard = () => {
     if (!editingCard || !formData.armenian.trim() || !formData.russian.trim()) return;
-    updateCard(editingCard.id, {
-      armenian: formData.armenian.trim(),
-      russian: formData.russian.trim(),
-      sentence: formData.sentence.trim(),
-      association: formData.association.trim(),
+    updateMutation.mutate({
+      id: editingCard.id,
+      data: {
+        armenian: formData.armenian.trim(),
+        russian: formData.russian.trim(),
+        sentence: formData.sentence.trim(),
+        association: formData.association.trim(),
+      },
     });
     resetForm();
     setEditingCard(null);
-    refreshCards();
   };
   
   const handleDeleteCard = () => {
     if (!deletingCard) return;
-    deleteCard(deletingCard.id);
-    setDeletingCard(null);
-    refreshCards();
+    deleteMutation.mutate(deletingCard.id);
   };
   
   const handleToggleStar = (card: FlashCard) => {
-    updateCard(card.id, { isStarred: !card.isStarred });
-    refreshCards();
+    updateMutation.mutate({ id: card.id, data: { isStarred: !card.isStarred } });
   };
   
   const openEditDialog = (card: FlashCard) => {
@@ -158,6 +194,14 @@ export function CardList({ deckId, onBack }: CardListProps) {
     link.download = `${deck?.name || "cards"}_export.csv`;
     link.click();
   };
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -196,10 +240,10 @@ export function CardList({ deckId, onBack }: CardListProps) {
                   <Label htmlFor="armenian">Armenian Word *</Label>
                   <Input
                     id="armenian"
-                    placeholder="e.g., գrelays"
+                    placeholder="e.g., գիdelays"
                     value={formData.armenian}
                     onChange={(e) => setFormData(prev => ({ ...prev, armenian: e.target.value }))}
-                    className="font-armenian text-xl"
+                    className="font-sans text-xl"
                     data-testid="input-card-armenian"
                   />
                 </div>
@@ -220,7 +264,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                     placeholder="Armenian sentence using this word"
                     value={formData.sentence}
                     onChange={(e) => setFormData(prev => ({ ...prev, sentence: e.target.value }))}
-                    className="font-armenian"
+                    className="font-sans"
                     data-testid="input-card-sentence"
                   />
                 </div>
@@ -241,9 +285,10 @@ export function CardList({ deckId, onBack }: CardListProps) {
                 </Button>
                 <Button 
                   onClick={handleCreateCard} 
-                  disabled={!formData.armenian.trim() || !formData.russian.trim()}
+                  disabled={!formData.armenian.trim() || !formData.russian.trim() || createMutation.isPending}
                   data-testid="button-confirm-add-card"
                 >
+                  {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Add Card
                 </Button>
               </DialogFooter>
@@ -318,7 +363,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                         )} />
                       </Button>
                     </TableCell>
-                    <TableCell className="font-armenian text-lg">{card.armenian}</TableCell>
+                    <TableCell className="font-sans text-lg">{card.armenian}</TableCell>
                     <TableCell>{card.russian}</TableCell>
                     <TableCell className="hidden md:table-cell">
                       <Badge variant={status === "new" ? "default" : status === "learning" ? "secondary" : "outline"}>
@@ -368,7 +413,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                 id="edit-armenian"
                 value={formData.armenian}
                 onChange={(e) => setFormData(prev => ({ ...prev, armenian: e.target.value }))}
-                className="font-armenian text-xl"
+                className="font-sans text-xl"
                 data-testid="input-edit-card-armenian"
               />
             </div>
@@ -387,7 +432,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                 id="edit-sentence"
                 value={formData.sentence}
                 onChange={(e) => setFormData(prev => ({ ...prev, sentence: e.target.value }))}
-                className="font-armenian"
+                className="font-sans"
                 data-testid="input-edit-card-sentence"
               />
             </div>
@@ -407,9 +452,10 @@ export function CardList({ deckId, onBack }: CardListProps) {
             </Button>
             <Button 
               onClick={handleUpdateCard}
-              disabled={!formData.armenian.trim() || !formData.russian.trim()}
+              disabled={!formData.armenian.trim() || !formData.russian.trim() || updateMutation.isPending}
               data-testid="button-confirm-edit-card"
             >
+              {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Save Changes
             </Button>
           </DialogFooter>

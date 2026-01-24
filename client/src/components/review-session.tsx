@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Flashcard } from "@/components/flashcard";
-import type { Card as FlashCard, QualityRating } from "@shared/schema";
-import { calculateSM2, isDueToday, isNewCard, sortCardsByPriority, isWeekend } from "@/lib/sm2";
-import { getCards, updateCard, addReview, getSettings } from "@/lib/storage";
+import type { Card as FlashCard, QualityRating, Settings } from "@shared/schema";
+import { isDueToday, isNewCard, sortCardsByPriority, isWeekend } from "@/lib/sm2";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface ReviewSessionProps {
   deckId?: string;
@@ -20,21 +21,48 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
   const [showAnswer, setShowAnswer] = useState(false);
   const [completed, setCompleted] = useState(0);
   const [sessionStats, setSessionStats] = useState({ correct: 0, total: 0 });
+  const [isInitialized, setIsInitialized] = useState(false);
   
-  useEffect(() => {
-    loadReviewQueue();
-  }, [deckId]);
+  const { data: allCards = [], isLoading: cardsLoading } = useQuery<FlashCard[]>({
+    queryKey: deckId ? ["/api/cards", deckId] : ["/api/cards"],
+    queryFn: async () => {
+      const url = deckId ? `/api/cards?deckId=${deckId}` : "/api/cards";
+      const res = await fetch(url);
+      return res.json();
+    },
+  });
+  
+  const { data: settings } = useQuery<Settings>({
+    queryKey: ["/api/settings"],
+  });
+  
+  const reviewMutation = useMutation({
+    mutationFn: async ({ cardId, quality }: { cardId: string; quality: number }) => {
+      const res = await apiRequest("POST", `/api/cards/${cardId}/review`, { quality });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
+    },
+  });
+  
+  const starMutation = useMutation({
+    mutationFn: async ({ cardId, isStarred }: { cardId: string; isStarred: boolean }) => {
+      const res = await apiRequest("PATCH", `/api/cards/${cardId}`, { isStarred });
+      return res.json();
+    },
+    onSuccess: (updatedCard) => {
+      setQueue(prev => prev.map(c => c.id === updatedCard.id ? updatedCard : c));
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+    },
+  });
   
   const loadReviewQueue = useCallback(() => {
-    const settings = getSettings();
-    let cards = getCards();
+    if (!settings || allCards.length === 0) return;
     
-    if (deckId) {
-      cards = cards.filter(c => c.deckId === deckId);
-    }
-    
-    const dueCards = cards.filter(isDueToday);
-    const newCards = cards.filter(isNewCard);
+    const dueCards = allCards.filter(c => isDueToday(c));
+    const newCards = allCards.filter(c => isNewCard(c));
     
     const weekendMode = settings.weekendLearnerMode;
     const isWeekendDay = isWeekend();
@@ -58,27 +86,21 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
     setCurrentIndex(0);
     setCompleted(0);
     setShowAnswer(false);
-  }, [deckId]);
+    setIsInitialized(true);
+  }, [allCards, settings]);
+  
+  useEffect(() => {
+    if (!isInitialized && settings && allCards.length >= 0 && !cardsLoading) {
+      loadReviewQueue();
+    }
+  }, [allCards, settings, cardsLoading, isInitialized, loadReviewQueue]);
   
   const currentCard = queue[currentIndex];
   
   const handleRate = (quality: QualityRating) => {
     if (!currentCard) return;
     
-    const result = calculateSM2(currentCard, quality);
-    
-    updateCard(currentCard.id, {
-      ...result,
-      lastReviewDate: new Date().toISOString(),
-    });
-    
-    addReview({
-      cardId: currentCard.id,
-      quality,
-      reviewedAt: new Date().toISOString(),
-      previousInterval: currentCard.interval,
-      newInterval: result.interval,
-    });
+    reviewMutation.mutate({ cardId: currentCard.id, quality });
     
     setSessionStats(prev => ({
       correct: prev.correct + (quality >= 3 ? 1 : 0),
@@ -97,13 +119,18 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
   
   const handleToggleStar = () => {
     if (!currentCard) return;
-    const updated = updateCard(currentCard.id, { isStarred: !currentCard.isStarred });
-    if (updated) {
-      setQueue(prev => prev.map(c => c.id === currentCard.id ? updated : c));
-    }
+    starMutation.mutate({ cardId: currentCard.id, isStarred: !currentCard.isStarred });
   };
   
   const progressPercent = queue.length > 0 ? (completed / queue.length) * 100 : 100;
+  
+  if (cardsLoading || !isInitialized) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
   
   if (queue.length === 0 && completed === 0) {
     return (
@@ -147,7 +174,7 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
           <Button onClick={onComplete} data-testid="button-finish-session">
             Done
           </Button>
-          <Button onClick={loadReviewQueue} variant="outline" data-testid="button-review-again">
+          <Button onClick={() => { setIsInitialized(false); }} variant="outline" data-testid="button-review-again">
             Review Again
           </Button>
         </div>

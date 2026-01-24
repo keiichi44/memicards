@@ -40,18 +40,18 @@ export function calculateSM2(card: Card, quality: QualityRating): SM2Result {
   };
 }
 
-export function isDueToday(card: Card): boolean {
+export function isDueToday(card: { nextReviewDate: Date | string }): boolean {
   const now = new Date();
   const reviewDate = new Date(card.nextReviewDate);
   return reviewDate <= now;
 }
 
-export function isNewCard(card: Card): boolean {
+export function isNewCard(card: { repetitions: number; lastReviewDate?: Date | string | null }): boolean {
   return card.repetitions === 0 && !card.lastReviewDate;
 }
 
-export function getCardStatus(card: Card): "new" | "learning" | "review" | "graduated" {
-  if (isNewCard(card)) return "new";
+export function getCardStatus(card: { repetitions: number; interval: number; lastReviewDate?: Date | string | null }): "new" | "learning" | "review" | "graduated" {
+  if (card.repetitions === 0 && !card.lastReviewDate) return "new";
   if (card.repetitions < 3) return "learning";
   if (card.interval >= 21) return "graduated";
   return "review";
@@ -73,14 +73,17 @@ export function formatInterval(days: number): string {
   return years === 1 ? "1 year" : `${years} years`;
 }
 
-export function getDaysUntilReview(card: Card): number {
+export function getDaysUntilReview(card: { nextReviewDate: Date | string }): number {
   const now = new Date();
   const reviewDate = new Date(card.nextReviewDate);
   const diffTime = reviewDate.getTime() - now.getTime();
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-export function sortCardsByPriority(cards: Card[], prioritizeStarred: boolean = true): Card[] {
+export function sortCardsByPriority<T extends { isStarred: boolean; nextReviewDate: Date | string }>(
+  cards: T[], 
+  prioritizeStarred: boolean = true
+): T[] {
   return [...cards].sort((a, b) => {
     if (prioritizeStarred && a.isStarred !== b.isStarred) {
       return a.isStarred ? -1 : 1;

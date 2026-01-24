@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DeckList } from "@/components/deck-list";
 import { CardList } from "@/components/card-list";
 import { ReviewSession } from "@/components/review-session";
 import { PracticeSession } from "@/components/practice-session";
-import { initializeSampleData } from "@/lib/storage";
 
 type View = "decks" | "cards" | "review" | "practice";
 
@@ -12,10 +11,6 @@ export default function Home() {
   const [selectedDeckId, setSelectedDeckId] = useState<string | undefined>();
   const [reviewDeckId, setReviewDeckId] = useState<string | undefined>();
   const [practiceDeckId, setPracticeDeckId] = useState<string | undefined>();
-  
-  useEffect(() => {
-    initializeSampleData();
-  }, []);
   
   const handleSelectDeck = (deckId: string) => {
     setSelectedDeckId(deckId);
