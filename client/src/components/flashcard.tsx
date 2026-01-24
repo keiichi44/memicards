@@ -63,7 +63,7 @@ export function Flashcard({ card, onRate, onToggleStar, showAnswer, onFlip, prac
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-6">
             <div className="w-full">
               <p className="text-sm text-muted-foreground mb-2">Armenian</p>
-              <p className="font-armenian text-4xl md:text-5xl font-medium leading-relaxed" data-testid="text-armenian-word">
+              <p className="font-sans text-4xl md:text-5xl font-medium leading-relaxed" data-testid="text-armenian-word">
                 {card.armenian}
               </p>
             </div>
