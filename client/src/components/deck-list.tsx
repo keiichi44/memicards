@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Folder, Play, Trash2, Edit2 } from "lucide-react";
+import { Plus, Folder, Play, Trash2, Edit2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +33,10 @@ import { cn } from "@/lib/utils";
 interface DeckListProps {
   onSelectDeck: (deckId: string) => void;
   onStartReview: (deckId?: string) => void;
+  onStartPractice: (deckId?: string) => void;
 }
 
-export function DeckList({ onSelectDeck, onStartReview }: DeckListProps) {
+export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckListProps) {
   const [decks, setDecks] = useState<Deck[]>(() => getDecks());
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
@@ -91,14 +92,25 @@ export function DeckList({ onSelectDeck, onStartReview }: DeckListProps) {
                 {totalDue} due today, {totalNew} new cards
               </p>
             </div>
-            <Button 
-              onClick={() => onStartReview()} 
-              disabled={totalDue === 0 && totalNew === 0}
-              data-testid="button-start-all-review"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              Start Review
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => onStartReview()} 
+                disabled={totalDue === 0 && totalNew === 0}
+                data-testid="button-start-all-review"
+              >
+                <Play className="h-4 w-4 mr-2" />
+                Start Review
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => onStartPractice()} 
+                disabled={allCards.length === 0}
+                data-testid="button-start-all-practice"
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Practice
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -221,19 +233,34 @@ export function DeckList({ onSelectDeck, onStartReview }: DeckListProps) {
                     {newCount > 0 && <Badge variant="secondary">{newCount} new</Badge>}
                     {starredCount > 0 && <Badge variant="outline" className="text-yellow-600">{starredCount} starred</Badge>}
                   </div>
-                  <Button 
-                    className="w-full" 
-                    variant="outline"
-                    disabled={dueCount === 0 && newCount === 0}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onStartReview(deck.id);
-                    }}
-                    data-testid={`button-review-deck-${deck.id}`}
-                  >
-                    <Play className="h-4 w-4 mr-2" />
-                    Study
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      className="flex-1" 
+                      variant="outline"
+                      disabled={dueCount === 0 && newCount === 0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onStartReview(deck.id);
+                      }}
+                      data-testid={`button-review-deck-${deck.id}`}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Study
+                    </Button>
+                    <Button 
+                      variant="ghost"
+                      size="icon"
+                      disabled={cards.length === 0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onStartPractice(deck.id);
+                      }}
+                      title="Practice mode"
+                      data-testid={`button-practice-deck-${deck.id}`}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             );

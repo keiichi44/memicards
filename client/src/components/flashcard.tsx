@@ -10,13 +10,14 @@ import { formatInterval, getCardStatus, getDaysUntilReview } from "@/lib/sm2";
 
 interface FlashcardProps {
   card: FlashCard;
-  onRate: (quality: QualityRating) => void;
-  onToggleStar: () => void;
+  onRate?: (quality: QualityRating) => void;
+  onToggleStar?: () => void;
   showAnswer: boolean;
   onFlip: () => void;
+  practiceMode?: boolean;
 }
 
-export function Flashcard({ card, onRate, onToggleStar, showAnswer, onFlip }: FlashcardProps) {
+export function Flashcard({ card, onRate, onToggleStar, showAnswer, onFlip, practiceMode = false }: FlashcardProps) {
   const status = getCardStatus(card);
   const daysUntil = getDaysUntilReview(card);
   
@@ -39,22 +40,24 @@ export function Flashcard({ card, onRate, onToggleStar, showAnswer, onFlip }: Fl
                 </span>
               )}
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleStar();
-              }}
-              data-testid="button-star-card"
-            >
-              <Star 
-                className={cn(
-                  "h-5 w-5",
-                  card.isStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
-                )} 
-              />
-            </Button>
+            {onToggleStar && !practiceMode && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleStar();
+                }}
+                data-testid="button-star-card"
+              >
+                <Star 
+                  className={cn(
+                    "h-5 w-5",
+                    card.isStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+                  )} 
+                />
+              </Button>
+            )}
           </div>
           
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-6">
@@ -103,7 +106,7 @@ export function Flashcard({ card, onRate, onToggleStar, showAnswer, onFlip }: Fl
         </CardContent>
       </Card>
       
-      {showAnswer && (
+      {showAnswer && onRate && !practiceMode && (
         <div className="mt-4 flex justify-center gap-2 flex-wrap animate-in fade-in slide-in-from-bottom-4 duration-300">
           {simpleQualityRatings.map(({ quality, label, color }) => (
             <Button
