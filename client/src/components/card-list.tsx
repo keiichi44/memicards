@@ -74,6 +74,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
     queryKey: ["/api/cards", deckId],
     queryFn: async () => {
       const res = await fetch(`/api/cards?deckId=${deckId}`);
+      if (!res.ok) throw new Error(`Failed to fetch cards: ${res.status}`);
       return res.json();
     },
   });

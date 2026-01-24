@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDeckSchema, insertCardSchema, batchImportSchema, insertSettingsSchema } from "@shared/schema";
+import { insertDeckSchema, insertCardSchema, batchImportSchema, insertSettingsSchema, updateDeckSchema, updateCardSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { calculateSM2 } from "./sm2";
 
@@ -58,7 +58,11 @@ export async function registerRoutes(
 
   app.patch("/api/decks/:id", async (req, res) => {
     try {
-      const deck = await storage.updateDeck(req.params.id, req.body);
+      const parsed = updateDeckSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.errors });
+      }
+      const deck = await storage.updateDeck(req.params.id, parsed.data);
       if (!deck) {
         return res.status(404).json({ error: "Deck not found" });
       }
@@ -132,7 +136,11 @@ export async function registerRoutes(
 
   app.patch("/api/cards/:id", async (req, res) => {
     try {
-      const card = await storage.updateCard(req.params.id, req.body);
+      const parsed = updateCardSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.errors });
+      }
+      const card = await storage.updateCard(req.params.id, parsed.data);
       if (!card) {
         return res.status(404).json({ error: "Card not found" });
       }

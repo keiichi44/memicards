@@ -28,6 +28,7 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
     queryFn: async () => {
       const url = deckId ? `/api/cards?deckId=${deckId}` : "/api/cards";
       const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to fetch cards: ${res.status}`);
       return res.json();
     },
   });

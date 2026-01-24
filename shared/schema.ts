@@ -22,7 +22,7 @@ export const cards = pgTable("cards", {
   easeFactor: real("ease_factor").default(2.5).notNull(),
   interval: integer("interval").default(0).notNull(),
   repetitions: integer("repetitions").default(0).notNull(),
-  nextReviewDate: timestamp("next_review_date").notNull(),
+  nextReviewDate: timestamp("next_review_date").defaultNow().notNull(),
   lastReviewDate: timestamp("last_review_date"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -74,6 +74,10 @@ export const insertCardSchema = createInsertSchema(cards).omit({ id: true, creat
 });
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, reviewedAt: true });
 export const insertSettingsSchema = createInsertSchema(settings).omit({ id: true });
+
+// Update schemas (partial versions for PATCH endpoints)
+export const updateDeckSchema = insertDeckSchema.partial();
+export const updateCardSchema = insertCardSchema.partial();
 
 // Types
 export type Deck = typeof decks.$inferSelect;
