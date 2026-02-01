@@ -326,7 +326,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           <div className="flex items-start gap-4">
             <Lightbulb className="h-8 w-8 text-muted-foreground flex-shrink-0 mt-1" />
             <div className="flex-1">
-              <h3 className="font-semibold mb-3" data-testid="text-tips-heading">Create effective decks</h3>
+              <h3 className="font-semibold mb-3" data-testid="text-tips-heading">Shape an effective learning curve</h3>
               <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside" data-testid="list-tips">
                 <li data-testid="text-tip-1">Creating a deck with 20-30 cards is ideal for learning.</li>
                 <li data-testid="text-tip-2">If you have more than 30, divide them into decks based on complexity.</li>
