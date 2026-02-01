@@ -20,8 +20,19 @@ export async function registerRoutes(
       const decks = await storage.getDecks();
       const decksWithCounts = await Promise.all(
         decks.map(async (deck) => {
-          const deckCards = await storage.getCards(deck.id);
-          return { ...deck, cardCount: deckCards.length };
+          const [deckCards, dueCards, starredCards, inactiveCards] = await Promise.all([
+            storage.getCards(deck.id),
+            storage.getDueCards(deck.id),
+            storage.getStarredCards(deck.id),
+            storage.getInactiveCards(deck.id),
+          ]);
+          return { 
+            ...deck, 
+            cardCount: deckCards.length,
+            dueCount: dueCards.length,
+            starredCount: starredCards.length,
+            inactiveCount: inactiveCards.length,
+          };
         })
       );
       res.json(decksWithCounts);

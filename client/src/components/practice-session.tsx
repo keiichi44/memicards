@@ -38,7 +38,9 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
   });
 
   const loadCards = useCallback(() => {
-    setShuffledCards(shuffleArray(allCards));
+    // Only include active cards in practice sessions
+    const activeCards = allCards.filter(c => c.isActive);
+    setShuffledCards(shuffleArray(activeCards));
     setCurrentIndex(0);
     setShowAnswer(false);
     setPracticeCount(0);

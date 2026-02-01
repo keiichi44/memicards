@@ -18,6 +18,7 @@ export const cards = pgTable("cards", {
   sentence: text("sentence").default(""),
   association: text("association").default(""),
   isStarred: boolean("is_starred").default(false).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
   deckId: text("deck_id").notNull().references(() => decks.id, { onDelete: "cascade" }),
   easeFactor: real("ease_factor").default(2.5).notNull(),
   interval: integer("interval").default(0).notNull(),

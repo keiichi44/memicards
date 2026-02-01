@@ -24,6 +24,7 @@ export interface IStorage {
   getDueCards(deckId?: string): Promise<Card[]>;
   getNewCards(deckId?: string): Promise<Card[]>;
   getStarredCards(deckId?: string): Promise<Card[]>;
+  getInactiveCards(deckId?: string): Promise<Card[]>;
   createCard(card: InsertCard): Promise<Card>;
   updateCard(id: string, card: Partial<Card>): Promise<Card | undefined>;
   deleteCard(id: string): Promise<boolean>;
@@ -90,19 +91,28 @@ export class DatabaseStorage implements IStorage {
     const now = new Date();
     if (deckId) {
       return db.select().from(cards).where(
-        and(eq(cards.deckId, deckId), lte(cards.nextReviewDate, now))
+        and(eq(cards.deckId, deckId), lte(cards.nextReviewDate, now), eq(cards.isActive, true))
       );
     }
-    return db.select().from(cards).where(lte(cards.nextReviewDate, now));
+    return db.select().from(cards).where(and(lte(cards.nextReviewDate, now), eq(cards.isActive, true)));
   }
   
   async getNewCards(deckId?: string): Promise<Card[]> {
     if (deckId) {
       return db.select().from(cards).where(
-        and(eq(cards.deckId, deckId), eq(cards.repetitions, 0))
+        and(eq(cards.deckId, deckId), eq(cards.repetitions, 0), eq(cards.isActive, true))
       );
     }
-    return db.select().from(cards).where(eq(cards.repetitions, 0));
+    return db.select().from(cards).where(and(eq(cards.repetitions, 0), eq(cards.isActive, true)));
+  }
+  
+  async getInactiveCards(deckId?: string): Promise<Card[]> {
+    if (deckId) {
+      return db.select().from(cards).where(
+        and(eq(cards.deckId, deckId), eq(cards.isActive, false))
+      );
+    }
+    return db.select().from(cards).where(eq(cards.isActive, false));
   }
   
   async getStarredCards(deckId?: string): Promise<Card[]> {

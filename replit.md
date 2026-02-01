@@ -67,7 +67,7 @@ server/
 
 ### Tables (PostgreSQL)
 - **decks**: id, name, description, createdAt
-- **cards**: id, deckId, armenian, russian, sentence, association, isStarred, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt
+- **cards**: id, deckId, armenian, russian, sentence, association, isStarred, isActive, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt
 - **reviews**: id, cardId, quality, reviewedAt, previousInterval, newInterval
 - **settings**: id, weekendLearnerMode, weekdayNewCards, weekdayReviewCards, weekendNewCards, weekendReviewCards, prioritizeStarred, weeklyCardTarget
 
@@ -112,9 +112,20 @@ The application runs on port 5000 via the `npm run dev` command.
 
 ## Recent Changes
 
+- Added card active/inactive toggle feature - enable/disable individual cards for review sessions
+- Added mobile bottom navigation bar for better mobile experience
 - Migrated from localStorage to PostgreSQL database
 - Added React Query for data fetching with proper cache invalidation
 - Server-side SM-2 algorithm for consistent scheduling
 - Cross-device synchronization support
 - Practice Mode for casual review without tracking
 - Improved batch import with configurable CSV separator
+
+## Card Active Toggle
+
+Cards can be individually enabled/disabled for review sessions:
+- **Active cards** (default): Included in review and practice sessions
+- **Inactive cards**: Excluded from sessions but remain in the deck
+- Toggle via checkbox in the card list view
+- Deck cards show "X off" count for inactive cards
+- Useful for progressive learning (enable cards as you progress through lessons)

@@ -62,8 +62,10 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
   const loadReviewQueue = useCallback(() => {
     if (!settings || allCards.length === 0) return;
     
-    const dueCards = allCards.filter(c => isDueToday(c));
-    const newCards = allCards.filter(c => isNewCard(c));
+    // Only include active cards in review sessions
+    const activeCards = allCards.filter(c => c.isActive);
+    const dueCards = activeCards.filter(c => isDueToday(c));
+    const newCards = activeCards.filter(c => isNewCard(c));
     
     const weekendMode = settings.weekendLearnerMode;
     const isWeekendDay = isWeekend();

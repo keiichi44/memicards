@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -106,6 +107,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
     },
   });
   
@@ -175,6 +177,10 @@ export function CardList({ deckId, onBack }: CardListProps) {
   
   const handleToggleStar = (card: FlashCard) => {
     updateMutation.mutate({ id: card.id, data: { isStarred: !card.isStarred } });
+  };
+  
+  const handleToggleActive = (card: FlashCard) => {
+    updateMutation.mutate({ id: card.id, data: { isActive: !card.isActive } });
   };
   
   const openEditDialog = (card: FlashCard) => {
@@ -338,6 +344,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">Active</TableHead>
                 <TableHead className="w-12"></TableHead>
                 <TableHead>Armenian</TableHead>
                 <TableHead>Russian</TableHead>
@@ -350,7 +357,19 @@ export function CardList({ deckId, onBack }: CardListProps) {
               {filteredCards.map((card) => {
                 const status = getCardStatus(card);
                 return (
-                  <TableRow key={card.id} data-testid={`row-card-${card.id}`}>
+                  <TableRow 
+                    key={card.id} 
+                    data-testid={`row-card-${card.id}`}
+                    className={cn(!card.isActive && "opacity-50")}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        checked={card.isActive}
+                        onCheckedChange={() => handleToggleActive(card)}
+                        aria-label={`Toggle ${card.armenian} active`}
+                        data-testid={`checkbox-active-${card.id}`}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Button
                         variant="ghost"

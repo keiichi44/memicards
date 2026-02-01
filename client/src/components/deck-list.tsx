@@ -32,6 +32,9 @@ import { isDueToday, isNewCard } from "@/lib/sm2";
 
 interface DeckWithCount extends Deck {
   cardCount: number;
+  dueCount: number;
+  starredCount: number;
+  inactiveCount: number;
 }
 
 interface DeckListProps {
@@ -55,8 +58,9 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
     queryKey: ["/api/cards"],
   });
   
-  const totalDue = allCards.filter(c => isDueToday(c)).length;
-  const totalNew = allCards.filter(c => isNewCard(c)).length;
+  const activeCards = allCards.filter(c => c.isActive);
+  const totalDue = activeCards.filter(c => isDueToday(c)).length;
+  const totalNew = activeCards.filter(c => isNewCard(c)).length;
   
   const createMutation = useMutation({
     mutationFn: async (data: { name: string; description: string }) => {
@@ -236,9 +240,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {decks.map((deck) => {
             const deckCards = allCards.filter(c => c.deckId === deck.id);
-            const dueCount = deckCards.filter(c => isDueToday(c)).length;
             const newCount = deckCards.filter(c => isNewCard(c)).length;
-            const starredCount = deckCards.filter(c => c.isStarred).length;
             
             return (
               <Card 
@@ -281,16 +283,17 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge variant="outline">{deckCards.length} cards</Badge>
-                    {dueCount > 0 && <Badge variant="default">{dueCount} due</Badge>}
+                    <Badge variant="outline">{deck.cardCount} cards</Badge>
+                    {deck.dueCount > 0 && <Badge variant="default">{deck.dueCount} due</Badge>}
                     {newCount > 0 && <Badge variant="secondary">{newCount} new</Badge>}
-                    {starredCount > 0 && <Badge variant="outline" className="text-yellow-600">{starredCount} starred</Badge>}
+                    {deck.starredCount > 0 && <Badge variant="outline" className="text-yellow-600">{deck.starredCount} starred</Badge>}
+                    {deck.inactiveCount > 0 && <Badge variant="outline" className="text-muted-foreground">{deck.inactiveCount} off</Badge>}
                   </div>
                   <div className="flex gap-2">
                     <Button 
                       className="flex-1" 
                       variant="outline"
-                      disabled={dueCount === 0 && newCount === 0}
+                      disabled={deck.dueCount === 0 && newCount === 0}
                       onClick={(e) => {
                         e.stopPropagation();
                         onStartReview(deck.id);
@@ -303,7 +306,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                     <Button 
                       variant="ghost"
                       size="icon"
-                      disabled={deckCards.length === 0}
+                      disabled={deck.cardCount === 0}
                       onClick={(e) => {
                         e.stopPropagation();
                         onStartPractice(deck.id);
