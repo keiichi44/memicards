@@ -340,7 +340,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               {decks.length === 0 && (
                 <Button className="mt-4" onClick={() => setIsCreateOpen(true)} data-testid="button-create-first-deck">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Deck
+                  Create a deck
                 </Button>
               )}
             </div>
