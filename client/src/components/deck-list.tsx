@@ -331,7 +331,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                 <li data-testid="text-tip-1">Creating a deck with 20-30 cards is ideal for learning.</li>
                 <li data-testid="text-tip-2">If you have more than 30, divide them into decks based on complexity.</li>
                 <li data-testid="text-tip-3">Begin learning 20 cards a week to get accustomed to the process.</li>
-                <li data-testid="text-tip-4">Think about using Weekend mode for intensive learning.</li>
+                <li data-testid="text-tip-4">Use Weekend mode for intensive learning.</li>
                 <li data-testid="text-tip-5">Import your cards via CSV mapping or enter them manually.</li>
               </ul>
               {decks.length === 0 && (
