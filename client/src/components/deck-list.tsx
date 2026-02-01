@@ -170,7 +170,6 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </div>
         </CardContent>
       </Card>
-      
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-xl font-semibold">Your Decks</h2>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -235,7 +234,6 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </DialogContent>
         </Dialog>
       </div>
-      
       {decks.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {decks.map((deck) => {
@@ -323,7 +321,6 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           })}
         </div>
       )}
-      
       <Card data-testid="card-tips">
         <CardContent className="py-8">
           <div className="flex items-start gap-4">
@@ -332,7 +329,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               <h3 className="font-semibold mb-3" data-testid="text-tips-heading">Create effective decks</h3>
               <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside" data-testid="list-tips">
                 <li data-testid="text-tip-1">Creating a deck with 20-30 cards is ideal for learning.</li>
-                <li data-testid="text-tip-2">If you have more than 30 cards, consider dividing them into decks based on complexity.</li>
+                <li data-testid="text-tip-2">If you have more than 30, divide them into decks based on complexity.</li>
                 <li data-testid="text-tip-3">Begin learning 20 cards a week to get accustomed to the process.</li>
                 <li data-testid="text-tip-4">Think about using Weekend mode for intensive learning.</li>
                 <li data-testid="text-tip-5">Import your cards via CSV mapping or enter them manually.</li>
@@ -347,7 +344,6 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </div>
         </CardContent>
       </Card>
-      
       <Dialog open={!!editingDeck} onOpenChange={(open) => !open && setEditingDeck(null)}>
         <DialogContent>
           <DialogHeader>
@@ -397,7 +393,6 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
       <AlertDialog open={!!deletingDeck} onOpenChange={(open) => !open && setDeletingDeck(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
