@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Folder, Play, Trash2, Edit2, RotateCcw, Loader2 } from "lucide-react";
+import { Plus, Lightbulb, Play, Trash2, Edit2, RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -236,21 +236,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
         </Dialog>
       </div>
       
-      {decks.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Folder className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="font-semibold mb-2">No decks yet</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Create your first deck to start organizing your flashcards.
-            </p>
-            <Button onClick={() => setIsCreateOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Deck
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
+      {decks.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {decks.map((deck) => {
             const deckCards = allCards.filter(c => c.deckId === deck.id);
@@ -337,6 +323,30 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           })}
         </div>
       )}
+      
+      <Card data-testid="card-tips">
+        <CardContent className="py-8">
+          <div className="flex items-start gap-4">
+            <Lightbulb className="h-8 w-8 text-muted-foreground flex-shrink-0 mt-1" />
+            <div className="flex-1">
+              <h3 className="font-semibold mb-3" data-testid="text-tips-heading">Create effective decks</h3>
+              <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside" data-testid="list-tips">
+                <li data-testid="text-tip-1">Creating a deck with 20-30 cards is ideal for learning.</li>
+                <li data-testid="text-tip-2">If you have more than 30 cards, consider dividing them into decks based on complexity.</li>
+                <li data-testid="text-tip-3">Begin learning 20 cards a week to get accustomed to the process.</li>
+                <li data-testid="text-tip-4">Think about using Weekend mode for intensive learning.</li>
+                <li data-testid="text-tip-5">Import your cards via CSV mapping or enter them manually.</li>
+              </ul>
+              {decks.length === 0 && (
+                <Button className="mt-4" onClick={() => setIsCreateOpen(true)} data-testid="button-create-first-deck">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Deck
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       
       <Dialog open={!!editingDeck} onOpenChange={(open) => !open && setEditingDeck(null)}>
         <DialogContent>
