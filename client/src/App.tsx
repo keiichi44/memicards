@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AppSidebar } from "@/components/app-sidebar";
+import { BottomNavBar } from "@/components/bottom-nav-bar";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Import from "@/pages/import";
@@ -37,17 +38,25 @@ function App() {
         <TooltipProvider>
           <SidebarProvider style={sidebarStyle as React.CSSProperties}>
             <div className="flex min-h-screen w-full">
-              <AppSidebar />
+              <div className="hidden md:block">
+                <AppSidebar />
+              </div>
               <div className="flex flex-col flex-1 min-w-0">
                 <header className="flex items-center justify-between gap-2 p-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-                  <SidebarTrigger data-testid="button-sidebar-toggle" />
+                  <div className="hidden md:block">
+                    <SidebarTrigger data-testid="button-sidebar-toggle" />
+                  </div>
+                  <div className="md:hidden">
+                    <span className="font-semibold text-lg" data-testid="text-app-title-mobile">Armenian SRS</span>
+                  </div>
                   <ThemeToggle />
                 </header>
-                <main className="flex-1 overflow-auto">
+                <main className="flex-1 overflow-auto pb-16 md:pb-0">
                   <Router />
                 </main>
               </div>
             </div>
+            <BottomNavBar />
           </SidebarProvider>
           <Toaster />
         </TooltipProvider>
