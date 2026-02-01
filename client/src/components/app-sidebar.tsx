@@ -47,7 +47,7 @@ export function AppSidebar() {
             <BookOpen className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-semibold text-lg leading-tight">Armenian SRS</h1>
+            <h1 className="font-semibold text-lg leading-tight">memicards</h1>
             <p className="text-xs text-muted-foreground">Spaced Repetition</p>
           </div>
         </Link>
@@ -82,7 +82,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="p-4">
         <p className="text-xs text-muted-foreground text-center">
-          Learning Armenian with SM-2
+          Powered by SM-2
         </p>
       </SidebarFooter>
     </Sidebar>

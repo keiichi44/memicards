@@ -1,14 +1,14 @@
-# Armenian SRS - Spaced Repetition Flashcards
+# memicards - Spaced Repetition Flashcards
 
-A customized spaced repetition system for learning Armenian vocabulary with Russian translations. Features the SM-2 algorithm, batch import, weekend learner mode, and progress tracking with cross-device synchronization via PostgreSQL.
+A universal spaced repetition system for learning vocabulary in any language. Features the SM-2 algorithm, batch import, weekend learner mode, and progress tracking with cross-device synchronization via PostgreSQL.
 
 ## Overview
 
-This application helps you learn Armenian vocabulary using spaced repetition. Key features include:
+This application helps you learn vocabulary using spaced repetition. Key features include:
 
 - **SM-2 Algorithm**: Industry-standard spaced repetition scheduling
-- **Armenian Typography**: Sans-serif font for clear text display
-- **Card Structure**: Armenian word, Russian translation, example sentence (optional), mnemonic association (optional), difficulty star
+- **Multi-Language Support**: Each deck has its own language setting for flexible learning
+- **Card Structure**: Word, translation, example sentence (optional), mnemonic association (optional), difficulty star
 - **Batch Import**: Import 50+ cards at once via CSV with configurable separator
 - **Weekend Learner Mode**: Customizable review loads for weekdays vs weekends
 - **Deck Organization**: Weekly decks with filtering (Due today, New, Starred)
@@ -66,8 +66,8 @@ server/
 ## Database Schema
 
 ### Tables (PostgreSQL)
-- **decks**: id, name, description, createdAt
-- **cards**: id, deckId, armenian, russian, sentence, association, isStarred, isActive, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt
+- **decks**: id, name, language, description, createdAt
+- **cards**: id, deckId, armenian (word), russian (translation), sentence, association, isStarred, isActive, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt
 - **reviews**: id, cardId, quality, reviewedAt, previousInterval, newInterval
 - **settings**: id, weekendLearnerMode, weekdayNewCards, weekdayReviewCards, weekendNewCards, weekendReviewCards, prioritizeStarred, weeklyCardTarget
 
@@ -91,12 +91,12 @@ server/
 ## CSV Import Format
 
 ```csv
-armenian,russian,sentence,association
-barev,привет,Barev! Inchpes es?,связь с barev
-girk,книга,Im girky seghani vra e,гирька на книгу
+word,translation,sentence,association
+hello,привет,Hello! How are you?,greeting word
+book,книга,The book is on the table,reading material
 ```
 
-Note: `sentence` and `association` columns are optional and can be empty. Supports comma or semicolon separators.
+Note: `sentence` and `association` columns are optional and can be empty. Supports comma or semicolon separators. Also accepts legacy headers: armenian, russian.
 
 ## User Preferences
 

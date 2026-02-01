@@ -244,7 +244,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="armenian">Armenian Word *</Label>
+                  <Label htmlFor="armenian">{deck?.language || "Word"} *</Label>
                   <Input
                     id="armenian"
                     placeholder="e.g., գիdelays"
@@ -255,7 +255,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="russian">Russian Translation *</Label>
+                  <Label htmlFor="russian">Translation *</Label>
                   <Input
                     id="russian"
                     placeholder="e.g., книга"
@@ -268,7 +268,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                   <Label htmlFor="sentence">Example Sentence (optional)</Label>
                   <Textarea
                     id="sentence"
-                    placeholder="Armenian sentence using this word"
+                    placeholder="Example sentence using this word"
                     value={formData.sentence}
                     onChange={(e) => setFormData(prev => ({ ...prev, sentence: e.target.value }))}
                     className="font-sans"
@@ -279,7 +279,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                   <Label htmlFor="association">Association/Mnemonic (optional)</Label>
                   <Textarea
                     id="association"
-                    placeholder="Memory aid in Russian"
+                    placeholder="Memory aid"
                     value={formData.association}
                     onChange={(e) => setFormData(prev => ({ ...prev, association: e.target.value }))}
                     data-testid="input-card-association"
@@ -346,8 +346,8 @@ export function CardList({ deckId, onBack }: CardListProps) {
               <TableRow>
                 <TableHead className="w-12">Active</TableHead>
                 <TableHead className="w-12"></TableHead>
-                <TableHead>Armenian</TableHead>
-                <TableHead>Russian</TableHead>
+                <TableHead>{deck?.language || "Word"}</TableHead>
+                <TableHead>Translation</TableHead>
                 <TableHead className="hidden md:table-cell">Status</TableHead>
                 <TableHead className="hidden lg:table-cell">Interval</TableHead>
                 <TableHead className="w-24"></TableHead>
@@ -428,7 +428,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-armenian">Armenian Word *</Label>
+              <Label htmlFor="edit-armenian">{deck?.language || "Word"} *</Label>
               <Input
                 id="edit-armenian"
                 value={formData.armenian}
@@ -438,7 +438,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-russian">Russian Translation *</Label>
+              <Label htmlFor="edit-russian">Translation *</Label>
               <Input
                 id="edit-russian"
                 value={formData.russian}

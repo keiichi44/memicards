@@ -7,6 +7,7 @@ import { z } from "zod";
 export const decks = pgTable("decks", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
+  language: text("language").notNull().default("Language"),
   description: text("description").default(""),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

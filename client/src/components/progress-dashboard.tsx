@@ -110,7 +110,7 @@ export function ProgressDashboard() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold mb-2">Progress Dashboard</h2>
-        <p className="text-muted-foreground">Track your Armenian learning journey</p>
+        <p className="text-muted-foreground">Track your learning progress</p>
       </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

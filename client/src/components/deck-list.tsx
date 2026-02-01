@@ -48,6 +48,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
   const [newDeckName, setNewDeckName] = useState("");
+  const [newDeckLanguage, setNewDeckLanguage] = useState("");
   const [newDeckDescription, setNewDeckDescription] = useState("");
   
   const { data: decks = [], isLoading: decksLoading } = useQuery<DeckWithCount[]>({
@@ -63,7 +64,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const totalNew = activeCards.filter(c => isNewCard(c)).length;
   
   const createMutation = useMutation({
-    mutationFn: async (data: { name: string; description: string }) => {
+    mutationFn: async (data: { name: string; language: string; description: string }) => {
       const res = await apiRequest("POST", "/api/decks", data);
       return res.json();
     },
@@ -72,12 +73,13 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
       setIsCreateOpen(false);
       setNewDeckName("");
+      setNewDeckLanguage("");
       setNewDeckDescription("");
     },
   });
   
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name: string; description: string } }) => {
+    mutationFn: async ({ id, data }: { id: string; data: { name: string; language: string; description: string } }) => {
       const res = await apiRequest("PATCH", `/api/decks/${id}`, data);
       return res.json();
     },
@@ -86,6 +88,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
       setEditingDeck(null);
       setNewDeckName("");
+      setNewDeckLanguage("");
       setNewDeckDescription("");
     },
   });
@@ -102,15 +105,15 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   });
   
   const handleCreateDeck = () => {
-    if (!newDeckName.trim()) return;
-    createMutation.mutate({ name: newDeckName.trim(), description: newDeckDescription.trim() });
+    if (!newDeckName.trim() || !newDeckLanguage.trim()) return;
+    createMutation.mutate({ name: newDeckName.trim(), language: newDeckLanguage.trim(), description: newDeckDescription.trim() });
   };
   
   const handleUpdateDeck = () => {
-    if (!editingDeck || !newDeckName.trim()) return;
+    if (!editingDeck || !newDeckName.trim() || !newDeckLanguage.trim()) return;
     updateMutation.mutate({ 
       id: editingDeck.id, 
-      data: { name: newDeckName.trim(), description: newDeckDescription.trim() } 
+      data: { name: newDeckName.trim(), language: newDeckLanguage.trim(), description: newDeckDescription.trim() } 
     });
   };
   
@@ -122,6 +125,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const openEditDialog = (deck: Deck) => {
     setEditingDeck(deck);
     setNewDeckName(deck.name);
+    setNewDeckLanguage(deck.language || "");
     setNewDeckDescription(deck.description || "");
   };
   
@@ -185,13 +189,23 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="deck-name">Name</Label>
+                <Label htmlFor="deck-name">Name *</Label>
                 <Input
                   id="deck-name"
                   placeholder="e.g., Week 2"
                   value={newDeckName}
                   onChange={(e) => setNewDeckName(e.target.value)}
                   data-testid="input-deck-name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="deck-language">Language *</Label>
+                <Input
+                  id="deck-language"
+                  placeholder="e.g., Spanish, Japanese, Armenian"
+                  value={newDeckLanguage}
+                  onChange={(e) => setNewDeckLanguage(e.target.value)}
+                  data-testid="input-deck-language"
                 />
               </div>
               <div className="space-y-2">
@@ -211,7 +225,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               </Button>
               <Button 
                 onClick={handleCreateDeck} 
-                disabled={!newDeckName.trim() || createMutation.isPending}
+                disabled={!newDeckName.trim() || !newDeckLanguage.trim() || createMutation.isPending}
                 data-testid="button-confirm-create-deck"
               >
                 {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
@@ -331,12 +345,21 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-deck-name">Name</Label>
+              <Label htmlFor="edit-deck-name">Name *</Label>
               <Input
                 id="edit-deck-name"
                 value={newDeckName}
                 onChange={(e) => setNewDeckName(e.target.value)}
                 data-testid="input-edit-deck-name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-deck-language">Language *</Label>
+              <Input
+                id="edit-deck-language"
+                value={newDeckLanguage}
+                onChange={(e) => setNewDeckLanguage(e.target.value)}
+                data-testid="input-edit-deck-language"
               />
             </div>
             <div className="space-y-2">
@@ -355,7 +378,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
             </Button>
             <Button 
               onClick={handleUpdateDeck} 
-              disabled={!newDeckName.trim() || updateMutation.isPending}
+              disabled={!newDeckName.trim() || !newDeckLanguage.trim() || updateMutation.isPending}
               data-testid="button-confirm-edit-deck"
             >
               {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}

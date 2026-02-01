@@ -4,7 +4,7 @@ import { ArrowLeft, Shuffle, RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Flashcard } from "@/components/flashcard";
-import type { Card as FlashCard } from "@shared/schema";
+import type { Card as FlashCard, Deck } from "@shared/schema";
 
 interface PracticeSessionProps {
   deckId?: string;
@@ -35,6 +35,11 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
       if (!res.ok) throw new Error(`Failed to fetch cards: ${res.status}`);
       return res.json();
     },
+  });
+  
+  const { data: deck } = useQuery<Deck>({
+    queryKey: ["/api/decks", deckId],
+    enabled: !!deckId,
   });
 
   const loadCards = useCallback(() => {
@@ -136,6 +141,7 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
 
       <Flashcard
         card={currentCard}
+        languageName={deck?.language}
         showAnswer={showAnswer}
         onFlip={() => setShowAnswer(!showAnswer)}
         practiceMode={true}

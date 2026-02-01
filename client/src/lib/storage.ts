@@ -18,7 +18,9 @@ export function parseCSV(csv: string, separator: "," | ";" = ","): Array<{ armen
   const lines = csv.trim().split("\n");
   const results: Array<{ armenian: string; russian: string; sentence?: string; association?: string }> = [];
   
-  const startIndex = lines[0]?.toLowerCase().includes("armenian") ? 1 : 0;
+  const firstLine = lines[0]?.toLowerCase();
+  const hasHeader = firstLine?.includes("armenian") || firstLine?.includes("word") || firstLine?.includes("translation");
+  const startIndex = hasHeader ? 1 : 0;
   
   for (let i = startIndex; i < lines.length; i++) {
     const values = parseCSVLine(lines[i], separator);
@@ -70,7 +72,7 @@ function escapeCSV(value: string): string {
 }
 
 export function exportCardsToCSV(cards: Array<{ armenian: string; russian: string; sentence?: string | null; association?: string | null; isStarred?: boolean }>): string {
-  const headers = ["armenian", "russian", "sentence", "association", "isStarred"];
+  const headers = ["word", "translation", "sentence", "association", "isStarred"];
   const rows = cards.map((card) => [
     escapeCSV(card.armenian),
     escapeCSV(card.russian),

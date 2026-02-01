@@ -39,7 +39,7 @@ export function BatchImport({ onComplete }: BatchImportProps) {
     mutationFn: async () => {
       const parsedCards = parseCSV(csvContent, separator);
       if (parsedCards.length === 0) {
-        throw new Error(`No valid cards found in the CSV. Make sure format is: armenian${separator}russian${separator}sentence${separator}association`);
+        throw new Error(`No valid cards found in the CSV. Make sure format is: word${separator}translation${separator}sentence${separator}association`);
       }
       return importCards(parsedCards, selectedDeckId, updateExisting);
     },
@@ -91,14 +91,14 @@ export function BatchImport({ onComplete }: BatchImportProps) {
   };
   
   const sampleCSV = separator === ","
-    ? `armenian,russian,sentence,association
-barev,привет,Barev! Inchpes es?,связь с barev
-girk,книга,Im girky seghani vra e,гирька на книгу
-jur,вода,Xndrum em jur tveq,`
-    : `armenian;russian;sentence;association
-barev;привет;Barev! Inchpes es?;связь с barev
-girk;книга;Im girky seghani vra e;гирька на книгу
-jur;вода;Xndrum em jur tveq;`;
+    ? `word,translation,sentence,association
+hello,привет,Hello! How are you?,greeting word
+book,книга,The book is on the table,reading material
+water,вода,Can I have some water?,essential liquid`
+    : `word;translation;sentence;association
+hello;привет;Hello! How are you?;greeting word
+book;книга;The book is on the table;reading material
+water;вода;Can I have some water?;essential liquid`;
   
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -113,7 +113,7 @@ jur;вода;Xndrum em jur tveq;`;
         <CardHeader>
           <CardTitle className="text-lg">CSV Format</CardTitle>
           <CardDescription>
-            Your CSV should have columns: armenian, russian, sentence (optional), association (optional)
+            Your CSV should have columns: word, translation, sentence (optional), association (optional)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -166,7 +166,7 @@ jur;вода;Xndrum em jur tveq;`;
             <div className="space-y-0.5">
               <Label htmlFor="update-existing">Update existing cards</Label>
               <p className="text-sm text-muted-foreground">
-                If a card with the same Armenian word exists, update it
+                If a card with the same word exists, update it
               </p>
             </div>
             <Switch
@@ -205,7 +205,7 @@ jur;вода;Xndrum em jur tveq;`;
             <Label htmlFor="csv-content">Or paste CSV content directly</Label>
             <Textarea
               id="csv-content"
-              placeholder="armenian,russian,sentence,association&#10;barev,привет,Barev! Inchpes es?,mnemonic"
+              placeholder="word,translation,sentence,association&#10;hello,привет,Hello! How are you?,greeting"
               value={csvContent}
               onChange={(e) => {
                 setCsvContent(e.target.value);

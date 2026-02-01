@@ -10,6 +10,7 @@ import { formatInterval, getCardStatus, getDaysUntilReview } from "@/lib/sm2";
 
 interface FlashcardProps {
   card: FlashCard;
+  languageName?: string;
   onRate?: (quality: QualityRating) => void;
   onToggleStar?: () => void;
   showAnswer: boolean;
@@ -17,7 +18,7 @@ interface FlashcardProps {
   practiceMode?: boolean;
 }
 
-export function Flashcard({ card, onRate, onToggleStar, showAnswer, onFlip, practiceMode = false }: FlashcardProps) {
+export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, showAnswer, onFlip, practiceMode = false }: FlashcardProps) {
   const status = getCardStatus(card);
   const daysUntil = getDaysUntilReview(card);
   
@@ -62,7 +63,7 @@ export function Flashcard({ card, onRate, onToggleStar, showAnswer, onFlip, prac
           
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-6">
             <div className="w-full">
-              <p className="text-sm text-muted-foreground mb-2">Armenian</p>
+              <p className="text-sm text-muted-foreground mb-2">{languageName}</p>
               <p className="font-sans text-4xl md:text-5xl font-medium leading-relaxed" data-testid="text-armenian-word">
                 {card.armenian}
               </p>
@@ -71,7 +72,7 @@ export function Flashcard({ card, onRate, onToggleStar, showAnswer, onFlip, prac
             {showAnswer && (
               <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
                 <div className="border-t pt-4">
-                  <p className="text-sm text-muted-foreground mb-2">Russian</p>
+                  <p className="text-sm text-muted-foreground mb-2">Translation</p>
                   <p className="text-2xl md:text-3xl font-medium" data-testid="text-russian-translation">
                     {card.russian}
                   </p>
@@ -80,7 +81,7 @@ export function Flashcard({ card, onRate, onToggleStar, showAnswer, onFlip, prac
                 {card.sentence && (
                   <div className="border-t pt-4">
                     <p className="text-sm text-muted-foreground mb-2">Example</p>
-                    <p className="font-armenian text-lg text-muted-foreground" data-testid="text-example-sentence">
+                    <p className="font-sans text-lg text-muted-foreground" data-testid="text-example-sentence">
                       {card.sentence}
                     </p>
                   </div>

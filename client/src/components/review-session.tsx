@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Flashcard } from "@/components/flashcard";
-import type { Card as FlashCard, QualityRating, Settings } from "@shared/schema";
+import type { Card as FlashCard, Deck, QualityRating, Settings } from "@shared/schema";
 import { isDueToday, isNewCard, sortCardsByPriority, isWeekend } from "@/lib/sm2";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -35,6 +35,11 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
   
   const { data: settings } = useQuery<Settings>({
     queryKey: ["/api/settings"],
+  });
+  
+  const { data: deck } = useQuery<Deck>({
+    queryKey: ["/api/decks", deckId],
+    enabled: !!deckId,
   });
   
   const reviewMutation = useMutation({
@@ -204,6 +209,7 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
       {currentCard && (
         <Flashcard
           card={currentCard}
+          languageName={deck?.language}
           onRate={handleRate}
           onToggleStar={handleToggleStar}
           showAnswer={showAnswer}

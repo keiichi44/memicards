@@ -47,7 +47,7 @@ function App() {
                     <SidebarTrigger data-testid="button-sidebar-toggle" />
                   </div>
                   <div className="md:hidden">
-                    <span className="font-semibold text-lg" data-testid="text-app-title-mobile">Armenian SRS</span>
+                    <span className="font-semibold text-lg" data-testid="text-app-title-mobile">memicards</span>
                   </div>
                   <ThemeToggle />
                 </header>
