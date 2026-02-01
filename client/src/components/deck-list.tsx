@@ -334,12 +334,10 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                 <li data-testid="text-tip-4">Use Weekend mode for intensive learning.</li>
                 <li data-testid="text-tip-5">Import your cards via CSV mapping or enter them manually.</li>
               </ul>
-              {decks.length === 0 && (
-                <Button className="mt-4" onClick={() => setIsCreateOpen(true)} data-testid="button-create-first-deck">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create a deck
-                </Button>
-              )}
+              <Button className="mt-4" onClick={() => setIsCreateOpen(true)} data-testid="button-create-first-deck">
+                <Plus className="h-4 w-4 mr-2" />
+                Create a deck
+              </Button>
             </div>
           </div>
         </CardContent>
