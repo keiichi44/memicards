@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2, Copy, ChevronDown, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -119,6 +125,17 @@ export function CardList({ deckId, onBack }: CardListProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
       queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
       setDeletingCard(null);
+    },
+  });
+  
+  const duplicateMutation = useMutation({
+    mutationFn: async ({ swap }: { swap: boolean }) => {
+      const res = await apiRequest("POST", `/api/decks/${deckId}/duplicate`, { swap });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
     },
   });
   
@@ -228,6 +245,35 @@ export function CardList({ deckId, onBack }: CardListProps) {
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" disabled={duplicateMutation.isPending} data-testid="button-duplicate-deck">
+                {duplicateMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Copy className="h-4 w-4 mr-2" />
+                )}
+                Duplicate...
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={() => duplicateMutation.mutate({ swap: false })}
+                data-testid="button-duplicate-as-is"
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Duplicate as is
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => duplicateMutation.mutate({ swap: true })}
+                data-testid="button-duplicate-swapped"
+              >
+                <ArrowRightLeft className="h-4 w-4 mr-2" />
+                Duplicate swapping original and translation
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button data-testid="button-add-card">
