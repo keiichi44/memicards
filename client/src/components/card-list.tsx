@@ -136,6 +136,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      onBack();
     },
   });
   
