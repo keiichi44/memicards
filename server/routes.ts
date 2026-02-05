@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDeckSchema, insertCardSchema, batchImportSchema, insertSettingsSchema, updateDeckSchema, updateCardSchema } from "@shared/schema";
+import { insertDeckSchema, insertCardSchema, batchImportSchema, insertSettingsSchema, updateDeckSchema, updateCardSchema, duplicateDeckSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { calculateSM2 } from "./sm2";
 
@@ -92,6 +92,50 @@ export async function registerRoutes(
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete deck" });
+    }
+  });
+
+  app.post("/api/decks/:id/duplicate", async (req, res) => {
+    try {
+      const parsed = duplicateDeckSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.errors });
+      }
+      const { swap } = parsed.data;
+      const originalDeck = await storage.getDeck(req.params.id);
+      if (!originalDeck) {
+        return res.status(404).json({ error: "Deck not found" });
+      }
+
+      const namePrefix = swap ? "Swapped copy of " : "Copy of ";
+      const newDeck = await storage.createDeck({
+        name: namePrefix + originalDeck.name,
+        language: originalDeck.language,
+        description: originalDeck.description || "",
+      });
+
+      const originalCards = await storage.getCards(originalDeck.id);
+      
+      for (const card of originalCards) {
+        await storage.createCard({
+          deckId: newDeck.id,
+          armenian: swap ? card.russian : card.armenian,
+          russian: swap ? card.armenian : card.russian,
+          sentence: card.sentence || "",
+          association: card.association || "",
+          isStarred: card.isStarred,
+          isActive: card.isActive,
+          easeFactor: 2.5,
+          interval: 0,
+          repetitions: 0,
+          nextReviewDate: new Date(),
+        });
+      }
+
+      const deckCards = await storage.getCards(newDeck.id);
+      res.status(201).json({ ...newDeck, cardCount: deckCards.length });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to duplicate deck" });
     }
   });
 

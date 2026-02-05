@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Lightbulb, Play, Trash2, Edit2, RotateCcw, Loader2 } from "lucide-react";
+import { Plus, Lightbulb, Play, Trash2, Edit2, RotateCcw, Loader2, Copy, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Deck, Card as FlashCard } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isDueToday, isNewCard } from "@/lib/sm2";
@@ -101,6 +107,17 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
       setDeletingDeck(null);
+    },
+  });
+  
+  const duplicateMutation = useMutation({
+    mutationFn: async ({ id, swap }: { id: string; swap: boolean }) => {
+      const res = await apiRequest("POST", `/api/decks/${id}/duplicate`, { swap });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
     },
   });
   
@@ -262,6 +279,33 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            data-testid={`button-duplicate-deck-${deck.id}`}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenuItem
+                            onClick={() => duplicateMutation.mutate({ id: deck.id, swap: false })}
+                            data-testid={`button-duplicate-as-is-${deck.id}`}
+                          >
+                            <Copy className="h-4 w-4 mr-2" />
+                            Duplicate as is
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => duplicateMutation.mutate({ id: deck.id, swap: true })}
+                            data-testid={`button-duplicate-swapped-${deck.id}`}
+                          >
+                            <ArrowRightLeft className="h-4 w-4 mr-2" />
+                            Duplicate swapping original and translation
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <Button
                         variant="ghost"
                         size="icon"

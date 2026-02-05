@@ -95,6 +95,12 @@ export type Settings = typeof settings.$inferSelect;
 export type InsertSettings = z.infer<typeof insertSettingsSchema>;
 
 // Batch import schema (kept as Zod)
+export const duplicateDeckSchema = z.object({
+  swap: z.boolean().optional().default(false),
+});
+
+export type DuplicateDeck = z.infer<typeof duplicateDeckSchema>;
+
 export const batchImportSchema = z.object({
   cards: z.array(z.object({
     armenian: z.string().min(1),
