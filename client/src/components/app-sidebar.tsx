@@ -1,5 +1,6 @@
 import { useLocation, Link } from "wouter";
-import { BookOpen, Upload, BarChart3, Settings, Layers } from "lucide-react";
+import { Upload, BarChart3, Settings, Layers } from "lucide-react";
+import logoImg from "@assets/memi_1770479923554.png";
 import {
   Sidebar,
   SidebarContent,
@@ -43,9 +44,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md bg-primary flex items-center justify-center">
-            <BookOpen className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <img src={logoImg} alt="memicards" className="w-10 h-10 rounded-md object-cover" />
           <div>
             <h1 className="font-semibold text-lg leading-tight">memicards</h1>
             <p className="text-xs text-muted-foreground">Spaced Repetition</p>

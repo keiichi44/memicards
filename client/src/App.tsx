@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BottomNavBar } from "@/components/bottom-nav-bar";
 import { ClerkProvider, SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
+import logoImg from "@assets/memi_1770479923554.png";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import DeckPage from "@/pages/deck";
@@ -73,8 +74,9 @@ function AuthenticatedApp() {
               <div className="hidden md:block">
                 <SidebarTrigger data-testid="button-sidebar-toggle" />
               </div>
-              <div className="md:hidden">
-                <span className="text-lg font-extrabold text-[#ff7c00] bg-[#9c7e7e00]" data-testid="text-app-title-mobile">memicards</span>
+              <div className="md:hidden flex items-center gap-2">
+                <img src={logoImg} alt="memicards" className="w-8 h-8 rounded-md object-cover" data-testid="img-logo-mobile" />
+                <span className="text-lg font-extrabold text-[#ff7c00]" data-testid="text-app-title-mobile">memicards</span>
               </div>
               <div className="flex items-center gap-2">
                 <ThemeToggle />
