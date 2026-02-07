@@ -24,6 +24,7 @@ This application helps you learn vocabulary using spaced repetition. Key feature
 - **Charts**: Recharts for progress visualization
 - **State**: React Query for data fetching with cache invalidation
 - **Database**: PostgreSQL with Drizzle ORM
+- **Authentication**: Clerk (email, Google, Facebook login + password recovery)
 - **Algorithm**: SM-2 spaced repetition implementation (server-side)
 
 ## Project Structure
@@ -49,6 +50,7 @@ client/
 │   │   ├── queryClient.ts      # React Query config with API helpers
 │   │   └── utils.ts            # Utility functions
 │   ├── pages/
+│   │   ├── auth.tsx            # Login/signup page with Clerk
 │   │   ├── home.tsx            # Main deck view
 │   │   ├── import.tsx          # Batch import page
 │   │   ├── progress.tsx        # Progress dashboard
@@ -66,27 +68,31 @@ server/
 ## Database Schema
 
 ### Tables (PostgreSQL)
-- **decks**: id, name, language, description, createdAt
+- **decks**: id, name, language, description, userId, createdAt
 - **cards**: id, deckId, armenian (word), russian (translation), sentence, association, isStarred, isActive, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt
 - **reviews**: id, cardId, quality, reviewedAt, previousInterval, newInterval
-- **settings**: id, weekendLearnerMode, weekdayNewCards, weekdayReviewCards, weekendNewCards, weekendReviewCards, prioritizeStarred, weeklyCardTarget
+- **settings**: id, userId, weekendLearnerMode, weekdayNewCards, weekdayReviewCards, weekendNewCards, weekendReviewCards, prioritizeStarred, weeklyCardTarget
 
 ## API Endpoints
 
-- `GET /api/decks` - List all decks with card counts
-- `POST /api/decks` - Create deck
-- `PATCH /api/decks/:id` - Update deck
-- `DELETE /api/decks/:id` - Delete deck and its cards
-- `GET /api/cards` - List cards (optional ?deckId filter)
+All API endpoints (except `/api/health`) require Clerk authentication via `requireAuth()` middleware. The authenticated user's ID is extracted from the Clerk session and used to scope data.
+
+- `GET /api/decks` - List user's decks with card counts
+- `POST /api/decks` - Create deck (auto-assigns userId)
+- `PATCH /api/decks/:id` - Update deck (ownership check)
+- `DELETE /api/decks/:id` - Delete deck and its cards (ownership check)
+- `POST /api/decks/:id/duplicate` - Duplicate deck with optional swap
+- `GET /api/cards` - List cards (scoped to user's decks)
 - `POST /api/cards` - Create card
 - `PATCH /api/cards/:id` - Update card
 - `DELETE /api/cards/:id` - Delete card
 - `POST /api/cards/:id/review` - Submit review with SM-2 calculation
 - `GET /api/reviews` - List review history
-- `POST /api/import` - Batch import cards
-- `GET /api/export` - Export all data as JSON
-- `GET /api/settings` - Get settings
-- `PATCH /api/settings` - Update settings
+- `POST /api/import` - Batch import cards (deck ownership check)
+- `GET /api/export` - Export user's data as JSON
+- `GET /api/settings` - Get user's settings
+- `PATCH /api/settings` - Update user's settings
+- `POST /api/auth/claim-data` - Assign unowned decks to first user (migration)
 
 ## CSV Import Format
 
@@ -110,8 +116,20 @@ The app remembers (stored in database):
 
 The application runs on port 5000 via the `npm run dev` command.
 
+## Authentication
+
+The app uses Clerk for authentication:
+- **Login methods**: Email/password, Google, Facebook
+- **Password recovery**: Handled by Clerk's built-in flow
+- **Session management**: Clerk handles sessions; backend uses `@clerk/express` middleware
+- **Data scoping**: Each user sees only their own decks, cards, reviews, and settings
+- **Migration**: First user to sign in automatically claims any pre-existing unowned decks
+- **Environment variables**: `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`
+
 ## Recent Changes
 
+- Added Clerk authentication with email, Google, Facebook login + password recovery
+- Added deck duplication feature (as-is and swapped translations)
 - Added card active/inactive toggle feature - enable/disable individual cards for review sessions
 - Added mobile bottom navigation bar for better mobile experience
 - Migrated from localStorage to PostgreSQL database

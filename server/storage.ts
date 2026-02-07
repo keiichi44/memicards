@@ -6,18 +6,16 @@ import {
   type Settings, type InsertSettings,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, lte, desc } from "drizzle-orm";
+import { eq, and, lte, desc, isNull } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export interface IStorage {
-  // Decks
-  getDecks(): Promise<Deck[]>;
+  getDecks(userId: string): Promise<Deck[]>;
   getDeck(id: string): Promise<Deck | undefined>;
   createDeck(deck: InsertDeck): Promise<Deck>;
   updateDeck(id: string, deck: Partial<InsertDeck>): Promise<Deck | undefined>;
   deleteDeck(id: string): Promise<boolean>;
   
-  // Cards
   getCards(deckId?: string): Promise<Card[]>;
   getCard(id: string): Promise<Card | undefined>;
   getCardByArmenian(armenian: string, deckId: string): Promise<Card | undefined>;
@@ -29,19 +27,18 @@ export interface IStorage {
   updateCard(id: string, card: Partial<Card>): Promise<Card | undefined>;
   deleteCard(id: string): Promise<boolean>;
   
-  // Reviews
   getReviews(cardId?: string): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
   
-  // Settings
-  getSettings(): Promise<Settings>;
-  updateSettings(settings: Partial<InsertSettings>): Promise<Settings>;
+  getSettings(userId: string): Promise<Settings>;
+  updateSettings(userId: string, settings: Partial<InsertSettings>): Promise<Settings>;
+
+  assignUnownedDecks(userId: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // Decks
-  async getDecks(): Promise<Deck[]> {
-    return db.select().from(decks).orderBy(desc(decks.createdAt));
+  async getDecks(userId: string): Promise<Deck[]> {
+    return db.select().from(decks).where(eq(decks.userId, userId)).orderBy(desc(decks.createdAt));
   }
   
   async getDeck(id: string): Promise<Deck | undefined> {
@@ -67,7 +64,6 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount ?? 0) > 0;
   }
   
-  // Cards
   async getCards(deckId?: string): Promise<Card[]> {
     if (deckId) {
       return db.select().from(cards).where(eq(cards.deckId, deckId)).orderBy(desc(cards.createdAt));
@@ -143,7 +139,6 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount ?? 0) > 0;
   }
   
-  // Reviews
   async getReviews(cardId?: string): Promise<Review[]> {
     if (cardId) {
       return db.select().from(reviews).where(eq(reviews.cardId, cardId)).orderBy(desc(reviews.reviewedAt));
@@ -159,15 +154,20 @@ export class DatabaseStorage implements IStorage {
     return newReview;
   }
   
-  // Settings
-  async getSettings(): Promise<Settings> {
-    const [existingSettings] = await db.select().from(settings).where(eq(settings.id, 1));
+  async getSettings(userId: string): Promise<Settings> {
+    const [existingSettings] = await db.select().from(settings).where(eq(settings.userId, userId));
     if (existingSettings) {
       return existingSettings;
     }
-    // Create default settings
+    const [oldSettings] = await db.select().from(settings).where(isNull(settings.userId));
+    if (oldSettings) {
+      const [claimed] = await db.update(settings).set({ userId }).where(eq(settings.id, oldSettings.id)).returning();
+      return claimed;
+    }
+    const nextId = Date.now();
     const [defaultSettings] = await db.insert(settings).values({
-      id: 1,
+      id: nextId,
+      userId,
       weekendLearnerMode: false,
       weekdayNewCards: 5,
       weekendNewCards: 15,
@@ -179,11 +179,17 @@ export class DatabaseStorage implements IStorage {
     return defaultSettings;
   }
   
-  async updateSettings(newSettings: Partial<InsertSettings>): Promise<Settings> {
-    // Ensure settings exist first
-    await this.getSettings();
-    const [updated] = await db.update(settings).set(newSettings).where(eq(settings.id, 1)).returning();
+  async updateSettings(userId: string, newSettings: Partial<InsertSettings>): Promise<Settings> {
+    await this.getSettings(userId);
+    const [updated] = await db.update(settings).set(newSettings).where(eq(settings.userId, userId)).returning();
     return updated;
+  }
+
+  async assignUnownedDecks(userId: string): Promise<number> {
+    const unowned = await db.select().from(decks).where(isNull(decks.userId));
+    if (unowned.length === 0) return 0;
+    await db.update(decks).set({ userId }).where(isNull(decks.userId));
+    return unowned.length;
   }
 }
 

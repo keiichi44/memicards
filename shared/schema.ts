@@ -9,6 +9,7 @@ export const decks = pgTable("decks", {
   name: text("name").notNull(),
   language: text("language").notNull().default("Language"),
   description: text("description").default(""),
+  userId: text("user_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -40,6 +41,7 @@ export const reviews = pgTable("reviews", {
 
 export const settings = pgTable("settings", {
   id: integer("id").primaryKey().default(1),
+  userId: text("user_id"),
   weekendLearnerMode: boolean("weekend_learner_mode").default(false).notNull(),
   weekdayNewCards: integer("weekday_new_cards").default(5).notNull(),
   weekendNewCards: integer("weekend_new_cards").default(15).notNull(),

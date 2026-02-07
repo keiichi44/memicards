@@ -46,3 +46,4 @@ integrations = ["javascript_database:1.0.0"]
 [userenv.shared]
 VITE_CLERK_PUBLISHABLE_KEY = "pk_test_c21hc2hpbmctb3N0cmljaC01LmNsZXJrLmFjY291bnRzLmRldiQ"
 CLERK_SECRET_KEY = "sk_test_i1LWradJpCGXPh1bHtR5cBgCEJWChbOLVZyIqobMZL"
+CLERK_PUBLISHABLE_KEY = "pk_test_c21hc2hpbmctb3N0cmljaC01LmNsZXJrLmFjY291bnRzLmRldiQ"
