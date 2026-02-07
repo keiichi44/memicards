@@ -66,7 +66,7 @@ function AuthenticatedApp() {
                 <SidebarTrigger data-testid="button-sidebar-toggle" />
               </div>
               <div className="md:hidden">
-                <span className="text-lg font-extrabold text-primary" data-testid="text-app-title-mobile">memicards</span>
+                <span className="text-lg font-extrabold text-[#ff7c00] bg-[#9c7e7e00]" data-testid="text-app-title-mobile">memicards</span>
               </div>
               <div className="flex items-center gap-2">
                 <ThemeToggle />
