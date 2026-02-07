@@ -10,7 +10,7 @@ export default function AuthPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold leading-tight" data-testid="text-auth-title">memicards</h1>
-          <p className="text-sm text-muted-foreground">Log in or Sign up to Memicards</p>
+          <p className="text-sm text-muted-foreground">Spaced Repetition System</p>
         </div>
       </div>
 
@@ -20,8 +20,6 @@ export default function AuthPage() {
             rootBox: "mx-auto",
             card: "shadow-md",
             footer: { display: "none" },
-            headerTitle: { display: "none" },
-            headerSubtitle: { display: "none" },
           },
         }}
         fallbackRedirectUrl="/"
