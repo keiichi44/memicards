@@ -11,6 +11,9 @@ import { BottomNavBar } from "@/components/bottom-nav-bar";
 import { ClerkProvider, SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
+import DeckPage from "@/pages/deck";
+import ReviewPage from "@/pages/review";
+import PracticePage from "@/pages/practice";
 import Import from "@/pages/import";
 import Progress from "@/pages/progress";
 import Settings from "@/pages/settings";
@@ -38,6 +41,11 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/deck/:id" component={DeckPage} />
+      <Route path="/deck/:id/review" component={ReviewPage} />
+      <Route path="/deck/:id/practice" component={PracticePage} />
+      <Route path="/review" component={ReviewPage} />
+      <Route path="/practice" component={PracticePage} />
       <Route path="/import" component={Import} />
       <Route path="/progress" component={Progress} />
       <Route path="/settings" component={Settings} />
