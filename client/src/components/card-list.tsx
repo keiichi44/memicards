@@ -243,19 +243,19 @@ export function CardList({ deckId, onBack }: CardListProps) {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExport} data-testid="button-export-cards">
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
+            <Download className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Export CSV</span>
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" disabled={duplicateMutation.isPending} data-testid="button-duplicate-deck">
                 {duplicateMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 md:mr-2 animate-spin" />
                 ) : (
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className="h-4 w-4 md:mr-2" />
                 )}
-                Duplicate...
-                <ChevronDown className="h-4 w-4 ml-2" />
+                <span className="hidden md:inline">Duplicate...</span>
+                <ChevronDown className="h-4 w-4 md:ml-2" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
