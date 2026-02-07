@@ -19,6 +19,7 @@ export default function AuthPage() {
           elements: {
             rootBox: "mx-auto",
             card: "shadow-md",
+            footer: { display: "none" },
           },
         }}
         fallbackRedirectUrl="/"
