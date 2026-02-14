@@ -177,9 +177,7 @@ water;вода;Can I have some water?;essential liquid`;
                 <SelectItem value=";">Semicolon (;)</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-sm text-muted-foreground">
-              Choose the separator used in your CSV file
-            </p>
+            <p className="text-sm text-muted-foreground">If you get incorrect import results, try selecting a different separator.</p>
           </div>
           
           <div className="flex items-center justify-between">
