@@ -131,7 +131,7 @@ water;вода;Can I have some water?;essential liquid`;
         <CardHeader>
           <CardTitle className="text-lg">CSV Format</CardTitle>
           <CardDescription className="text-sm text-[#000000]">1. Prepare a spreadsheet with columns: word, translation, sentence (optional), association (optional). This will be the structure of your deck. Each row represents a card, E.g.book,книга,The book is on the table,reading material</CardDescription>
-          <CardDescription>2. Upload the spreadsheet or copy and paste it into the field above. If the decks aren't exporting correctly, try selecting another CSV separator.</CardDescription>
+          <CardDescription className="text-sm text-[#000000]">2. Upload the spreadsheet or copy and paste it into the field above. If the decks aren't exporting correctly, try selecting another CSV separator.</CardDescription>
         </CardHeader>
         <CardContent>
           <pre className="bg-muted p-4 rounded-md text-sm overflow-x-auto font-mono">
