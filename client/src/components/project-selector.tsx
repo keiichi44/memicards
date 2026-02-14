@@ -25,6 +25,7 @@ export function ProjectSelector() {
   const [isListOpen, setIsListOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
+  const [createError, setCreateError] = useState("");
 
   const createMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -37,6 +38,16 @@ export function ProjectSelector() {
       setIsCreateOpen(false);
       setIsListOpen(false);
       setNewName("");
+      setCreateError("");
+    },
+    onError: (error: Error) => {
+      try {
+        const text = error.message.replace(/^\d+:\s*/, "");
+        const parsed = JSON.parse(text);
+        setCreateError(parsed.error || "Failed to create project");
+      } catch {
+        setCreateError("Failed to create project");
+      }
     },
   });
 
@@ -55,12 +66,14 @@ export function ProjectSelector() {
 
   const handleOpenCreate = () => {
     setNewName(getNextName());
+    setCreateError("");
     setIsListOpen(false);
     setIsCreateOpen(true);
   };
 
   const handleCreate = () => {
     if (!newName.trim()) return;
+    setCreateError("");
     createMutation.mutate(newName.trim());
   };
 
@@ -124,7 +137,7 @@ export function ProjectSelector() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+      <Dialog open={isCreateOpen} onOpenChange={(open) => { setIsCreateOpen(open); if (!open) setCreateError(""); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
@@ -138,10 +151,13 @@ export function ProjectSelector() {
               <Input
                 id="project-name"
                 value={newName}
-                onChange={(e) => setNewName(e.target.value)}
+                onChange={(e) => { setNewName(e.target.value); setCreateError(""); }}
                 placeholder="e.g., Spanish Course"
                 data-testid="input-project-name"
               />
+              {createError && (
+                <p className="text-sm text-destructive" data-testid="text-project-create-error">{createError}</p>
+              )}
             </div>
           </div>
           <DialogFooter>

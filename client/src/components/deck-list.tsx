@@ -52,6 +52,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const [newDeckName, setNewDeckName] = useState("");
   const [newDeckLanguage, setNewDeckLanguage] = useState("");
   const [newDeckDescription, setNewDeckDescription] = useState("");
+  const [deckError, setDeckError] = useState("");
   
   const { data: decks = [], isLoading: decksLoading } = useQuery<DeckWithCount[]>({
     queryKey: ["/api/decks", { projectId: activeProject?.id }],
@@ -79,6 +80,16 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const totalDue = activeCards.filter(c => isDueToday(c)).length;
   const totalNew = activeCards.filter(c => isNewCard(c)).length;
   
+  const parseMutationError = (error: Error): string => {
+    try {
+      const text = error.message.replace(/^\d+:\s*/, "");
+      const parsed = JSON.parse(text);
+      return parsed.error || "Something went wrong";
+    } catch {
+      return "Something went wrong";
+    }
+  };
+
   const createMutation = useMutation({
     mutationFn: async (data: { name: string; language: string; description: string }) => {
       const res = await apiRequest("POST", "/api/decks", { ...data, projectId: activeProject?.id });
@@ -91,6 +102,10 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       setNewDeckName("");
       setNewDeckLanguage("");
       setNewDeckDescription("");
+      setDeckError("");
+    },
+    onError: (error: Error) => {
+      setDeckError(parseMutationError(error));
     },
   });
   
@@ -106,6 +121,10 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       setNewDeckName("");
       setNewDeckLanguage("");
       setNewDeckDescription("");
+      setDeckError("");
+    },
+    onError: (error: Error) => {
+      setDeckError(parseMutationError(error));
     },
   });
   
@@ -122,11 +141,13 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   
   const handleCreateDeck = () => {
     if (!newDeckName.trim() || !newDeckLanguage.trim()) return;
+    setDeckError("");
     createMutation.mutate({ name: newDeckName.trim(), language: newDeckLanguage.trim(), description: newDeckDescription.trim() });
   };
   
   const handleUpdateDeck = () => {
     if (!editingDeck || !newDeckName.trim() || !newDeckLanguage.trim()) return;
+    setDeckError("");
     updateMutation.mutate({ 
       id: editingDeck.id, 
       data: { name: newDeckName.trim(), language: newDeckLanguage.trim(), description: newDeckDescription.trim() } 
@@ -189,7 +210,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       </Card>
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-xl font-semibold">Your Decks</h2>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <Dialog open={isCreateOpen} onOpenChange={(open) => { setIsCreateOpen(open); if (!open) setDeckError(""); }}>
           <DialogTrigger asChild>
             <Button data-testid="button-create-deck">
               <Plus className="h-4 w-4 mr-2" />
@@ -210,9 +231,12 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                   id="deck-name"
                   placeholder="e.g., Week 2"
                   value={newDeckName}
-                  onChange={(e) => setNewDeckName(e.target.value)}
+                  onChange={(e) => { setNewDeckName(e.target.value); setDeckError(""); }}
                   data-testid="input-deck-name"
                 />
+                {deckError && (
+                  <p className="text-sm text-destructive" data-testid="text-deck-create-error">{deckError}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="deck-language">Language *</Label>
@@ -359,7 +383,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </div>
         </CardContent>
       </Card>
-      <Dialog open={!!editingDeck} onOpenChange={(open) => !open && setEditingDeck(null)}>
+      <Dialog open={!!editingDeck} onOpenChange={(open) => { if (!open) { setEditingDeck(null); setDeckError(""); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Deck</DialogTitle>
@@ -370,9 +394,12 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               <Input
                 id="edit-deck-name"
                 value={newDeckName}
-                onChange={(e) => setNewDeckName(e.target.value)}
+                onChange={(e) => { setNewDeckName(e.target.value); setDeckError(""); }}
                 data-testid="input-edit-deck-name"
               />
+              {deckError && (
+                <p className="text-sm text-destructive" data-testid="text-deck-edit-error">{deckError}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-deck-language">Language *</Label>

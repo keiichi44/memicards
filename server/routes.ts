@@ -56,6 +56,10 @@ export async function registerRoutes(
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.errors });
       }
+      const existingProjects = await storage.getProjects(userId);
+      if (existingProjects.some(p => p.name.toLowerCase() === parsed.data.name.toLowerCase())) {
+        return res.status(400).json({ error: "A project with this name already exists" });
+      }
       const project = await storage.createProject(parsed.data);
       res.status(201).json(project);
     } catch (error) {
@@ -73,6 +77,12 @@ export async function registerRoutes(
       const parsed = updateProjectSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.errors });
+      }
+      if (parsed.data.name) {
+        const existingProjects = await storage.getProjects(userId);
+        if (existingProjects.some(p => p.id !== req.params.id && p.name.toLowerCase() === parsed.data.name!.toLowerCase())) {
+          return res.status(400).json({ error: "A project with this name already exists" });
+        }
       }
       const updated = await storage.updateProject(req.params.id as string, parsed.data);
       res.json(updated);
@@ -155,6 +165,16 @@ export async function registerRoutes(
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.errors });
       }
+      if (parsed.data.projectId) {
+        const project = await storage.getProject(parsed.data.projectId);
+        if (!project || project.userId !== userId) {
+          return res.status(404).json({ error: "Project not found" });
+        }
+        const existingDecks = await storage.getDecks(userId, parsed.data.projectId);
+        if (existingDecks.some(d => d.name.toLowerCase() === parsed.data.name.toLowerCase())) {
+          return res.status(400).json({ error: "A deck with this name already exists in this project" });
+        }
+      }
       const deck = await storage.createDeck({ ...parsed.data, userId });
       res.status(201).json({ ...deck, cardCount: 0 });
     } catch (error) {
@@ -172,6 +192,12 @@ export async function registerRoutes(
       const parsed = updateDeckSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.errors });
+      }
+      if (parsed.data.name && deck.projectId) {
+        const existingDecks = await storage.getDecks(userId, deck.projectId);
+        if (existingDecks.some(d => d.id !== deck.id && d.name.toLowerCase() === parsed.data.name!.toLowerCase())) {
+          return res.status(400).json({ error: "A deck with this name already exists in this project" });
+        }
       }
       const updated = await storage.updateDeck(req.params.id as string, parsed.data);
       res.json(updated);
