@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Upload, FileText, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { Upload, FileText, AlertCircle, CheckCircle, Loader2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -131,6 +131,10 @@ water;вода;Can I have some water?;essential liquid`;
         <CardHeader>
           <CardTitle className="text-lg">CSV Format</CardTitle>
           <CardDescription className="text-sm text-[#000000]">1. Prepare a spreadsheet with columns: word, translation, sentence (optional), association (optional). This will be the structure of your deck. Each row represents a card, E.g.: book | книга | The book is on the table | reading material</CardDescription>
+          <a href="/csv-template.csv" download="csv-template.csv" className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-1" data-testid="link-download-csv-template">
+            <Download className="h-3 w-3" />
+            Download CSV template
+          </a>
           <CardDescription className="text-sm text-[#000000]">2. Upload the spreadsheet or copy and paste it into the field above. If the decks aren't exporting correctly, try selecting another CSV separator.</CardDescription>
         </CardHeader>
         <CardContent>
