@@ -135,7 +135,7 @@ water;вода;Can I have some water?;essential liquid`;
             <Download className="h-3 w-3" />
             Download CSV template
           </a>
-          <CardDescription className="text-sm text-[#000000]">2. Upload the spreadsheet or copy and paste it into the field above. If the decks aren't exporting correctly, try selecting another CSV separator.</CardDescription>
+          <CardDescription className="text-sm text-[#000000]">2. Save your spreadsheet as a .csv file. Upload the CSV or copy and paste it into the field above. If the decks aren't exporting correctly, try selecting another CSV separator.</CardDescription>
         </CardHeader>
         <CardContent>
         </CardContent>
