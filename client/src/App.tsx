@@ -8,6 +8,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BottomNavBar } from "@/components/bottom-nav-bar";
+import { ProjectProvider } from "@/lib/project-context";
+import { ProjectSelector } from "@/components/project-selector";
 import { ClerkProvider, SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 import logoImg from "@assets/memi_1770479923554.png";
 import NotFound from "@/pages/not-found";
@@ -31,7 +33,13 @@ function DataMigration() {
   useEffect(() => {
     if (user && !claimed.current) {
       claimed.current = true;
-      apiRequest("POST", "/api/auth/claim-data", {}).catch(() => {});
+      apiRequest("POST", "/api/auth/claim-data", {})
+        .then(res => res.json())
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+        })
+        .catch(() => {});
     }
   }, [user]);
 
@@ -64,39 +72,42 @@ function AuthenticatedApp() {
   return (
     <>
       <DataMigration />
-      <SidebarProvider style={sidebarStyle as React.CSSProperties}>
-        <div className="flex min-h-screen w-full">
-          <div className="hidden md:block">
-            <AppSidebar />
+      <ProjectProvider>
+        <SidebarProvider style={sidebarStyle as React.CSSProperties}>
+          <div className="flex min-h-screen w-full">
+            <div className="hidden md:block">
+              <AppSidebar />
+            </div>
+            <div className="flex flex-col flex-1 min-w-0">
+              <header className="flex items-center justify-between gap-2 p-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+                <div className="hidden md:flex items-center gap-2">
+                  <SidebarTrigger data-testid="button-sidebar-toggle" />
+                  <ProjectSelector />
+                </div>
+                <div className="md:hidden flex items-center gap-1">
+                  <img src={logoImg} alt="memicards" className="w-7 h-7 rounded-md object-cover" data-testid="img-logo-mobile" />
+                  <ProjectSelector />
+                </div>
+                <div className="flex items-center gap-2">
+                  <ThemeToggle />
+                  <UserButton
+                    afterSignOutUrl="/"
+                    appearance={{
+                      elements: {
+                        avatarBox: "h-8 w-8",
+                      },
+                    }}
+                  />
+                </div>
+              </header>
+              <main className="flex-1 overflow-auto pb-16 md:pb-0">
+                <Router />
+              </main>
+            </div>
           </div>
-          <div className="flex flex-col flex-1 min-w-0">
-            <header className="flex items-center justify-between gap-2 p-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-              <div className="hidden md:block">
-                <SidebarTrigger data-testid="button-sidebar-toggle" />
-              </div>
-              <div className="md:hidden flex items-center gap-2">
-                <img src={logoImg} alt="memicards" className="w-8 h-8 rounded-md object-cover" data-testid="img-logo-mobile" />
-                <span className="text-lg font-extrabold text-[#ff7c00]" data-testid="text-app-title-mobile">memicards</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ThemeToggle />
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      avatarBox: "h-8 w-8",
-                    },
-                  }}
-                />
-              </div>
-            </header>
-            <main className="flex-1 overflow-auto pb-16 md:pb-0">
-              <Router />
-            </main>
-          </div>
-        </div>
-        <BottomNavBar />
-      </SidebarProvider>
+          <BottomNavBar />
+        </SidebarProvider>
+      </ProjectProvider>
     </>
   );
 }

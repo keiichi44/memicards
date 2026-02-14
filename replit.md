@@ -48,6 +48,7 @@ client/
 │   │   ├── sm2.ts              # Client-side SM-2 utilities
 │   │   ├── storage.ts          # CSV parsing and export utilities
 │   │   ├── queryClient.ts      # React Query config with API helpers
+│   │   ├── project-context.tsx  # ProjectProvider context for active project
 │   │   └── utils.ts            # Utility functions
 │   ├── pages/
 │   │   ├── auth.tsx            # Login/signup page with Clerk
@@ -68,30 +69,35 @@ server/
 ## Database Schema
 
 ### Tables (PostgreSQL)
-- **decks**: id, name, language, description, userId, createdAt
+- **projects**: id, name, userId, createdAt (top-level organization containers)
+- **decks**: id, name, language, description, userId, projectId, createdAt
 - **cards**: id, deckId, armenian (word), russian (translation), sentence, association, isStarred, isActive, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt
 - **reviews**: id, cardId, quality, reviewedAt, previousInterval, newInterval
-- **settings**: id, userId, weekendLearnerMode, weekdayNewCards, weekdayReviewCards, weekendNewCards, weekendReviewCards, prioritizeStarred, weeklyCardTarget
+- **settings**: id, userId, projectId, weekendLearnerMode, weekdayNewCards, weekdayReviewCards, weekendNewCards, weekendReviewCards, prioritizeStarred, weeklyCardTarget
 
 ## API Endpoints
 
 All API endpoints (except `/api/health`) require Clerk authentication via `requireAuth()` middleware. The authenticated user's ID is extracted from the Clerk session and used to scope data.
 
-- `GET /api/decks` - List user's decks with card counts
+- `GET /api/projects` - List user's projects
+- `POST /api/projects` - Create project
+- `PATCH /api/projects/:id` - Update project (ownership check)
+- `DELETE /api/projects/:id` - Delete project and cascade (ownership check, prevents deleting last)
+- `GET /api/decks` - List user's decks with card counts (optional ?projectId= filter)
 - `POST /api/decks` - Create deck (auto-assigns userId)
 - `PATCH /api/decks/:id` - Update deck (ownership check)
 - `DELETE /api/decks/:id` - Delete deck and its cards (ownership check)
 - `POST /api/decks/:id/duplicate` - Duplicate deck with optional swap
-- `GET /api/cards` - List cards (scoped to user's decks)
+- `GET /api/cards` - List cards (optional ?projectId= or ?deckId= filter, ownership validated)
 - `POST /api/cards` - Create card
 - `PATCH /api/cards/:id` - Update card
 - `DELETE /api/cards/:id` - Delete card
 - `POST /api/cards/:id/review` - Submit review with SM-2 calculation
-- `GET /api/reviews` - List review history
+- `GET /api/reviews` - List review history (optional ?projectId= filter)
 - `POST /api/import` - Batch import cards (deck ownership check)
-- `GET /api/export` - Export user's data as JSON
-- `GET /api/settings` - Get user's settings
-- `PATCH /api/settings` - Update user's settings
+- `GET /api/export` - Export user's data as JSON (optional ?projectId= filter)
+- `GET /api/settings` - Get user's settings (optional ?projectId= for per-project settings)
+- `PATCH /api/settings` - Update user's settings (optional ?projectId=)
 - `POST /api/auth/claim-data` - Assign unowned decks to first user (migration)
 
 ## CSV Import Format
@@ -128,6 +134,13 @@ The app uses Clerk for authentication:
 
 ## Recent Changes
 
+- Added project organization layer: projects as top-level containers for decks, settings, and progress
+- ProjectProvider context with ProjectSelector dropdown in header for switching between projects
+- Auto-create default "Learning project" on first login, auto-name new projects incrementally
+- All views (decks, cards, reviews, settings, progress, import, export) scoped by active projectId
+- Project deletion with cascade (prevents deleting last project)
+- Settings renamed to "Project Settings" with per-project configuration
+- Added ownership validation for projectId on all endpoints (security hardening)
 - Added Clerk authentication with email, Google, Facebook login + password recovery
 - Added deck duplication feature (as-is and swapped translations)
 - Added card active/inactive toggle feature - enable/disable individual cards for review sessions

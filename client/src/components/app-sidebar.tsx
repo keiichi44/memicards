@@ -13,6 +13,8 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
+import { ProjectSelector } from "@/components/project-selector";
+import { useProject } from "@/lib/project-context";
 
 const menuItems = [
   {
@@ -31,7 +33,7 @@ const menuItems = [
     icon: BarChart3,
   },
   {
-    title: "Settings",
+    title: "Project Settings",
     url: "/settings",
     icon: Settings,
   },
@@ -39,6 +41,7 @@ const menuItems = [
 
 export function AppSidebar() {
   const [location] = useLocation();
+  const { activeProject } = useProject();
   
   return (
     <Sidebar>
@@ -53,7 +56,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>{activeProject?.name || "Project"}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => {
@@ -65,7 +68,7 @@ export function AppSidebar() {
                     <SidebarMenuButton 
                       asChild 
                       isActive={isActive}
-                      data-testid={`nav-${item.title.toLowerCase().replace(" ", "-")}`}
+                      data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                     >
                       <Link href={item.url}>
                         <item.icon className="h-4 w-4" />

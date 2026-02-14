@@ -8,6 +8,7 @@ import { Flashcard } from "@/components/flashcard";
 import type { Card as FlashCard, Deck, QualityRating, Settings } from "@shared/schema";
 import { isDueToday, isNewCard, sortCardsByPriority, isWeekend } from "@/lib/sm2";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useProject } from "@/lib/project-context";
 
 interface ReviewSessionProps {
   deckId?: string;
@@ -16,6 +17,7 @@ interface ReviewSessionProps {
 }
 
 export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps) {
+  const { activeProject } = useProject();
   const [queue, setQueue] = useState<FlashCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -24,9 +26,16 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
   const [isInitialized, setIsInitialized] = useState(false);
   
   const { data: allCards = [], isLoading: cardsLoading } = useQuery<FlashCard[]>({
-    queryKey: deckId ? ["/api/cards", deckId] : ["/api/cards"],
+    queryKey: deckId ? ["/api/cards", deckId] : ["/api/cards", { projectId: activeProject?.id }],
     queryFn: async () => {
-      const url = deckId ? `/api/cards?deckId=${deckId}` : "/api/cards";
+      let url: string;
+      if (deckId) {
+        url = `/api/cards?deckId=${deckId}`;
+      } else if (activeProject?.id) {
+        url = `/api/cards?projectId=${activeProject.id}`;
+      } else {
+        url = "/api/cards";
+      }
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Failed to fetch cards: ${res.status}`);
       return res.json();
@@ -34,7 +43,13 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
   });
   
   const { data: settings } = useQuery<Settings>({
-    queryKey: ["/api/settings"],
+    queryKey: ["/api/settings", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/settings?projectId=${activeProject.id}` : "/api/settings";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch settings");
+      return res.json();
+    },
   });
   
   const { data: deck } = useQuery<Deck>({

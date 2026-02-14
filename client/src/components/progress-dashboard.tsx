@@ -7,18 +7,42 @@ import { Star, Target, TrendingUp, Calendar, BookOpen, Loader2 } from "lucide-re
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import type { Card as FlashCard, Review, Settings, DailyStats } from "@shared/schema";
 import { isDueToday, isNewCard, getCardStatus } from "@/lib/sm2";
+import { useProject } from "@/lib/project-context";
 
 export function ProgressDashboard() {
+  const { activeProject } = useProject();
+
   const { data: cards = [], isLoading: cardsLoading } = useQuery<FlashCard[]>({
-    queryKey: ["/api/cards"],
+    queryKey: ["/api/cards", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/cards?projectId=${activeProject.id}` : "/api/cards";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch cards");
+      return res.json();
+    },
+    enabled: !!activeProject,
   });
   
   const { data: reviews = [] } = useQuery<Review[]>({
-    queryKey: ["/api/reviews"],
+    queryKey: ["/api/reviews", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/reviews?projectId=${activeProject.id}` : "/api/reviews";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch reviews");
+      return res.json();
+    },
+    enabled: !!activeProject,
   });
   
   const { data: settings } = useQuery<Settings>({
-    queryKey: ["/api/settings"],
+    queryKey: ["/api/settings", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/settings?projectId=${activeProject.id}` : "/api/settings";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch settings");
+      return res.json();
+    },
+    enabled: !!activeProject,
   });
   
   const stats = useMemo(() => {

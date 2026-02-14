@@ -17,14 +17,23 @@ import {
 import type { Deck } from "@shared/schema";
 import { parseCSV, importCards } from "@/lib/storage";
 import { queryClient } from "@/lib/queryClient";
+import { useProject } from "@/lib/project-context";
 
 interface BatchImportProps {
   onComplete: () => void;
 }
 
 export function BatchImport({ onComplete }: BatchImportProps) {
+  const { activeProject } = useProject();
   const { data: decks = [] } = useQuery<Deck[]>({
-    queryKey: ["/api/decks"],
+    queryKey: ["/api/decks", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/decks?projectId=${activeProject.id}` : "/api/decks";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch decks");
+      return res.json();
+    },
+    enabled: !!activeProject,
   });
   
   const [selectedDeckId, setSelectedDeckId] = useState<string>("");

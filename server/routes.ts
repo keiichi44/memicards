@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDeckSchema, insertCardSchema, batchImportSchema, insertSettingsSchema, updateDeckSchema, updateCardSchema, duplicateDeckSchema } from "@shared/schema";
+import { insertDeckSchema, insertCardSchema, batchImportSchema, insertSettingsSchema, updateDeckSchema, updateCardSchema, duplicateDeckSchema, insertProjectSchema, updateProjectSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { calculateSM2 } from "./sm2";
 import { clerkMiddleware, getAuth, requireAuth } from "@clerk/express";
@@ -12,6 +12,11 @@ function getUserId(req: Request): string {
     throw new Error("Unauthorized");
   }
   return auth.userId;
+}
+
+async function verifyProjectOwnership(projectId: string, userId: string): Promise<boolean> {
+  const project = await storage.getProject(projectId);
+  return !!project && project.userId === userId;
 }
 
 async function verifyCardOwnership(cardId: string, userId: string): Promise<{ card: any; deck: any } | null> {
@@ -33,11 +38,79 @@ export async function registerRoutes(
     res.json({ status: "ok", message: "Armenian SRS API is running" });
   });
 
+  // === PROJECTS ===
+  app.get("/api/projects", requireAuth(), async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const userProjects = await storage.getProjects(userId);
+      res.json(userProjects);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch projects" });
+    }
+  });
+
+  app.post("/api/projects", requireAuth(), async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const parsed = insertProjectSchema.safeParse({ ...req.body, userId });
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.errors });
+      }
+      const project = await storage.createProject(parsed.data);
+      res.status(201).json(project);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create project" });
+    }
+  });
+
+  app.patch("/api/projects/:id", requireAuth(), async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const project = await storage.getProject(req.params.id as string);
+      if (!project || project.userId !== userId) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      const parsed = updateProjectSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.errors });
+      }
+      const updated = await storage.updateProject(req.params.id as string, parsed.data);
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update project" });
+    }
+  });
+
+  app.delete("/api/projects/:id", requireAuth(), async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const project = await storage.getProject(req.params.id as string);
+      if (!project || project.userId !== userId) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      const allProjects = await storage.getProjects(userId);
+      if (allProjects.length <= 1) {
+        return res.status(400).json({ error: "Cannot delete the last project" });
+      }
+      const success = await storage.deleteProject(req.params.id as string);
+      if (!success) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete project" });
+    }
+  });
+
   // === DECKS ===
   app.get("/api/decks", requireAuth(), async (req, res) => {
     try {
       const userId = getUserId(req);
-      const allDecks = await storage.getDecks(userId);
+      const projectId = req.query.projectId as string | undefined;
+      if (projectId && !(await verifyProjectOwnership(projectId, userId))) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      const allDecks = await storage.getDecks(userId, projectId);
       const decksWithCounts = await Promise.all(
         allDecks.map(async (deck) => {
           const [deckCards, dueCards, starredCards, inactiveCards] = await Promise.all([
@@ -143,6 +216,7 @@ export async function registerRoutes(
         language: originalDeck.language,
         description: originalDeck.description || "",
         userId,
+        projectId: originalDeck.projectId,
       });
 
       const originalCards = await storage.getCards(originalDeck.id);
@@ -176,6 +250,11 @@ export async function registerRoutes(
       const userId = getUserId(req);
       const deckId = req.query.deckId as string | undefined;
       const filter = req.query.filter as string | undefined;
+      const projectId = req.query.projectId as string | undefined;
+
+      if (projectId && !(await verifyProjectOwnership(projectId, userId))) {
+        return res.status(403).json({ error: "Access denied" });
+      }
 
       if (deckId) {
         const deck = await storage.getDeck(deckId);
@@ -185,19 +264,24 @@ export async function registerRoutes(
       }
       
       if (!deckId) {
-        const userDecks = await storage.getDecks(userId);
-        const userDeckIds = new Set(userDecks.map(d => d.id));
         let allCards: any[];
-        if (filter === "due") {
-          allCards = await storage.getDueCards();
-        } else if (filter === "new") {
-          allCards = await storage.getNewCards();
-        } else if (filter === "starred") {
-          allCards = await storage.getStarredCards();
+        if (projectId) {
+          allCards = await storage.getCardsByProject(projectId, userId);
         } else {
-          allCards = await storage.getCards();
+          const userDecks = await storage.getDecks(userId);
+          const userDeckIds = new Set(userDecks.map(d => d.id));
+          if (filter === "due") {
+            allCards = await storage.getDueCards();
+          } else if (filter === "new") {
+            allCards = await storage.getNewCards();
+          } else if (filter === "starred") {
+            allCards = await storage.getStarredCards();
+          } else {
+            allCards = await storage.getCards();
+          }
+          allCards = allCards.filter(c => userDeckIds.has(c.deckId));
         }
-        return res.json(allCards.filter(c => userDeckIds.has(c.deckId)));
+        return res.json(allCards);
       }
 
       let cardsList;
@@ -385,21 +469,28 @@ export async function registerRoutes(
   app.get("/api/export", requireAuth(), async (req, res) => {
     try {
       const userId = getUserId(req);
-      const [allDecks, allCards, allReviews, currentSettings] = await Promise.all([
-        storage.getDecks(userId),
-        storage.getCards(),
-        storage.getReviews(),
-        storage.getSettings(userId),
-      ]);
-
+      const projectId = req.query.projectId as string | undefined;
+      if (projectId && !(await verifyProjectOwnership(projectId, userId))) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      const allDecks = await storage.getDecks(userId, projectId);
       const userDeckIds = new Set(allDecks.map(d => d.id));
-      const userCards = allCards.filter(c => userDeckIds.has(c.deckId));
-      const userCardIds = new Set(userCards.map(c => c.id));
+      
+      let allCards: any[] = [];
+      for (const deck of allDecks) {
+        const deckCards = await storage.getCards(deck.id);
+        allCards.push(...deckCards);
+      }
+      
+      const allReviews = await storage.getReviews();
+      const userCardIds = new Set(allCards.map(c => c.id));
       const userReviews = allReviews.filter(r => userCardIds.has(r.cardId));
+
+      const currentSettings = await storage.getSettings(userId, projectId);
 
       res.json({
         decks: allDecks,
-        cards: userCards,
+        cards: allCards,
         reviews: userReviews,
         settings: currentSettings,
         exportedAt: new Date().toISOString(),
@@ -412,7 +503,26 @@ export async function registerRoutes(
   // === REVIEWS ===
   app.get("/api/reviews", requireAuth(), async (req, res) => {
     try {
+      const userId = getUserId(req);
       const cardId = req.query.cardId as string | undefined;
+      const projectId = req.query.projectId as string | undefined;
+      
+      if (projectId) {
+        if (!(await verifyProjectOwnership(projectId, userId))) {
+          return res.status(403).json({ error: "Access denied" });
+        }
+        const projectCards = await storage.getCardsByProject(projectId, userId);
+        const projectCardIds = new Set(projectCards.map(c => c.id));
+        const allReviews = await storage.getReviews();
+        return res.json(allReviews.filter(r => projectCardIds.has(r.cardId)));
+      }
+      
+      if (cardId) {
+        const result = await verifyCardOwnership(cardId, userId);
+        if (!result) {
+          return res.status(404).json({ error: "Card not found" });
+        }
+      }
       const reviewsList = await storage.getReviews(cardId);
       res.json(reviewsList);
     } catch (error) {
@@ -424,7 +534,11 @@ export async function registerRoutes(
   app.get("/api/settings", requireAuth(), async (req, res) => {
     try {
       const userId = getUserId(req);
-      const currentSettings = await storage.getSettings(userId);
+      const projectId = req.query.projectId as string | undefined;
+      if (projectId && !(await verifyProjectOwnership(projectId, userId))) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      const currentSettings = await storage.getSettings(userId, projectId);
       res.json(currentSettings);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch settings" });
@@ -434,11 +548,15 @@ export async function registerRoutes(
   app.patch("/api/settings", requireAuth(), async (req, res) => {
     try {
       const userId = getUserId(req);
+      const projectId = req.query.projectId as string | undefined;
+      if (projectId && !(await verifyProjectOwnership(projectId, userId))) {
+        return res.status(403).json({ error: "Access denied" });
+      }
       const parsed = insertSettingsSchema.partial().safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.errors });
       }
-      const updatedSettings = await storage.updateSettings(userId, parsed.data);
+      const updatedSettings = await storage.updateSettings(userId, parsed.data, projectId);
       res.json(updatedSettings);
     } catch (error) {
       res.status(500).json({ error: "Failed to update settings" });
@@ -450,7 +568,8 @@ export async function registerRoutes(
     try {
       const userId = getUserId(req);
       const days = parseInt(req.query.days as string) || 7;
-      const userDecks = await storage.getDecks(userId);
+      const projectId = req.query.projectId as string | undefined;
+      const userDecks = await storage.getDecks(userId, projectId);
       const userDeckIds = new Set(userDecks.map(d => d.id));
       const allCards = await storage.getCards();
       const userCardIds = new Set(allCards.filter(c => userDeckIds.has(c.deckId)).map(c => c.id));
@@ -491,8 +610,9 @@ export async function registerRoutes(
   app.get("/api/stats/weekly", requireAuth(), async (req, res) => {
     try {
       const userId = getUserId(req);
-      const currentSettings = await storage.getSettings(userId);
-      const userDecks = await storage.getDecks(userId);
+      const projectId = req.query.projectId as string | undefined;
+      const currentSettings = await storage.getSettings(userId, projectId);
+      const userDecks = await storage.getDecks(userId, projectId);
       const userDeckIds = new Set(userDecks.map(d => d.id));
       const allCards = await storage.getCards();
       const userCardIds = new Set(allCards.filter(c => userDeckIds.has(c.deckId)).map(c => c.id));
@@ -528,11 +648,12 @@ export async function registerRoutes(
     try {
       const userId = getUserId(req);
       const existingDecks = await storage.getDecks(userId);
-      if (existingDecks.length > 0) {
-        return res.json({ assigned: 0 });
-      }
-      const assigned = await storage.assignUnownedDecks(userId);
-      res.json({ assigned });
+      const assigned = existingDecks.length === 0 ? await storage.assignUnownedDecks(userId) : 0;
+      
+      const project = await storage.ensureDefaultProject(userId);
+      await storage.migrateDataToProject(userId, project.id);
+      
+      res.json({ assigned, projectId: project.id });
     } catch (error) {
       res.status(500).json({ error: "Failed to claim data" });
     }

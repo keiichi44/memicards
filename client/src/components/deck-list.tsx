@@ -29,6 +29,7 @@ import { Label } from "@/components/ui/label";
 import type { Deck, Card as FlashCard } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isDueToday, isNewCard } from "@/lib/sm2";
+import { useProject } from "@/lib/project-context";
 
 interface DeckWithCount extends Deck {
   cardCount: number;
@@ -44,6 +45,7 @@ interface DeckListProps {
 }
 
 export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckListProps) {
+  const { activeProject } = useProject();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
@@ -52,11 +54,25 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const [newDeckDescription, setNewDeckDescription] = useState("");
   
   const { data: decks = [], isLoading: decksLoading } = useQuery<DeckWithCount[]>({
-    queryKey: ["/api/decks"],
+    queryKey: ["/api/decks", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/decks?projectId=${activeProject.id}` : "/api/decks";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch decks");
+      return res.json();
+    },
+    enabled: !!activeProject,
   });
   
   const { data: allCards = [] } = useQuery<FlashCard[]>({
-    queryKey: ["/api/cards"],
+    queryKey: ["/api/cards", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/cards?projectId=${activeProject.id}` : "/api/cards";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch cards");
+      return res.json();
+    },
+    enabled: !!activeProject,
   });
   
   const activeCards = allCards.filter(c => c.isActive);
@@ -65,12 +81,12 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   
   const createMutation = useMutation({
     mutationFn: async (data: { name: string; language: string; description: string }) => {
-      const res = await apiRequest("POST", "/api/decks", data);
+      const res = await apiRequest("POST", "/api/decks", { ...data, projectId: activeProject?.id });
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"] });
       setIsCreateOpen(false);
       setNewDeckName("");
       setNewDeckLanguage("");
@@ -85,7 +101,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"] });
       setEditingDeck(null);
       setNewDeckName("");
       setNewDeckLanguage("");
@@ -99,11 +115,10 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"] });
       setDeletingDeck(null);
     },
   });
-  
   
   const handleCreateDeck = () => {
     if (!newDeckName.trim() || !newDeckLanguage.trim()) return;
@@ -144,7 +159,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-lg">All Cards Review</h3>
+              <h3 className="font-semibold text-lg" data-testid="text-project-name">{activeProject?.name || "All Cards"}</h3>
               <p className="text-sm text-muted-foreground">
                 {totalDue} due today, {totalNew} new cards
               </p>
@@ -160,12 +175,13 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               </Button>
               <Button 
                 variant="outline"
+                size="icon"
                 onClick={() => onStartPractice()} 
                 disabled={allCards.length === 0}
+                title="Practice mode"
                 data-testid="button-start-all-practice"
               >
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Practice
+                <RotateCcw className="h-4 w-4" />
               </Button>
             </div>
           </div>

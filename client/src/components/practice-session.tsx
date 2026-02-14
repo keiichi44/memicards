@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Flashcard } from "@/components/flashcard";
 import type { Card as FlashCard, Deck } from "@shared/schema";
+import { useProject } from "@/lib/project-context";
 
 interface PracticeSessionProps {
   deckId?: string;
@@ -21,6 +22,7 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
+  const { activeProject } = useProject();
   const [shuffledCards, setShuffledCards] = useState<FlashCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -28,9 +30,16 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const { data: allCards = [], isLoading } = useQuery<FlashCard[]>({
-    queryKey: deckId ? ["/api/cards", deckId] : ["/api/cards"],
+    queryKey: deckId ? ["/api/cards", deckId] : ["/api/cards", { projectId: activeProject?.id }],
     queryFn: async () => {
-      const url = deckId ? `/api/cards?deckId=${deckId}` : "/api/cards";
+      let url: string;
+      if (deckId) {
+        url = `/api/cards?deckId=${deckId}`;
+      } else if (activeProject?.id) {
+        url = `/api/cards?projectId=${activeProject.id}`;
+      } else {
+        url = "/api/cards";
+      }
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Failed to fetch cards: ${res.status}`);
       return res.json();

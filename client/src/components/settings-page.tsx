@@ -1,44 +1,86 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Save, Download, Loader2 } from "lucide-react";
+import { Save, Download, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import type { Settings, Card as FlashCard, Deck, Review } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { exportCardsToCSV, exportReviewsToCSV } from "@/lib/storage";
+import { useProject } from "@/lib/project-context";
+import { useLocation } from "wouter";
 
 export function SettingsPage() {
   const { toast } = useToast();
+  const { activeProject, projects } = useProject();
+  const [, setLocation] = useLocation();
   const [isSaved, setIsSaved] = useState(true);
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
   
   const { data: settings, isLoading: settingsLoading } = useQuery<Settings>({
-    queryKey: ["/api/settings"],
+    queryKey: ["/api/settings", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/settings?projectId=${activeProject.id}` : "/api/settings";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch settings");
+      return res.json();
+    },
+    enabled: !!activeProject,
   });
   
   const { data: allCards = [] } = useQuery<FlashCard[]>({
-    queryKey: ["/api/cards"],
+    queryKey: ["/api/cards", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/cards?projectId=${activeProject.id}` : "/api/cards";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch cards");
+      return res.json();
+    },
+    enabled: !!activeProject,
   });
   
   const { data: allDecks = [] } = useQuery<Deck[]>({
-    queryKey: ["/api/decks"],
+    queryKey: ["/api/decks", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/decks?projectId=${activeProject.id}` : "/api/decks";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch decks");
+      return res.json();
+    },
+    enabled: !!activeProject,
   });
   
   const { data: allReviews = [] } = useQuery<Review[]>({
-    queryKey: ["/api/reviews"],
+    queryKey: ["/api/reviews", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/reviews?projectId=${activeProject.id}` : "/api/reviews";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch reviews");
+      return res.json();
+    },
+    enabled: !!activeProject,
   });
-  
-  const totalDecks = allDecks.length;
   
   const [localSettings, setLocalSettings] = useState<Partial<Settings>>({});
   
   const updateMutation = useMutation({
     mutationFn: async (newSettings: Partial<Settings>) => {
-      const res = await apiRequest("PATCH", "/api/settings", newSettings);
+      const url = activeProject?.id ? `/api/settings?projectId=${activeProject.id}` : "/api/settings";
+      const res = await apiRequest("PATCH", url, newSettings);
       return res.json();
     },
     onSuccess: () => {
@@ -48,6 +90,23 @@ export function SettingsPage() {
       toast({
         title: "Settings saved",
         description: "Your preferences have been updated.",
+      });
+    },
+  });
+
+  const deleteProjectMutation = useMutation({
+    mutationFn: async (projectId: string) => {
+      await apiRequest("DELETE", `/api/projects/${projectId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"] });
+      setIsDeletingProject(false);
+      setLocation("/");
+      toast({
+        title: "Project deleted",
+        description: "The project and all its data have been removed.",
       });
     },
   });
@@ -72,7 +131,8 @@ export function SettingsPage() {
   };
   
   const handleExportData = async () => {
-    const res = await fetch("/api/export");
+    const url = activeProject?.id ? `/api/export?projectId=${activeProject.id}` : "/api/export";
+    const res = await fetch(url);
     const data = await res.json();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const link = document.createElement("a");
@@ -113,12 +173,14 @@ export function SettingsPage() {
       description: `${allReviews.length} review records exported to CSV.`,
     });
   };
+
+  const canDeleteProject = projects.length > 1;
   
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
-        <h2 className="text-2xl font-semibold mb-2">Settings</h2>
-        <p className="text-muted-foreground">Configure your learning preferences</p>
+        <h2 className="text-2xl font-semibold mb-2" data-testid="text-settings-title">Project Settings</h2>
+        <p className="text-muted-foreground">Configure preferences for "{activeProject?.name}"</p>
       </div>
       
       <Card>
@@ -281,6 +343,28 @@ export function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Card className={canDeleteProject ? "border-destructive/30" : ""}>
+        <CardHeader>
+          <CardTitle>Delete Project</CardTitle>
+          <CardDescription>
+            {canDeleteProject
+              ? `Permanently delete "${activeProject?.name}" and all its decks, cards, and review history.`
+              : "You cannot delete your only project. Create another project first."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            variant="destructive"
+            disabled={!canDeleteProject || deleteProjectMutation.isPending}
+            onClick={() => setIsDeletingProject(true)}
+            data-testid="button-delete-project"
+          >
+            {deleteProjectMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+            Delete Project
+          </Button>
+        </CardContent>
+      </Card>
       
       <div className="flex justify-end">
         <Button 
@@ -292,6 +376,27 @@ export function SettingsPage() {
           {isSaved ? "Settings Saved" : "Save Settings"}
         </Button>
       </div>
+
+      <AlertDialog open={isDeletingProject} onOpenChange={setIsDeletingProject}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete "{activeProject?.name}" and all its decks, cards, and review history. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => activeProject && deleteProjectMutation.mutate(activeProject.id)} 
+              className="bg-destructive text-destructive-foreground"
+              data-testid="button-confirm-delete-project"
+            >
+              Delete Project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

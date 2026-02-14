@@ -3,13 +3,20 @@ import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Drizzle Tables
+export const projects = pgTable("projects", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  userId: text("user_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const decks = pgTable("decks", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   language: text("language").notNull().default("Language"),
   description: text("description").default(""),
   userId: text("user_id"),
+  projectId: text("project_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -42,6 +49,7 @@ export const reviews = pgTable("reviews", {
 export const settings = pgTable("settings", {
   id: integer("id").primaryKey().default(1),
   userId: text("user_id"),
+  projectId: text("project_id"),
   weekendLearnerMode: boolean("weekend_learner_mode").default(false).notNull(),
   weekdayNewCards: integer("weekday_new_cards").default(5).notNull(),
   weekendNewCards: integer("weekend_new_cards").default(15).notNull(),
@@ -51,9 +59,16 @@ export const settings = pgTable("settings", {
   weeklyCardTarget: integer("weekly_card_target").default(50).notNull(),
 });
 
-// Relations
-export const decksRelations = relations(decks, ({ many }) => ({
+export const projectsRelations = relations(projects, ({ many }) => ({
+  decks: many(decks),
+}));
+
+export const decksRelations = relations(decks, ({ one, many }) => ({
   cards: many(cards),
+  project: one(projects, {
+    fields: [decks.projectId],
+    references: [projects.id],
+  }),
 }));
 
 export const cardsRelations = relations(cards, ({ one, many }) => ({
@@ -71,7 +86,7 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
   }),
 }));
 
-// Insert schemas using drizzle-zod
+export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true });
 export const insertDeckSchema = createInsertSchema(decks).omit({ id: true, createdAt: true });
 export const insertCardSchema = createInsertSchema(cards).omit({ id: true, createdAt: true }).extend({
   nextReviewDate: z.date().optional(),
@@ -79,11 +94,13 @@ export const insertCardSchema = createInsertSchema(cards).omit({ id: true, creat
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, reviewedAt: true });
 export const insertSettingsSchema = createInsertSchema(settings).omit({ id: true });
 
-// Update schemas (partial versions for PATCH endpoints)
 export const updateDeckSchema = insertDeckSchema.partial();
 export const updateCardSchema = insertCardSchema.partial();
+export const updateProjectSchema = insertProjectSchema.partial();
 
-// Types
+export type Project = typeof projects.$inferSelect;
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+
 export type Deck = typeof decks.$inferSelect;
 export type InsertDeck = z.infer<typeof insertDeckSchema>;
 
@@ -96,7 +113,6 @@ export type InsertReview = z.infer<typeof insertReviewSchema>;
 export type Settings = typeof settings.$inferSelect;
 export type InsertSettings = z.infer<typeof insertSettingsSchema>;
 
-// Batch import schema (kept as Zod)
 export const duplicateDeckSchema = z.object({
   swap: z.boolean().optional().default(false),
 });
@@ -116,7 +132,6 @@ export const batchImportSchema = z.object({
 
 export type BatchImport = z.infer<typeof batchImportSchema>;
 
-// Export data schema
 export const exportDataSchema = z.object({
   cards: z.array(z.any()),
   decks: z.array(z.any()),
@@ -127,7 +142,6 @@ export const exportDataSchema = z.object({
 
 export type ExportData = z.infer<typeof exportDataSchema>;
 
-// Card filter schema
 export const cardFilterSchema = z.object({
   filter: z.enum(["all", "due", "new", "starred"]).default("all"),
   deckId: z.string().optional(),
@@ -136,7 +150,6 @@ export const cardFilterSchema = z.object({
 
 export type CardFilter = z.infer<typeof cardFilterSchema>;
 
-// Quality rating types
 export type QualityRating = 0 | 1 | 2 | 3 | 4 | 5;
 
 export const qualityLabels: Record<QualityRating, string> = {
@@ -155,7 +168,6 @@ export const simpleQualityRatings = [
   { quality: 5 as QualityRating, label: "Easy", color: "accent" },
 ] as const;
 
-// Stats interfaces
 export interface DailyStats {
   date: string;
   cardsReviewed: number;
