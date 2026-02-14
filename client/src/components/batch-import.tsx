@@ -141,7 +141,10 @@ water;вода;Can I have some water?;essential liquid`;
         </CardContent>
       </Card>
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Import CSV file</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="deck-select">Target Deck *</Label>
             <Select value={selectedDeckId} onValueChange={setSelectedDeckId}>
