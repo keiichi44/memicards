@@ -138,9 +138,6 @@ water;вода;Can I have some water?;essential liquid`;
           <CardDescription className="text-sm text-[#000000]">2. Upload the spreadsheet or copy and paste it into the field above. If the decks aren't exporting correctly, try selecting another CSV separator.</CardDescription>
         </CardHeader>
         <CardContent>
-          <pre className="bg-muted p-4 rounded-md text-sm overflow-x-auto font-mono">
-            {sampleCSV}
-          </pre>
         </CardContent>
       </Card>
       <Card>
