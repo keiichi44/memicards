@@ -129,7 +129,7 @@ water;вода;Can I have some water?;essential liquid`;
       </div>
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">CSV Format</CardTitle>
+          <CardTitle className="text-lg">How to import</CardTitle>
           <CardDescription className="text-sm text-[#000000]">1. Prepare a spreadsheet with columns: word, translation, sentence (optional), association (optional). This will be the structure of your deck. Each row represents a card, E.g.: book | книга | The book is on the table | reading material</CardDescription>
           <a href="/csv-template.csv" download="csv-template.csv" className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-1" data-testid="link-download-csv-template">
             <Download className="h-3 w-3" />
