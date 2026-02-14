@@ -127,13 +127,10 @@ water;вода;Can I have some water?;essential liquid`;
           Import multiple cards at once from a CSV file or paste directly.
         </p>
       </div>
-      
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">CSV Format</CardTitle>
-          <CardDescription>
-            Your CSV should have columns: word, translation, sentence (optional), association (optional)
-          </CardDescription>
+          <CardDescription>1. Prepare a spreadsheet with the following columns: word, translation, sentence (optional), association (optional). Each row represents each card, e.g.:2. Save it as CSV</CardDescription>
         </CardHeader>
         <CardContent>
           <pre className="bg-muted p-4 rounded-md text-sm overflow-x-auto font-mono">
@@ -141,7 +138,6 @@ water;вода;Can I have some water?;essential liquid`;
           </pre>
         </CardContent>
       </Card>
-      
       <Card>
         <CardContent className="pt-6 space-y-6">
           <div className="space-y-2">
