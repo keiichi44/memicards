@@ -5,6 +5,11 @@ FROM base AS deps
 COPY package.json package-lock.json* ./
 RUN npm ci
 
+FROM deps AS migrator
+COPY drizzle.config.ts ./
+COPY shared ./shared
+COPY tsconfig.json ./
+
 FROM deps AS builder
 ARG VITE_CLERK_PUBLISHABLE_KEY
 ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY

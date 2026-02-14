@@ -37,7 +37,7 @@ services:
   migrate:
     build:
       context: .
-      target: deps
+      target: migrator
     command: npx drizzle-kit push
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-memicards}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-memicards}
