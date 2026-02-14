@@ -193,10 +193,18 @@ export async function registerRoutes(
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.errors });
       }
-      if (parsed.data.name && deck.projectId) {
-        const existingDecks = await storage.getDecks(userId, deck.projectId);
-        if (existingDecks.some(d => d.id !== deck.id && d.name.toLowerCase() === parsed.data.name!.toLowerCase())) {
-          return res.status(400).json({ error: "A deck with this name already exists in this project" });
+      const targetProjectId = parsed.data.projectId || deck.projectId;
+      if (parsed.data.projectId && parsed.data.projectId !== deck.projectId) {
+        const targetProject = await storage.getProject(parsed.data.projectId);
+        if (!targetProject || targetProject.userId !== userId) {
+          return res.status(404).json({ error: "Target project not found" });
+        }
+      }
+      if (targetProjectId) {
+        const deckName = parsed.data.name || deck.name;
+        const existingDecks = await storage.getDecks(userId, targetProjectId);
+        if (existingDecks.some(d => d.id !== deck.id && d.name.toLowerCase() === deckName.toLowerCase())) {
+          return res.status(400).json({ error: "A deck with this name already exists in the target project" });
         }
       }
       const updated = await storage.updateDeck(req.params.id as string, parsed.data);

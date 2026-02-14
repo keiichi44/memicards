@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2, Copy, ChevronDown, ArrowRightLeft } from "lucide-react";
+import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2, Copy, ChevronDown, ArrowRightLeft, FolderInput } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +53,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { exportCardsToCSV } from "@/lib/storage";
 import { isDueToday, isNewCard, getCardStatus, formatInterval } from "@/lib/sm2";
 import { cn } from "@/lib/utils";
+import { useProject } from "@/lib/project-context";
 
 interface CardListProps {
   deckId: string;
@@ -60,11 +61,15 @@ interface CardListProps {
 }
 
 export function CardList({ deckId, onBack }: CardListProps) {
+  const { activeProject, projects } = useProject();
   const [filter, setFilter] = useState<CardFilter["filter"]>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<FlashCard | null>(null);
   const [deletingCard, setDeletingCard] = useState<FlashCard | null>(null);
+  const [isMoveOpen, setIsMoveOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [moveError, setMoveError] = useState("");
   
   const [formData, setFormData] = useState({
     armenian: "",
@@ -137,6 +142,34 @@ export function CardList({ deckId, onBack }: CardListProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
       onBack();
+    },
+  });
+  
+  const parseMoveError = (error: Error): string => {
+    try {
+      const text = error.message.replace(/^\d+:\s*/, "");
+      const parsed = JSON.parse(text);
+      return parsed.error || "Failed to move deck";
+    } catch {
+      return "Failed to move deck";
+    }
+  };
+
+  const moveMutation = useMutation({
+    mutationFn: async (targetProjectId: string) => {
+      const res = await apiRequest("PATCH", `/api/decks/${deckId}`, { projectId: targetProjectId });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      setIsMoveOpen(false);
+      setSelectedProjectId(null);
+      setMoveError("");
+      onBack();
+    },
+    onError: (error: Error) => {
+      setMoveError(parseMoveError(error));
     },
   });
   
@@ -275,6 +308,19 @@ export function CardList({ deckId, onBack }: CardListProps) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setIsMoveOpen(true);
+              setSelectedProjectId(null);
+              setMoveError("");
+            }}
+            disabled={projects.length <= 1}
+            data-testid="button-move-deck"
+          >
+            <FolderInput className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Move</span>
+          </Button>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button data-testid="button-add-card">
@@ -549,6 +595,53 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isMoveOpen} onOpenChange={(open) => { if (!open) { setIsMoveOpen(false); setMoveError(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Move Deck</DialogTitle>
+            <DialogDescription>
+              Select a project to move "{deck?.name}" to. All cards and their progress will be preserved.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-4">
+            {projects
+              .filter(p => p.id !== activeProject?.id)
+              .map(project => (
+                <div
+                  key={project.id}
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-md cursor-pointer hover-elevate",
+                    selectedProjectId === project.id
+                      ? "bg-accent"
+                      : ""
+                  )}
+                  onClick={() => { setSelectedProjectId(project.id); setMoveError(""); }}
+                  data-testid={`move-project-${project.id}`}
+                >
+                  <FolderInput className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <span className="text-sm font-medium">{project.name}</span>
+                </div>
+              ))}
+            {moveError && (
+              <p className="text-sm text-destructive" data-testid="text-move-error">{moveError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMoveOpen(false)} data-testid="button-cancel-move">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => selectedProjectId && moveMutation.mutate(selectedProjectId)}
+              disabled={!selectedProjectId || moveMutation.isPending}
+              data-testid="button-confirm-move"
+            >
+              {moveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Move
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

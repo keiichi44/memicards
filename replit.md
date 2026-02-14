@@ -151,6 +151,8 @@ The app uses Clerk for authentication:
 - Cross-device synchronization support
 - Practice Mode for casual review without tracking
 - Improved batch import with configurable CSV separator
+- Added "Move deck" feature to move decks between projects (preserves cards, progress, and reviews)
+- Import page deck selector shows all decks across projects as "Deck Name (Project Name)"
 
 ## Card Active Toggle
 
