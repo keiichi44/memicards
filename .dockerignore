@@ -6,5 +6,4 @@ dist
 .env
 .env.*
 !.env.example
-attached_assets
 migrations
