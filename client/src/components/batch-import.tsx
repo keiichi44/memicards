@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Deck } from "@shared/schema";
+import type { Deck, Project } from "@shared/schema";
 import { parseCSV, importCards } from "@/lib/storage";
 import { queryClient } from "@/lib/queryClient";
 import { useProject } from "@/lib/project-context";
@@ -24,16 +24,26 @@ interface BatchImportProps {
 }
 
 export function BatchImport({ onComplete }: BatchImportProps) {
-  const { activeProject } = useProject();
-  const { data: decks = [] } = useQuery<Deck[]>({
-    queryKey: ["/api/decks", { projectId: activeProject?.id }],
+  const { activeProject, projects } = useProject();
+  const { data: allDecks = [] } = useQuery<Deck[]>({
+    queryKey: ["/api/decks"],
     queryFn: async () => {
-      const url = activeProject?.id ? `/api/decks?projectId=${activeProject.id}` : "/api/decks";
-      const res = await fetch(url);
+      const res = await fetch("/api/decks");
       if (!res.ok) throw new Error("Failed to fetch decks");
       return res.json();
     },
-    enabled: !!activeProject,
+  });
+
+  const projectMap = new Map<string, Project>();
+  for (const p of projects) {
+    projectMap.set(p.id, p);
+  }
+
+  const sortedDecks = [...allDecks].sort((a, b) => {
+    const aIsCurrent = a.projectId === activeProject?.id ? 0 : 1;
+    const bIsCurrent = b.projectId === activeProject?.id ? 0 : 1;
+    if (aIsCurrent !== bIsCurrent) return aIsCurrent - bIsCurrent;
+    return a.name.localeCompare(b.name);
   });
   
   const [selectedDeckId, setSelectedDeckId] = useState<string>("");
@@ -141,14 +151,14 @@ water;вода;Can I have some water?;essential liquid`;
                 <SelectValue placeholder="Select a deck" />
               </SelectTrigger>
               <SelectContent>
-                {decks.map((deck) => (
-                  <SelectItem key={deck.id} value={deck.id}>
-                    {deck.name}
+                {sortedDecks.map((deck) => (
+                  <SelectItem key={deck.id} value={deck.id} data-testid={`select-deck-${deck.id}`}>
+                    {deck.name} ({projectMap.get(deck.projectId || "")?.name || "No project"})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {decks.length === 0 && (
+            {sortedDecks.length === 0 && (
               <p className="text-sm text-muted-foreground">
                 No decks available. Create a deck first.
               </p>
