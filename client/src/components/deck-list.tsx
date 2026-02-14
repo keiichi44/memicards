@@ -159,7 +159,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-lg" data-testid="text-project-name">{activeProject?.name || "All Cards"}</h3>
+              <h3 className="font-semibold text-lg" data-testid="text-all-decks-review">All decks Review</h3>
               <p className="text-sm text-muted-foreground">
                 {totalDue} due today, {totalNew} new cards
               </p>

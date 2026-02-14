@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Plus, ChevronDown, Loader2 } from "lucide-react";
+import { Plus, ChevronDown, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -21,8 +15,14 @@ import { Label } from "@/components/ui/label";
 import { useProject } from "@/lib/project-context";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
+function truncateName(name: string, maxLength = 18): string {
+  if (name.length <= maxLength) return name;
+  return name.slice(0, maxLength) + "...";
+}
+
 export function ProjectSelector() {
   const { projects, activeProject, setActiveProjectId } = useProject();
+  const [isListOpen, setIsListOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
 
@@ -35,6 +35,7 @@ export function ProjectSelector() {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       setActiveProjectId(project.id);
       setIsCreateOpen(false);
+      setIsListOpen(false);
       setNewName("");
     },
   });
@@ -54,6 +55,7 @@ export function ProjectSelector() {
 
   const handleOpenCreate = () => {
     setNewName(getNextName());
+    setIsListOpen(false);
     setIsCreateOpen(true);
   };
 
@@ -62,35 +64,65 @@ export function ProjectSelector() {
     createMutation.mutate(newName.trim());
   };
 
+  const handleSelectProject = (projectId: string) => {
+    setActiveProjectId(projectId);
+    setIsListOpen(false);
+  };
+
   if (!activeProject) return null;
 
   return (
     <>
-      <div className="flex items-center gap-1">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="font-semibold text-base gap-1 px-2" data-testid="button-project-selector">
-              <span className="truncate max-w-[180px]">{activeProject.name}</span>
-              <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
+      <Button
+        variant="ghost"
+        className="font-semibold text-base gap-1 px-2"
+        onClick={() => setIsListOpen(true)}
+        data-testid="button-project-selector"
+      >
+        <span>{truncateName(activeProject.name)}</span>
+        <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
+      </Button>
+
+      <Dialog open={isListOpen} onOpenChange={setIsListOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select Project</DialogTitle>
+            <DialogDescription>
+              Switch between your learning projects.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1 py-2">
             {projects.map((project) => (
-              <DropdownMenuItem
+              <Button
                 key={project.id}
-                onClick={() => setActiveProjectId(project.id)}
+                variant="ghost"
+                className="w-full justify-start gap-2"
+                onClick={() => handleSelectProject(project.id)}
                 data-testid={`menu-project-${project.id}`}
-                className={project.id === activeProject.id ? "bg-accent" : ""}
               >
+                {project.id === activeProject.id && (
+                  <Check className="h-4 w-4 shrink-0" />
+                )}
+                {project.id !== activeProject.id && (
+                  <span className="w-4 shrink-0" />
+                )}
                 <span className="truncate">{project.name}</span>
-              </DropdownMenuItem>
+              </Button>
             ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button variant="ghost" size="icon" onClick={handleOpenCreate} data-testid="button-add-project">
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleOpenCreate}
+              data-testid="button-add-project"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Project
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
