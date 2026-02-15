@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Lightbulb, Play, Trash2, Edit2, RotateCcw, Loader2 } from "lucide-react";
+import { Onboarding } from "@/components/onboarding";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -53,7 +54,10 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const [newDeckLanguage, setNewDeckLanguage] = useState("");
   const [newDeckDescription, setNewDeckDescription] = useState("");
   const [deckError, setDeckError] = useState("");
-  
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const onboardingKey = activeProject ? `onboarding_done_${activeProject.id}` : null;
+
   const { data: decks = [], isLoading: decksLoading } = useQuery<DeckWithCount[]>({
     queryKey: ["/api/decks", { projectId: activeProject?.id }],
     queryFn: async () => {
@@ -76,6 +80,26 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
     enabled: !!activeProject,
   });
   
+  useEffect(() => {
+    if (!decksLoading && decks.length === 0 && onboardingKey) {
+      const done = localStorage.getItem(onboardingKey);
+      if (!done) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [decksLoading, decks.length, onboardingKey]);
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    if (onboardingKey) {
+      localStorage.setItem(onboardingKey, "true");
+    }
+  };
+
+  const handleOnboardingCreateDeck = () => {
+    setIsCreateOpen(true);
+  };
+
   const activeCards = allCards.filter(c => c.isActive);
   const totalDue = activeCards.filter(c => isDueToday(c)).length;
   const totalNew = activeCards.filter(c => isNewCard(c)).length;
@@ -455,6 +479,11 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <Onboarding
+        open={showOnboarding}
+        onComplete={handleOnboardingComplete}
+        onCreateDeck={handleOnboardingCreateDeck}
+      />
     </div>
   );
 }
