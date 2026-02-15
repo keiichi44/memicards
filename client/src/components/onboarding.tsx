@@ -22,7 +22,7 @@ const steps = [
   {
     title: "Organize Your Learning",
     description:
-      "Group your cards into projects and decks. A deck with 20\u201330 cards is ideal. Start with 20 new cards per week and build up from there.",
+      "Use projects to organise your learning tracks, e.g., \u201cChinese\u201d, \u201cSpanish\u201d, and set up a specific schedule for each.\n\nPlace 20-30 items into a single deck to smooth the learning curve.",
     image: "/images/onboarding-step2.svg",
   },
   {
