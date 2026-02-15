@@ -16,7 +16,7 @@ const steps = [
   {
     title: "Spaced Repetition",
     description:
-      "Learn vocabulary effectively with the proven SM-2 algorithm. Cards you find easy appear less often, while challenging ones come back sooner until you master them.",
+      "Your brain remembers things better when you review them at increasing intervals, right before you\u2019re about to forget them.\n\nThis app uses this method to figure out the optimal moment to quiz you.",
     image: "/images/onboarding-step1.svg",
   },
   {
@@ -102,7 +102,7 @@ export function Onboarding({ open, onComplete, onCreateDeck }: OnboardingProps) 
               {current.title}
             </h2>
             <p
-              className="text-sm leading-relaxed"
+              className="text-sm leading-relaxed text-left text-[#ffffffe6] whitespace-pre-line"
               style={{ color: "rgba(255,255,255,0.9)" }}
               data-testid="text-onboarding-description"
             >
