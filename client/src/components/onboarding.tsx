@@ -28,7 +28,7 @@ const steps = [
   {
     title: "Learn Anywhere",
     description:
-      "Study on desktop or mobile \u2014 your progress syncs automatically. Use Practice mode for casual review without affecting your schedule.",
+      "Learn on a desktop or a mobile and track your project progress in the stats dashboard. Practice intensively by flipping the deck or using Weekend mode.\n\nHappy learning!",
     image: "/images/onboarding-step3.svg",
   },
 ];
