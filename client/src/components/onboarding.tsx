@@ -82,7 +82,7 @@ export function Onboarding({ open, onComplete, onCreateDeck }: OnboardingProps) 
           </div>
 
           <div
-            className="w-full flex items-center justify-center rounded-md p-4 text-[#1f242e] bg-[#1c080800]"
+            className="w-full flex items-center justify-center rounded-md p-4 bg-[#ffffff00] text-[#1f242e]"
             style={{ backgroundColor: "rgba(255,255,255,0.15)", minHeight: 140 }}
           >
             <img
