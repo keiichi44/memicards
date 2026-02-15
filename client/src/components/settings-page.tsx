@@ -217,9 +217,6 @@ export function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Project Name</CardTitle>
-          <CardDescription>
-            Rename your project to keep things organized
-          </CardDescription>
         </CardHeader>
         <CardContent>
           {isRenamingProject ? (
