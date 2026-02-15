@@ -211,7 +211,6 @@ export function SettingsPage() {
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
         <h2 className="text-2xl font-semibold mb-2" data-testid="text-settings-title">Project Settings</h2>
-        <p className="text-muted-foreground">Configure preferences for "{activeProject?.name}"</p>
       </div>
       
       <Card>
