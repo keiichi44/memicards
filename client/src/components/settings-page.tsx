@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Save, Download, Loader2, Trash2 } from "lucide-react";
+import { Save, Download, Loader2, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,37 @@ export function SettingsPage() {
   const [, setLocation] = useLocation();
   const [isSaved, setIsSaved] = useState(true);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
+  const [projectName, setProjectName] = useState(activeProject?.name ?? "");
+  const [isRenamingProject, setIsRenamingProject] = useState(false);
+
+  useEffect(() => {
+    setProjectName(activeProject?.name ?? "");
+    setIsRenamingProject(false);
+  }, [activeProject?.name]);
+
+  const renameProjectMutation = useMutation({
+    mutationFn: async (name: string) => {
+      if (!activeProject?.id) throw new Error("No active project");
+      const res = await apiRequest("PATCH", `/api/projects/${activeProject.id}`, { name });
+      return res.json();
+    },
+    onSuccess: (_data, name) => {
+      setProjectName(name);
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      setIsRenamingProject(false);
+      toast({
+        title: "Project renamed",
+        description: "The project name has been updated.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Rename failed",
+        description: error.message || "Could not rename the project.",
+        variant: "destructive",
+      });
+    },
+  });
   
   const { data: settings, isLoading: settingsLoading } = useQuery<Settings>({
     queryKey: ["/api/settings", { projectId: activeProject?.id }],
@@ -183,6 +214,72 @@ export function SettingsPage() {
         <p className="text-muted-foreground">Configure preferences for "{activeProject?.name}"</p>
       </div>
       
+      <Card>
+        <CardHeader>
+          <CardTitle>Project Name</CardTitle>
+          <CardDescription>
+            Rename your project to keep things organized
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isRenamingProject ? (
+            <div className="flex items-center flex-wrap gap-2">
+              <Input
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Enter project name"
+                className="flex-1 min-w-[200px]"
+                data-testid="input-project-name"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && projectName.trim() && projectName !== activeProject?.name) {
+                    renameProjectMutation.mutate(projectName.trim());
+                  }
+                  if (e.key === "Escape") {
+                    setProjectName(activeProject?.name ?? "");
+                    setIsRenamingProject(false);
+                  }
+                }}
+              />
+              <Button
+                onClick={() => renameProjectMutation.mutate(projectName.trim())}
+                disabled={!projectName.trim() || projectName === activeProject?.name || renameProjectMutation.isPending}
+                data-testid="button-save-project-name"
+              >
+                {renameProjectMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                Save
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setProjectName(activeProject?.name ?? "");
+                  setIsRenamingProject(false);
+                }}
+                data-testid="button-cancel-rename"
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="text-sm font-medium" data-testid="text-project-name">{activeProject?.name}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setProjectName(activeProject?.name ?? "");
+                  setIsRenamingProject(true);
+                }}
+                data-testid="button-rename-project"
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Rename
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Weekend Learner Mode</CardTitle>
