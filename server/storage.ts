@@ -7,7 +7,7 @@ import {
   type Settings, type InsertSettings,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, lte, desc, isNull, inArray } from "drizzle-orm";
+import { eq, and, lte, desc, isNull, inArray, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export interface IStorage {
@@ -237,9 +237,9 @@ export class DatabaseStorage implements IStorage {
         and(eq(settings.userId, userId), eq(settings.projectId, projectId))
       );
       if (existingSettings) return existingSettings;
-      const nextId = Date.now();
+      const [{ maxId }] = await db.select({ maxId: sql<number>`coalesce(max(${settings.id}), 0)` }).from(settings);
       const [defaultSettings] = await db.insert(settings).values({
-        id: nextId,
+        id: maxId + 1,
         userId,
         projectId,
         weekendLearnerMode: false,
@@ -259,9 +259,9 @@ export class DatabaseStorage implements IStorage {
       const [claimed] = await db.update(settings).set({ userId }).where(eq(settings.id, oldSettings.id)).returning();
       return claimed;
     }
-    const nextId = Date.now();
+    const [{ maxId: maxId2 }] = await db.select({ maxId: sql<number>`coalesce(max(${settings.id}), 0)` }).from(settings);
     const [defaultSettings] = await db.insert(settings).values({
-      id: nextId,
+      id: maxId2 + 1,
       userId,
       weekendLearnerMode: false,
       weekdayNewCards: 5,
