@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star } from "lucide-react";
+import { Star, HelpCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,8 @@ import type { Card as FlashCard, QualityRating } from "@shared/schema";
 import { simpleQualityRatings } from "@shared/schema";
 import { cn } from "@/lib/utils";
 import { formatInterval, getCardStatus, getDaysUntilReview } from "@/lib/sm2";
+
+const HINT_STORAGE_KEY = "review_hint_seen";
 
 interface FlashcardProps {
   card: FlashCard;
@@ -21,6 +23,57 @@ interface FlashcardProps {
 export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, showAnswer, onFlip, practiceMode = false }: FlashcardProps) {
   const status = getCardStatus(card);
   const daysUntil = getDaysUntilReview(card);
+  const [showHint, setShowHint] = useState(() => !localStorage.getItem(HINT_STORAGE_KEY));
+
+  const handleDismissHint = () => {
+    localStorage.setItem(HINT_STORAGE_KEY, "true");
+    setShowHint(false);
+  };
+
+  const handleShowHint = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowHint(true);
+  };
+
+  if (showHint && !practiceMode) {
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        <Card className="min-h-[400px] flex flex-col" data-testid="card-review-hint">
+          <CardContent className="flex-1 flex flex-col p-6 gap-4">
+            <div className="flex justify-center">
+              <Button onClick={handleDismissHint} data-testid="button-got-it">
+                Got it
+              </Button>
+            </div>
+            <div className="flex-1 flex flex-col justify-center gap-4">
+              <h3 className="text-xl font-semibold text-center italic">How to use the card</h3>
+              <p className="text-muted-foreground text-center">
+                Try to recall what's on the reverse and hit the button:
+              </p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex gap-2">
+                  <span className="font-semibold text-destructive shrink-0">Again</span>
+                  <span className="text-muted-foreground">— Didn't remember. Will show up again soon.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-semibold shrink-0">Hard</span>
+                  <span className="text-muted-foreground">— Remembered, but with effort. Will appear more frequently.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-semibold shrink-0">Good</span>
+                  <span className="text-muted-foreground">— Remembered well. On track.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-semibold text-accent shrink-0">Easy</span>
+                  <span className="text-muted-foreground">— Remembered instantly. Will appear much later.</span>
+                </li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -41,24 +94,36 @@ export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, s
                 </span>
               )}
             </div>
-            {onToggleStar && !practiceMode && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleStar();
-                }}
-                data-testid="button-star-card"
-              >
-                <Star 
-                  className={cn(
-                    "h-5 w-5",
-                    card.isStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
-                  )} 
-                />
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {!practiceMode && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleShowHint}
+                  data-testid="button-show-hint"
+                >
+                  <HelpCircle className="h-5 w-5 text-muted-foreground" />
+                </Button>
+              )}
+              {onToggleStar && !practiceMode && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleStar();
+                  }}
+                  data-testid="button-star-card"
+                >
+                  <Star 
+                    className={cn(
+                      "h-5 w-5",
+                      card.isStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+                    )} 
+                  />
+                </Button>
+              )}
+            </div>
           </div>
           
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-6">
