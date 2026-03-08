@@ -114,7 +114,7 @@ export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, s
               key={quality}
               variant={color === "destructive" ? "destructive" : color === "accent" ? "default" : "secondary"}
               className={cn(
-                "min-w-[80px]",
+                "min-w-[60px] md:min-w-[80px]",
                 color === "accent" && "bg-accent text-accent-foreground"
               )}
               onClick={() => onRate(quality)}
