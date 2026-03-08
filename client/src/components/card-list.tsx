@@ -515,7 +515,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
       )}
       
       <Dialog open={!!editingCard} onOpenChange={(open) => { if (!open) { resetForm(); setEditingCard(null); } }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Edit Card</DialogTitle>
           </DialogHeader>
