@@ -43,6 +43,7 @@ export function ProjectSelector() {
       setIsListOpen(false);
       setNewName("");
       setCreateError("");
+      navigate("/");
     },
     onError: (error: Error) => {
       try {
@@ -77,8 +78,11 @@ export function ProjectSelector() {
 
   const handleCreate = () => {
     if (!newName.trim()) return;
-    setCreateError("");
-    createMutation.mutate(newName.trim());
+    const doCreate = () => {
+      setCreateError("");
+      createMutation.mutate(newName.trim());
+    };
+    requestNavigation(doCreate);
   };
 
   const handleSelectProject = (projectId: string) => {
