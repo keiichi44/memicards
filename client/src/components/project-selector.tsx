@@ -37,6 +37,9 @@ export function ProjectSelector() {
       return res.json();
     },
     onSuccess: (project) => {
+      queryClient.setQueryData(["/api/projects"], (old: any[] | undefined) => {
+        return old ? [project, ...old] : [project];
+      });
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       setActiveProjectId(project.id);
       setIsCreateOpen(false);
