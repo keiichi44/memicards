@@ -62,7 +62,7 @@ export function ReviewGuardProvider({ children }: { children: ReactNode }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Do you want to interrupt the learning session?</AlertDialogTitle>
             <AlertDialogDescription>
-              Your current progress in this session will be lost if you leave now.
+              Your progress has been saved, by the way.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
