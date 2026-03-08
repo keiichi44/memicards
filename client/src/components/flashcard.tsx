@@ -40,11 +40,6 @@ export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, s
       <div className="w-full max-w-2xl mx-auto">
         <Card className="min-h-[400px] flex flex-col" data-testid="card-review-hint">
           <CardContent className="flex-1 flex flex-col p-6 gap-4">
-            <div className="flex justify-center">
-              <Button onClick={handleDismissHint} data-testid="button-got-it">
-                Got it
-              </Button>
-            </div>
             <div className="flex-1 flex flex-col justify-center gap-4">
               <h3 className="text-xl font-semibold text-center italic">How to use the card</h3>
               <p className="text-muted-foreground text-center">
@@ -68,6 +63,11 @@ export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, s
                   <span className="text-muted-foreground">— Remembered instantly. Will appear much later.</span>
                 </li>
               </ul>
+            </div>
+            <div className="flex justify-center">
+              <Button onClick={handleDismissHint} data-testid="button-got-it">
+                Got it
+              </Button>
             </div>
           </CardContent>
         </Card>
