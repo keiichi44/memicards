@@ -23,6 +23,7 @@ import Progress from "@/pages/progress";
 import Settings from "@/pages/settings";
 import AuthPage from "@/pages/auth";
 import { useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -64,6 +65,23 @@ function Router() {
   );
 }
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
+function PageViewTracker() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.gtag?.("event", "page_view", {
+      page_path: location,
+      page_title: document.title,
+    });
+  }, [location]);
+  return null;
+}
+
 function DynamicTitle() {
   const { activeProject } = useProject();
   useEffect(() => {
@@ -83,6 +101,7 @@ function AuthenticatedApp() {
       <DataMigration />
       <ProjectProvider>
         <DynamicTitle />
+        <PageViewTracker />
         <ReviewGuardProvider>
         <SidebarProvider style={sidebarStyle as React.CSSProperties}>
           <div className="flex min-h-screen w-full">
