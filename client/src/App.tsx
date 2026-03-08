@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BottomNavBar } from "@/components/bottom-nav-bar";
-import { ProjectProvider } from "@/lib/project-context";
+import { ProjectProvider, useProject } from "@/lib/project-context";
 import { ReviewGuardProvider } from "@/lib/review-guard-context";
 import { ProjectSelector } from "@/components/project-selector";
 import { ClerkProvider, SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
@@ -64,6 +64,14 @@ function Router() {
   );
 }
 
+function DynamicTitle() {
+  const { activeProject } = useProject();
+  useEffect(() => {
+    document.title = activeProject ? `memicards: ${activeProject.name}` : "memicards";
+  }, [activeProject?.name]);
+  return null;
+}
+
 function AuthenticatedApp() {
   const sidebarStyle = {
     "--sidebar-width": "16rem",
@@ -74,6 +82,7 @@ function AuthenticatedApp() {
     <>
       <DataMigration />
       <ProjectProvider>
+        <DynamicTitle />
         <ReviewGuardProvider>
         <SidebarProvider style={sidebarStyle as React.CSSProperties}>
           <div className="flex min-h-screen w-full">
