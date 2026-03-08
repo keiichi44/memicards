@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BottomNavBar } from "@/components/bottom-nav-bar";
 import { ProjectProvider } from "@/lib/project-context";
+import { ReviewGuardProvider } from "@/lib/review-guard-context";
 import { ProjectSelector } from "@/components/project-selector";
 import { ClerkProvider, SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 import logoImg from "@assets/memi_1770479923554.png";
@@ -73,6 +74,7 @@ function AuthenticatedApp() {
     <>
       <DataMigration />
       <ProjectProvider>
+        <ReviewGuardProvider>
         <SidebarProvider style={sidebarStyle as React.CSSProperties}>
           <div className="flex min-h-screen w-full">
             <div className="hidden md:block">
@@ -107,6 +109,7 @@ function AuthenticatedApp() {
           </div>
           <BottomNavBar />
         </SidebarProvider>
+        </ReviewGuardProvider>
       </ProjectProvider>
     </>
   );

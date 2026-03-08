@@ -1,5 +1,6 @@
-import { useLocation, Link } from "wouter";
+import { useLocation } from "wouter";
 import { Layers, Upload, BarChart3, Settings } from "lucide-react";
+import { useReviewGuard } from "@/lib/review-guard-context";
 
 const navItems = [
   {
@@ -25,7 +26,8 @@ const navItems = [
 ];
 
 export function BottomNavBar() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
+  const { isInSession, requestNavigation } = useReviewGuard();
 
   return (
     <nav 
@@ -38,9 +40,17 @@ export function BottomNavBar() {
           const isActive = location === item.url;
           
           return (
-            <Link
+            <a
               key={item.title}
               href={item.url}
+              onClick={(e) => {
+                e.preventDefault();
+                if (isInSession) {
+                  requestNavigation(() => navigate(item.url));
+                } else {
+                  navigate(item.url);
+                }
+              }}
               data-testid={`nav-mobile-${item.title.toLowerCase()}`}
               aria-label={`Navigate to ${item.title}`}
               aria-current={isActive ? "page" : undefined}
@@ -52,7 +62,7 @@ export function BottomNavBar() {
             >
               <item.icon className={`h-5 w-5 ${isActive ? "text-primary" : ""}`} />
               <span className={`text-xs ${isActive ? "font-semibold" : "font-medium"}`}>{item.title}</span>
-            </Link>
+            </a>
           );
         })}
       </div>

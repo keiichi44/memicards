@@ -153,6 +153,7 @@ The app uses Clerk for authentication:
 - Improved batch import with configurable CSV separator
 - Added "Move deck" feature to move decks between projects (preserves cards, progress, and reviews)
 - Import page deck selector shows all decks across projects as "Deck Name (Project Name)"
+- Added navigation guard for review/practice sessions: confirmation dialog when switching projects or navigating to other sections during active sessions
 
 ## Card Active Toggle
 

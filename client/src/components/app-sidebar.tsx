@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ProjectSelector } from "@/components/project-selector";
 import { useProject } from "@/lib/project-context";
+import { useReviewGuard } from "@/lib/review-guard-context";
 
 const menuItems = [
   {
@@ -40,13 +41,21 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const { activeProject } = useProject();
+  const { isInSession, requestNavigation } = useReviewGuard();
   
+  const handleNavClick = (e: React.MouseEvent, url: string) => {
+    if (isInSession) {
+      e.preventDefault();
+      requestNavigation(() => navigate(url));
+    }
+  };
+
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3" onClick={(e) => handleNavClick(e, "/")}>
           <img src={logoImg} alt="memicards" className="w-10 h-10 rounded-md object-cover" />
           <div>
             <h1 className="font-semibold text-lg leading-tight">memicards</h1>
@@ -70,7 +79,7 @@ export function AppSidebar() {
                       isActive={isActive}
                       data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                     >
-                      <Link href={item.url}>
+                      <Link href={item.url} onClick={(e) => handleNavClick(e, item.url)}>
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
                       </Link>

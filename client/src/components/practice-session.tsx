@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Flashcard } from "@/components/flashcard";
 import type { Card as FlashCard, Deck } from "@shared/schema";
 import { useProject } from "@/lib/project-context";
+import { useReviewGuard } from "@/lib/review-guard-context";
 
 interface PracticeSessionProps {
   deckId?: string;
@@ -23,6 +24,7 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
   const { activeProject } = useProject();
+  const { setInSession } = useReviewGuard();
   const [shuffledCards, setShuffledCards] = useState<FlashCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -50,6 +52,15 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
     queryKey: ["/api/decks", deckId],
     enabled: !!deckId,
   });
+
+  const isActiveSession = shuffledCards.length > 0;
+
+  useEffect(() => {
+    setInSession(isActiveSession);
+    return () => {
+      setInSession(false);
+    };
+  }, [isActiveSession, setInSession]);
 
   const loadCards = useCallback(() => {
     // Only include active cards in practice sessions

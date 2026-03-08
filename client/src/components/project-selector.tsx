@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Plus, ChevronDown, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProject } from "@/lib/project-context";
+import { useReviewGuard } from "@/lib/review-guard-context";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
 function truncateName(name: string, maxLength = 18): string {
@@ -22,6 +24,8 @@ function truncateName(name: string, maxLength = 18): string {
 
 export function ProjectSelector() {
   const { projects, activeProject, setActiveProjectId } = useProject();
+  const { requestNavigation } = useReviewGuard();
+  const [location, navigate] = useLocation();
   const [isListOpen, setIsListOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -78,8 +82,19 @@ export function ProjectSelector() {
   };
 
   const handleSelectProject = (projectId: string) => {
-    setActiveProjectId(projectId);
-    setIsListOpen(false);
+    if (projectId === activeProject?.id) {
+      setIsListOpen(false);
+      return;
+    }
+    const isOnSubPage = location.startsWith("/deck/") || location.startsWith("/review") || location.startsWith("/practice");
+    const doSwitch = () => {
+      setActiveProjectId(projectId);
+      setIsListOpen(false);
+      if (isOnSubPage) {
+        navigate("/");
+      }
+    };
+    requestNavigation(doSwitch);
   };
 
   if (!activeProject) return null;

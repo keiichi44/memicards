@@ -9,6 +9,7 @@ import type { Card as FlashCard, Deck, QualityRating, Settings } from "@shared/s
 import { isDueToday, isNewCard, sortCardsByPriority, isWeekend } from "@/lib/sm2";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useProject } from "@/lib/project-context";
+import { useReviewGuard } from "@/lib/review-guard-context";
 
 interface ReviewSessionProps {
   deckId?: string;
@@ -18,6 +19,7 @@ interface ReviewSessionProps {
 
 export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps) {
   const { activeProject } = useProject();
+  const { setInSession } = useReviewGuard();
   const [queue, setQueue] = useState<FlashCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -79,6 +81,15 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
     },
   });
   
+  const isActiveSession = queue.length > 0 && currentIndex < queue.length;
+
+  useEffect(() => {
+    setInSession(isActiveSession);
+    return () => {
+      setInSession(false);
+    };
+  }, [isActiveSession, setInSession]);
+
   const loadReviewQueue = useCallback(() => {
     if (!settings || allCards.length === 0) return;
     
