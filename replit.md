@@ -156,6 +156,7 @@ The app uses Clerk for authentication:
 - Added navigation guard for review/practice sessions: confirmation dialog when switching projects or navigating to other sections during active sessions
 - Added Google Analytics (gtag.js, Measurement ID: G-7JJN79B86) with SPA page view tracking
 - Added review hint card: onboarding overlay explaining rating buttons on first review, with "?" icon to re-show
+- Added Decks Library: curated CSV decks in /Library folder, browsable + importable via Import page tab and home page tips button
 
 ## Card Active Toggle
 

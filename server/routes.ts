@@ -1,5 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import { promises as fs } from "fs";
+import path from "path";
 import { storage } from "./storage";
 import { insertDeckSchema, insertCardSchema, batchImportSchema, insertSettingsSchema, updateDeckSchema, updateCardSchema, duplicateDeckSchema, insertProjectSchema, updateProjectSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
@@ -674,6 +676,107 @@ export async function registerRoutes(
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch weekly stats" });
+    }
+  });
+
+  // === LIBRARY ===
+  const LIBRARY_DIR = path.resolve(process.cwd(), "Library");
+
+  function parseLibraryFilename(filename: string): { name: string; language: string } {
+    const base = filename.replace(/\.csv$/i, "");
+    const dashIdx = base.indexOf("-");
+    if (dashIdx === -1) {
+      return { language: "Unknown", name: base.replace(/_/g, " ") };
+    }
+    const langRaw = base.slice(0, dashIdx);
+    const nameRaw = base.slice(dashIdx + 1);
+    const language = langRaw.charAt(0).toUpperCase() + langRaw.slice(1);
+    const name = nameRaw.replace(/_/g, " ");
+    return { language, name };
+  }
+
+  function parseLibraryCSV(content: string): Array<{ word: string; translation: string; sentence: string; association: string }> {
+    const lines = content.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) return [];
+    const sep = lines[0].includes(";") ? ";" : ",";
+    const header = lines[0].split(sep).map(h => h.trim().toLowerCase());
+    const wordIdx = header.findIndex(h => h === "word" || h === "armenian");
+    const transIdx = header.findIndex(h => h === "translation" || h === "russian");
+    const sentIdx = header.findIndex(h => h === "sentence");
+    const assocIdx = header.findIndex(h => h === "association");
+    if (wordIdx === -1 || transIdx === -1) return [];
+    return lines.slice(1).map(line => {
+      const cols = line.split(sep);
+      return {
+        word: (cols[wordIdx] || "").trim(),
+        translation: (cols[transIdx] || "").trim(),
+        sentence: sentIdx !== -1 ? (cols[sentIdx] || "").trim() : "",
+        association: assocIdx !== -1 ? (cols[assocIdx] || "").trim() : "",
+      };
+    }).filter(c => c.word && c.translation);
+  }
+
+  app.get("/api/library", async (_req, res) => {
+    try {
+      const files = await fs.readdir(LIBRARY_DIR);
+      const csvFiles = files.filter(f => f.toLowerCase().endsWith(".csv"));
+      const decks = await Promise.all(csvFiles.map(async (filename) => {
+        const content = await fs.readFile(path.join(LIBRARY_DIR, filename), "utf-8");
+        const cards = parseLibraryCSV(content);
+        const { name, language } = parseLibraryFilename(filename);
+        return { filename, name, language, cardCount: cards.length };
+      }));
+      res.json(decks);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to read library" });
+    }
+  });
+
+  app.get("/api/library/:filename/cards", async (req, res) => {
+    try {
+      const { filename } = req.params;
+      if (!filename.toLowerCase().endsWith(".csv") || filename.includes("..") || filename.includes("/")) {
+        return res.status(400).json({ error: "Invalid filename" });
+      }
+      const content = await fs.readFile(path.join(LIBRARY_DIR, filename), "utf-8");
+      const cards = parseLibraryCSV(content);
+      const { name, language } = parseLibraryFilename(filename);
+      res.json({ name, language, cards });
+    } catch (error) {
+      res.status(404).json({ error: "Deck not found" });
+    }
+  });
+
+  app.post("/api/library/:filename/import", requireAuth(), async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { filename } = req.params;
+      const { projectId } = req.body;
+      if (!filename.toLowerCase().endsWith(".csv") || filename.includes("..") || filename.includes("/")) {
+        return res.status(400).json({ error: "Invalid filename" });
+      }
+      if (projectId) {
+        const owns = await verifyProjectOwnership(projectId, userId);
+        if (!owns) return res.status(403).json({ error: "Forbidden" });
+      }
+      const content = await fs.readFile(path.join(LIBRARY_DIR, filename), "utf-8");
+      const cards = parseLibraryCSV(content);
+      const { name, language } = parseLibraryFilename(filename);
+      const deck = await storage.createDeck({ name, language, description: "", userId, projectId: projectId || null });
+      for (const card of cards) {
+        await storage.createCard({
+          deckId: deck.id,
+          armenian: card.word,
+          russian: card.translation,
+          sentence: card.sentence,
+          association: card.association,
+          isStarred: false,
+          isActive: true,
+        });
+      }
+      res.json({ deck, cardCount: cards.length });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to import library deck" });
     }
   });
 

@@ -22,6 +22,7 @@ import Import from "@/pages/import";
 import Progress from "@/pages/progress";
 import Settings from "@/pages/settings";
 import AuthPage from "@/pages/auth";
+import LibraryDeckPage from "@/pages/library-deck";
 import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -60,6 +61,7 @@ function Router() {
       <Route path="/import" component={Import} />
       <Route path="/progress" component={Progress} />
       <Route path="/settings" component={Settings} />
+      <Route path="/library/:filename" component={LibraryDeckPage} />
       <Route component={NotFound} />
     </Switch>
   );

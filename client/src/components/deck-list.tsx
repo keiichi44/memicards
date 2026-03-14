@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Lightbulb, Play, Trash2, Edit2, RotateCcw, Loader2 } from "lucide-react";
+import { Plus, Lightbulb, Play, Trash2, Edit2, RotateCcw, Loader2, BookOpen } from "lucide-react";
 import { Onboarding } from "@/components/onboarding";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +31,7 @@ import type { Deck, Card as FlashCard } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isDueToday, isNewCard } from "@/lib/sm2";
 import { useProject } from "@/lib/project-context";
+import { useLocation } from "wouter";
 
 interface DeckWithCount extends Deck {
   cardCount: number;
@@ -47,6 +48,7 @@ interface DeckListProps {
 
 export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckListProps) {
   const { activeProject } = useProject();
+  const [, setLocation] = useLocation();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
@@ -399,10 +401,16 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                 <li data-testid="text-tip-4">Use Weekend mode for intensive learning.</li>
                 <li data-testid="text-tip-5">Import your cards via CSV mapping or enter them manually.</li>
               </ul>
-              <Button className="mt-4" onClick={() => setIsCreateOpen(true)} data-testid="button-create-first-deck">
-                <Plus className="h-4 w-4 mr-2" />
-                Create a deck
-              </Button>
+              <div className="mt-4 flex gap-2 flex-wrap">
+                <Button onClick={() => setIsCreateOpen(true)} data-testid="button-create-first-deck">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create a deck
+                </Button>
+                <Button variant="outline" onClick={() => setLocation("/import?tab=library")} data-testid="button-decks-library">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Decks Library
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
