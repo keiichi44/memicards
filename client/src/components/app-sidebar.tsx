@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { Upload, BarChart3, Settings, Layers } from "lucide-react";
+import { Upload, BarChart3, Settings, Layers, Mail } from "lucide-react";
 import logoImg from "@assets/memi_1770479923554.png";
 import {
   Sidebar,
@@ -92,9 +92,14 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="p-4">
-        <p className="text-xs text-muted-foreground text-center">
-          Powered by SM-2
-        </p>
+        <a
+          href="mailto:feedback@memicards.org"
+          className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          data-testid="link-send-feedback"
+        >
+          <Mail className="h-3.5 w-3.5" />
+          Send feedback
+        </a>
       </SidebarFooter>
     </Sidebar>
   );
