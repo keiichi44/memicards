@@ -680,9 +680,7 @@ export async function registerRoutes(
   });
 
   // === LIBRARY ===
-  const LIBRARY_DIR = process.env.NODE_ENV === "production"
-    ? path.join(__dirname, "../public/Library")
-    : path.resolve(process.cwd(), "client/public/Library");
+  const LIBRARY_DIR = path.resolve(process.cwd(), "Library");
 
   function parseLibraryFilename(filename: string): { name: string; language: string } {
     const base = filename.replace(/\.csv$/i, "");
