@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Lightbulb, Play, Trash2, Edit2, RotateCcw, Loader2, BookOpen } from "lucide-react";
 import { Onboarding } from "@/components/onboarding";
+import { AddDeckPicker } from "@/components/add-deck-picker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -49,6 +49,7 @@ interface DeckListProps {
 export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckListProps) {
   const { activeProject } = useProject();
   const [, setLocation] = useLocation();
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
@@ -99,7 +100,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   };
 
   const handleOnboardingCreateDeck = () => {
-    setIsCreateOpen(true);
+    setIsPickerOpen(true);
   };
 
   const activeCards = allCards.filter(c => c.isActive);
@@ -236,71 +237,69 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       </Card>
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-xl font-semibold">Your Decks</h2>
-        <Dialog open={isCreateOpen} onOpenChange={(open) => { setIsCreateOpen(open); if (!open) setDeckError(""); }}>
-          <DialogTrigger asChild>
-            <Button data-testid="button-create-deck">
-              <Plus className="h-4 w-4 mr-2" />
-              New Deck
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create New Deck</DialogTitle>
-              <DialogDescription>
-                Create a new deck to organize your flashcards.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="deck-name">Name *</Label>
-                <Input
-                  id="deck-name"
-                  placeholder="e.g., Week 2"
-                  value={newDeckName}
-                  onChange={(e) => { setNewDeckName(e.target.value); setDeckError(""); }}
-                  data-testid="input-deck-name"
-                />
-                {deckError && (
-                  <p className="text-sm text-destructive" data-testid="text-deck-create-error">{deckError}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="deck-language">Language *</Label>
-                <Input
-                  id="deck-language"
-                  placeholder="e.g., Spanish, Japanese, Armenian"
-                  value={newDeckLanguage}
-                  onChange={(e) => setNewDeckLanguage(e.target.value)}
-                  data-testid="input-deck-language"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="deck-description">Description (optional)</Label>
-                <Textarea
-                  id="deck-description"
-                  placeholder="What's in this deck?"
-                  value={newDeckDescription}
-                  onChange={(e) => setNewDeckDescription(e.target.value)}
-                  data-testid="input-deck-description"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleCreateDeck} 
-                disabled={!newDeckName.trim() || !newDeckLanguage.trim() || createMutation.isPending}
-                data-testid="button-confirm-create-deck"
-              >
-                {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Create Deck
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsPickerOpen(true)} data-testid="button-create-deck">
+          <Plus className="h-4 w-4 mr-2" />
+          New Deck
+        </Button>
       </div>
+      <Dialog open={isCreateOpen} onOpenChange={(open) => { setIsCreateOpen(open); if (!open) setDeckError(""); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Deck</DialogTitle>
+            <DialogDescription>
+              Create a new deck to organize your flashcards.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="deck-name">Name *</Label>
+              <Input
+                id="deck-name"
+                placeholder="e.g., Week 2"
+                value={newDeckName}
+                onChange={(e) => { setNewDeckName(e.target.value); setDeckError(""); }}
+                data-testid="input-deck-name"
+              />
+              {deckError && (
+                <p className="text-sm text-destructive" data-testid="text-deck-create-error">{deckError}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="deck-language">Language *</Label>
+              <Input
+                id="deck-language"
+                placeholder="e.g., Spanish, Japanese, Armenian"
+                value={newDeckLanguage}
+                onChange={(e) => setNewDeckLanguage(e.target.value)}
+                data-testid="input-deck-language"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="deck-description">Description (optional)</Label>
+              <Textarea
+                id="deck-description"
+                placeholder="What's in this deck?"
+                value={newDeckDescription}
+                onChange={(e) => setNewDeckDescription(e.target.value)}
+                data-testid="input-deck-description"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleCreateDeck} 
+              disabled={!newDeckName.trim() || !newDeckLanguage.trim() || createMutation.isPending}
+              data-testid="button-confirm-create-deck"
+            >
+              {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Create Deck
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {decks.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {decks.map((deck) => {
@@ -402,9 +401,9 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                 <li data-testid="text-tip-5">Import your cards via CSV mapping or enter them manually.</li>
               </ul>
               <div className="mt-4 flex gap-2 flex-wrap">
-                <Button onClick={() => setIsCreateOpen(true)} data-testid="button-create-first-deck">
+                <Button onClick={() => setIsPickerOpen(true)} data-testid="button-create-first-deck">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create a deck
+                  Add a deck
                 </Button>
                 <Button variant="outline" onClick={() => setLocation("/import?tab=library")} data-testid="button-decks-library">
                   <BookOpen className="h-4 w-4 mr-2" />
@@ -491,6 +490,11 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
         open={showOnboarding}
         onComplete={handleOnboardingComplete}
         onCreateDeck={handleOnboardingCreateDeck}
+      />
+      <AddDeckPicker
+        open={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        onCreateDeck={() => setIsCreateOpen(true)}
       />
     </div>
   );
