@@ -1,0 +1,61 @@
+word;translation;sentence;association
+backlog;список невыполненных задач;We have a huge backlog of feature requests that needs to be prioritized.;BACK — задачи сзади, которые тебя догоняют
+sprint;спринт (короткий рабочий цикл);The team will deliver the new dashboard by the end of this sprint.;бег на короткую дистанцию — быстро и конкретно
+milestone;контрольная точка / веха;We hit a major milestone by shipping the beta version on time.;MILE + STONE — камень на дороге, отмечающий пройденный путь
+deliverable;результат работы / то, что нужно сдать;The main deliverable for this quarter is the updated API documentation.;DELIVER — то, что нужно «доставить» заказчику
+roadmap;план развития продукта;The product roadmap shows our priorities for the next 12 months.;ROAD + MAP — карта дороги, по которой идёт продукт
+bottleneck;узкое место / затор;The database query is the bottleneck slowing down the entire pipeline.;бутылочное горлышко — самое узкое место
+rollout;запуск / поэтапное развёртывание;The feature rollout will happen gradually — first 5%, then 25%, then 100%.;ROLL OUT — раскатываем по пользователям
+iterate;итерировать / улучшать постепенно;We iterate on the design based on user feedback after each release.;iter — снова и снова, шаг за шагом
+pivot;кардинально изменить направление;After poor retention numbers, the team decided to pivot to a B2B model.;поворот на месте — резко меняем курс
+scope creep;постепенное расширение задачи сверх плана;Scope creep added three weeks to the project timeline without anyone noticing.;CREEP — незаметно вползает в проект
+sign-off;официальное одобрение / согласование;We need sign-off from legal before releasing the new privacy policy.;подпись внизу документа — финальный OK
+kickoff;стартовое совещание / начало проекта;The project kickoff is scheduled for Monday at 10 AM.;KICK OFF — футбольный начальный удар, старт игры
+stakeholder;заинтересованная сторона;We need to align all stakeholders before making a final decision.;STAKE — ставка, HOLDER — тот, у кого есть интерес
+bandwidth;пропускная способность / наличие времени;I don't have the bandwidth to take on another project right now.;ширина канала — сколько «влезает» в тебя сейчас
+sync;синхронизироваться / короткое совещание;Let's sync tomorrow morning to go over the deployment plan.;синхронизация часов — все на одной волне
+alignment;согласованность / единое понимание;We need better alignment between the product and engineering teams.;выравнивание — все смотрят в одну сторону
+escalate;эскалировать / передать на уровень выше;If the issue isn't resolved by Friday, we'll need to escalate it to the VP.;шкала вверх — поднимаем проблему выше
+loop in;подключить кого-то к обсуждению;Can you loop in the design team on this thread?;включить в петлю (loop) переписки
+pushback;возражение / сопротивление;We got a lot of pushback from engineers on the new deployment process.;PUSH BACK — толкают назад, не соглашаются
+takeaway;вывод / ключевая мысль после встречи;The main takeaway from the meeting is that we need to ship faster.;что «забираешь» с собой после встречи
+follow-up;дальнейшие действия / повторный контакт;I'll send a follow-up email with the summary and next steps.;следующий шаг после первого контакта
+ownership;ответственность / владение задачей;There's no clear ownership of the onboarding flow — nobody knows who's responsible.;OWNER — хозяин задачи, который за неё отвечает
+accountability;подотчётность / ответственность за результат;We need to build a culture of accountability where people own their mistakes.;ACCOUNT — держать счёт своим действиям
+leverage;использовать с выгодой / давать преимущество;We can leverage our existing infrastructure to speed up the new feature.;рычаг — небольшое усилие даёт большой эффект
+traction;результаты роста / первые успехи;The app is gaining traction — 10,000 new signups in the last two weeks.;TRACTION — сцепление с дорогой, едем вперёд
+churn;отток пользователей;High churn rate means users sign up but don't stick around.;CHURN — масло взбивают и выбрасывают — пользователи уходят
+adoption;принятие / внедрение (продукта);The adoption rate for the new feature exceeded our expectations.;ADOPT — принять, как ребёнка в семью — пользователи «берут» продукт
+pain point;болевая точка / проблема пользователя;The main pain point we're solving is the slow onboarding experience.;точка боли — место где жмёт у пользователя
+use case;сценарий использования;The primary use case for this feature is bulk data import by enterprise clients.;конкретный случай применения продукта
+edge case;нестандартный / граничный случай;The bug only happens in an edge case when the user has no internet connection.;крайний случай — живёт на краю нормальной логики
+benchmark;точка отсчёта / эталон для сравнения;Let's benchmark our performance against the industry standard before optimizing.;скамья с меткой — отмечаем, от чего отталкиваемся
+throughput;пропускная способность / объём обработки;After the optimization, the system's throughput increased by 40%.;сколько «проходит через» систему за единицу времени
+turnover;текучка кадров; оборот (бизнес);High employee turnover is a sign of deeper cultural problems.;TURN OVER — люди «переворачиваются» и уходят
+overhead;накладные расходы / лишняя нагрузка;Adding more microservices increases operational overhead significantly.;над головой — лишний груз, который тянет вниз
+runway;запас времени / денег до исчерпания ресурсов;At our current burn rate, we have 8 months of runway left.;взлётная полоса — сколько есть до взлёта или краша
+trade-off;компромисс / обмен одного на другое;There's a classic trade-off between speed and code quality.;отдаёшь одно, получаешь другое — торговый обмен
+legacy code;устаревший код, который всё ещё работает;Nobody wants to touch the legacy code because it's undocumented and fragile.;LEGACY — наследство от прошлых разработчиков
+refactor;рефакторить / улучшать код без изменения функций;We need to refactor the authentication module before adding new features.;RE + FACTOR — переделываем структуру, не меняя результат
+deploy;разворачивать / выпускать в продакшн;We deploy to production every Friday after QA sign-off.;DEPLOY — военные разворачивают войска — мы разворачиваем код
+dependency;зависимость (от библиотеки / сервиса);A critical dependency was deprecated, breaking half our pipeline.;зависишь от чего-то — если сломается оно, сломаешься ты
+workaround;обходное решение / временный фикс;We found a workaround, but the root cause still needs to be fixed.;обходим проблему стороной — не лечим, а обходим
+regression;регрессия / поломка ранее работавшего функционала;The latest release introduced a regression in the payment flow.;регресс — шаг назад, что-то сломалось что работало
+sandbox;изолированная среда для тестов;Test your changes in the sandbox environment before pushing to staging.;ящик с песком — играем, не ломая настоящее
+codebase;кодовая база / весь код проекта;The codebase has grown significantly and needs better documentation.;BASE — фундамент из кода, на котором стоит всё
+downtime;время простоя / недоступности системы;We had two hours of unexpected downtime last night due to a database failure.;DOWN + TIME — время, когда всё упало вниз
+latency;задержка / время отклика системы;High latency in the API responses is affecting the user experience.;LATE + ency — опаздывает, тормозит
+throttle;ограничивать / снижать скорость запросов;The API throttles requests after 100 calls per minute.;газ вниз — намеренно замедляем поток
+onboarding;процесс адаптации нового пользователя / сотрудника;A smooth onboarding experience dramatically improves 30-day retention.;ON BOARD — заходишь на борт, осваиваешься
+baseline;исходный уровень / точка отсчёта;Before making changes, establish a baseline so you can measure improvement.;BASE LINE — базовая линия, от которой всё меряем
+outlier;аномальное значение / исключение из тренда;There's one outlier in the dataset that's skewing the average significantly.;OUT + LIER — лежит снаружи от всех остальных
+cohort;когорта / группа пользователей с общим признаком;Users from the January cohort have significantly higher retention than February.;римская когорта — группа, объединённая общим признаком
+funnel;воронка (маркетинговая или продуктовая);Most users drop off at the third step in the conversion funnel.;воронка — сверху много, снизу мало
+conversion rate;конверсия / доля пользователей, совершивших целевое действие;Our conversion rate from free trial to paid plan is 8%.;CONVERT — превращаем посетителей в покупателей
+retention;удержание пользователей;Improving day-7 retention is our top priority this quarter.;RE + TAIN — держим снова и снова, не отпускаем
+headcount;количество сотрудников в штате;The team is requesting additional headcount for the new infrastructure project.;считаем головы — сколько людей в команде
+seniority;уровень опыта / старшинство в компании;Compensation is tied to both performance and seniority at this company.;SENIOR — старший, опытный, выше по уровню
+onsite;очный / в офисе (о встрече или работе);The final round of interviews is an onsite at the San Francisco office.;ON SITE — на месте, физически там
+offboarding;процесс увольнения / выхода сотрудника;Proper offboarding ensures knowledge transfer and access revocation.;противоположность onboarding — выходишь с борта
+ramp-up;период разгона / набора скорости (нового сотрудника или продукта);New engineers typically have a 30–60 day ramp-up period before full productivity.;RAMP — разгонная дорожка, набираем скорость
+culture fit;соответствие корпоративной культуре;Culture fit matters, but be careful not to use it as a proxy for bias.;FIT — влезает ли человек в культуру компании
