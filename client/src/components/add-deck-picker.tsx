@@ -27,7 +27,7 @@ export function AddDeckPicker({ open, onClose, onCreateDeck }: AddDeckPickerProp
 
   const handleChooseLibrary = () => {
     onClose();
-    setLocation("/import?tab=library");
+    setLocation("/import/lib");
   };
 
   return (

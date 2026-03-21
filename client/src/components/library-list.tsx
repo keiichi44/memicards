@@ -74,47 +74,61 @@ export function LibraryList() {
     );
   }
 
+  const languageMap = new Map<string, LibraryDeck[]>();
+  for (const deck of decks) {
+    const lang = deck.language || "Other";
+    if (!languageMap.has(lang)) languageMap.set(lang, []);
+    languageMap.get(lang)!.push(deck);
+  }
+  const sortedLanguages = [...languageMap.keys()].sort((a, b) => a.localeCompare(b));
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-semibold mb-2">Decks Library</h2>
         <p className="text-muted-foreground">
           Browse and import ready-made decks into your project.
         </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {decks.map((deck) => (
-          <Card
-            key={deck.filename}
-            className="hover-elevate cursor-pointer"
-            onClick={() => setLocation(`/library/${encodeURIComponent(deck.filename)}`)}
-            data-testid={`card-library-deck-${deck.filename}`}
-          >
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-lg">{deck.name}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Badge variant="outline">{deck.cardCount} cards</Badge>
-                <Badge variant="secondary">{deck.language}</Badge>
-              </div>
-              <Button
-                className="w-full"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setImportingDeck(deck);
-                }}
-                data-testid={`button-import-library-deck-${deck.filename}`}
+
+      {sortedLanguages.map((language) => (
+        <div key={language} className="space-y-3">
+          <h3 className="text-lg font-semibold border-b pb-1">{language}</h3>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {languageMap.get(language)!.map((deck) => (
+              <Card
+                key={deck.filename}
+                className="hover-elevate cursor-pointer"
+                onClick={() => setLocation(`/library/${encodeURIComponent(deck.filename)}`)}
+                data-testid={`card-library-deck-${deck.filename}`}
               >
-                <Download className="h-4 w-4 mr-2" />
-                Import
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-lg">{deck.name}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <Badge variant="outline">{deck.cardCount} cards</Badge>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImportingDeck(deck);
+                    }}
+                    data-testid={`button-import-library-deck-${deck.filename}`}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Import
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      ))}
 
       <AlertDialog open={!!importingDeck} onOpenChange={(open) => { if (!open) setImportingDeck(null); }}>
         <AlertDialogContent>

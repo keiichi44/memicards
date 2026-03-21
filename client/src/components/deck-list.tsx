@@ -405,7 +405,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                   <Plus className="h-4 w-4 mr-2" />
                   Add a deck
                 </Button>
-                <Button variant="outline" onClick={() => setLocation("/import?tab=library")} data-testid="button-decks-library">
+                <Button variant="outline" onClick={() => setLocation("/import/lib")} data-testid="button-decks-library">
                   <BookOpen className="h-4 w-4 mr-2" />
                   Decks Library
                 </Button>

@@ -58,6 +58,7 @@ function Router() {
       <Route path="/deck/:id/practice" component={PracticePage} />
       <Route path="/review" component={ReviewPage} />
       <Route path="/practice" component={PracticePage} />
+      <Route path="/import/lib" component={Import} />
       <Route path="/import" component={Import} />
       <Route path="/progress" component={Progress} />
       <Route path="/settings" component={Settings} />

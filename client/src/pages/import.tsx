@@ -1,28 +1,11 @@
-import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { BatchImport } from "@/components/batch-import";
 import { LibraryList } from "@/components/library-list";
 import { Button } from "@/components/ui/button";
 
-type Tab = "batch" | "library";
-
 export default function Import() {
-  const [, setLocation] = useLocation();
-  const [tab, setTab] = useState<Tab>(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("tab") === "library" ? "library" : "batch";
-    }
-    return "batch";
-  });
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const urlTab = params.get("tab") === "library" ? "library" : "batch";
-    if (urlTab !== tab) {
-      setTab(urlTab);
-    }
-  }, []);
+  const [location, setLocation] = useLocation();
+  const tab = location === "/import/lib" ? "library" : "batch";
 
   return (
     <div className="p-6 space-y-6">
@@ -30,7 +13,7 @@ export default function Import() {
         <Button
           variant={tab === "batch" ? "default" : "ghost"}
           size="sm"
-          onClick={() => setTab("batch")}
+          onClick={() => setLocation("/import")}
           data-testid="button-tab-batch-import"
         >
           Batch Import
@@ -38,7 +21,7 @@ export default function Import() {
         <Button
           variant={tab === "library" ? "default" : "ghost"}
           size="sm"
-          onClick={() => setTab("library")}
+          onClick={() => setLocation("/import/lib")}
           data-testid="button-tab-decks-library"
         >
           Decks Library

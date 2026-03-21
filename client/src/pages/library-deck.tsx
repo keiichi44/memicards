@@ -90,7 +90,7 @@ export default function LibraryDeckPage() {
       <div className="p-6 flex flex-col items-center gap-4 text-muted-foreground">
         <BookOpen className="h-12 w-12" />
         <p>Deck not found.</p>
-        <Button variant="outline" onClick={() => setLocation("/import?tab=library")}>
+        <Button variant="outline" onClick={() => setLocation("/import/lib")}>
           Back to Library
         </Button>
       </div>
@@ -104,7 +104,7 @@ export default function LibraryDeckPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLocation("/import?tab=library")}
+            onClick={() => setLocation("/import/lib")}
             data-testid="button-back-library"
           >
             <ArrowLeft className="h-5 w-5" />
