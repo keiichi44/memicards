@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Lightbulb, Play, Trash2, Edit2, RotateCcw, Loader2, BookOpen } from "lucide-react";
+import { Plus, Lightbulb, Play, Trash2, Edit2, Eye, Loader2, BookOpen } from "lucide-react";
 import { Onboarding } from "@/components/onboarding";
 import { AddDeckPicker } from "@/components/add-deck-picker";
 import { Button } from "@/components/ui/button";
@@ -229,7 +229,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                 title="Practice mode"
                 data-testid="button-start-all-practice"
               >
-                <RotateCcw className="h-4 w-4" />
+                <Eye className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -378,7 +378,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                       title="Practice mode"
                       data-testid={`button-practice-deck-${deck.id}`}
                     >
-                      <RotateCcw className="h-4 w-4" />
+                      <Eye className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardContent>
