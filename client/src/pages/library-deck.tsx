@@ -117,7 +117,7 @@ export default function LibraryDeckPage() {
             <p className="text-sm text-muted-foreground">{data.cards.length} cards</p>
           </div>
         </div>
-        <Button onClick={() => setShowImportDialog(true)} data-testid="button-import-library-deck-header">
+        <Button variant="secondary" onClick={() => setShowImportDialog(true)} data-testid="button-import-library-deck-header">
           <Download className="h-4 w-4 mr-2" />
           Import to {activeProject?.name || "project"}
         </Button>
