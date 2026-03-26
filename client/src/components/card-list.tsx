@@ -215,7 +215,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
     setRenameLanguage(deck?.language || "");
     setRenameDescription(deck?.description || "");
     setRenameError("");
-    setIsRenameOpen(true);
+    setTimeout(() => setIsRenameOpen(true), 0);
   };
 
   const handleRenameDeck = () => {
@@ -442,7 +442,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                 Duplicate and flip cards
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => { setIsMoveOpen(true); setSelectedProjectId(null); setMoveError(""); }}
+                onClick={() => { setTimeout(() => { setIsMoveOpen(true); setSelectedProjectId(null); setMoveError(""); }, 0); }}
                 disabled={projects.length <= 1}
                 data-testid="button-move-deck"
               >
@@ -456,7 +456,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => setIsDeletingDeck(true)}
+                onClick={() => setTimeout(() => setIsDeletingDeck(true), 0)}
                 className="text-destructive focus:text-destructive"
                 data-testid="button-delete-deck"
               >
