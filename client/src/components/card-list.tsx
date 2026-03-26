@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2, Copy, ChevronDown, ArrowRightLeft, FolderInput } from "lucide-react";
+import { useLocation } from "wouter";
+import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2, Copy, ArrowRightLeft, FolderInput, MoreVertical, Play, Eye, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -62,6 +64,7 @@ interface CardListProps {
 
 export function CardList({ deckId, onBack }: CardListProps) {
   const { activeProject, projects } = useProject();
+  const [, setLocation] = useLocation();
   const [filter, setFilter] = useState<CardFilter["filter"]>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -70,6 +73,12 @@ export function CardList({ deckId, onBack }: CardListProps) {
   const [isMoveOpen, setIsMoveOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [moveError, setMoveError] = useState("");
+  const [isRenameOpen, setIsRenameOpen] = useState(false);
+  const [isDeletingDeck, setIsDeletingDeck] = useState(false);
+  const [renameName, setRenameName] = useState("");
+  const [renameLanguage, setRenameLanguage] = useState("");
+  const [renameDescription, setRenameDescription] = useState("");
+  const [renameError, setRenameError] = useState("");
   
   const [formData, setFormData] = useState({
     armenian: "",
@@ -172,7 +181,52 @@ export function CardList({ deckId, onBack }: CardListProps) {
       setMoveError(parseMoveError(error));
     },
   });
-  
+
+  const renameMutation = useMutation({
+    mutationFn: async (data: { name: string; language: string; description: string }) => {
+      const res = await apiRequest("PATCH", `/api/decks/${deckId}`, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      setIsRenameOpen(false);
+      setRenameError("");
+    },
+    onError: () => {
+      setRenameError("Failed to rename deck");
+    },
+  });
+
+  const deleteDeckMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("DELETE", `/api/decks/${deckId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
+      setIsDeletingDeck(false);
+      onBack();
+    },
+  });
+
+  const openRenameDialog = () => {
+    setRenameName(deck?.name || "");
+    setRenameLanguage(deck?.language || "");
+    setRenameDescription(deck?.description || "");
+    setRenameError("");
+    setIsRenameOpen(true);
+  };
+
+  const handleRenameDeck = () => {
+    if (!renameName.trim() || !renameLanguage.trim()) return;
+    renameMutation.mutate({
+      name: renameName.trim(),
+      language: renameLanguage.trim(),
+      description: renameDescription.trim(),
+    });
+  };
+
   const filteredCards = useMemo(() => {
     let result = [...cards];
     
@@ -275,55 +329,13 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport} data-testid="button-export-cards">
-            <Download className="h-4 w-4 md:mr-2" />
-            <span className="hidden md:inline">Export CSV</span>
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" disabled={duplicateMutation.isPending} data-testid="button-duplicate-deck">
-                {duplicateMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 md:mr-2 animate-spin" />
-                ) : (
-                  <Copy className="h-4 w-4 md:mr-2" />
-                )}
-                <span className="hidden md:inline">Duplicate...</span>
-                <ChevronDown className="h-4 w-4 md:ml-2" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                onClick={() => duplicateMutation.mutate({ swap: false })}
-                data-testid="button-duplicate-as-is"
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                Duplicate as is
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => duplicateMutation.mutate({ swap: true })}
-                data-testid="button-duplicate-swapped"
-              >
-                <ArrowRightLeft className="h-4 w-4 mr-2" />
-                Duplicate swapping original and translation
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setIsMoveOpen(true);
-              setSelectedProjectId(null);
-              setMoveError("");
-            }}
-            disabled={projects.length <= 1}
-            data-testid="button-move-deck"
-          >
-            <FolderInput className="h-4 w-4 md:mr-2" />
-            <span className="hidden md:inline">Move</span>
+          <Button onClick={() => setLocation(`/deck/${deckId}/review`)} data-testid="button-study-deck">
+            <Play className="h-4 w-4 mr-2" />
+            Study
           </Button>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button data-testid="button-add-card">
+              <Button variant="outline" data-testid="button-add-card">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Card
               </Button>
@@ -394,6 +406,65 @@ export function CardList({ deckId, onBack }: CardListProps) {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" data-testid="button-deck-menu">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => setLocation(`/deck/${deckId}/practice`)}
+                data-testid="button-practice-from-menu"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Practice cards
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={openRenameDialog} data-testid="button-rename-deck">
+                <Pencil className="h-4 w-4 mr-2" />
+                Rename deck
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => duplicateMutation.mutate({ swap: false })}
+                disabled={duplicateMutation.isPending}
+                data-testid="button-duplicate-as-is"
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Duplicate as is
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => duplicateMutation.mutate({ swap: true })}
+                disabled={duplicateMutation.isPending}
+                data-testid="button-duplicate-swapped"
+              >
+                <ArrowRightLeft className="h-4 w-4 mr-2" />
+                Duplicate and flip cards
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => { setIsMoveOpen(true); setSelectedProjectId(null); setMoveError(""); }}
+                disabled={projects.length <= 1}
+                data-testid="button-move-deck"
+              >
+                <FolderInput className="h-4 w-4 mr-2" />
+                Move to Project
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleExport} data-testid="button-export-cards">
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setIsDeletingDeck(true)}
+                className="text-destructive focus:text-destructive"
+                data-testid="button-delete-deck"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete deck
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
@@ -642,6 +713,81 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isRenameOpen} onOpenChange={(open) => { if (!open) { setIsRenameOpen(false); setRenameError(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Deck</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="rename-deck-name">Name *</Label>
+              <Input
+                id="rename-deck-name"
+                value={renameName}
+                onChange={(e) => { setRenameName(e.target.value); setRenameError(""); }}
+                data-testid="input-rename-deck-name"
+              />
+              {renameError && (
+                <p className="text-sm text-destructive" data-testid="text-rename-error">{renameError}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rename-deck-language">Language *</Label>
+              <Input
+                id="rename-deck-language"
+                value={renameLanguage}
+                onChange={(e) => setRenameLanguage(e.target.value)}
+                data-testid="input-rename-deck-language"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rename-deck-description">Description</Label>
+              <Textarea
+                id="rename-deck-description"
+                value={renameDescription}
+                onChange={(e) => setRenameDescription(e.target.value)}
+                data-testid="input-rename-deck-description"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRenameOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRenameDeck}
+              disabled={!renameName.trim() || !renameLanguage.trim() || renameMutation.isPending}
+              data-testid="button-confirm-rename-deck"
+            >
+              {renameMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={isDeletingDeck} onOpenChange={(open) => !open && setIsDeletingDeck(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Deck?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete "{deck?.name}" and all its cards. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteDeckMutation.mutate()}
+              className="bg-destructive text-destructive-foreground"
+              data-testid="button-confirm-delete-deck"
+            >
+              {deleteDeckMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
