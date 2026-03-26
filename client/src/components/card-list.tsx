@@ -352,7 +352,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                   <Label htmlFor="armenian">{deck?.language || "Word"} *</Label>
                   <Input
                     id="armenian"
-                    placeholder="e.g., գիdelays"
+                    placeholder="e.g., el libro"
                     value={formData.armenian}
                     onChange={(e) => setFormData(prev => ({ ...prev, armenian: e.target.value }))}
                     className="font-sans text-xl"
