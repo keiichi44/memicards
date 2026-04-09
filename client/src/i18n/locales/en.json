@@ -142,7 +142,9 @@
     "showAnswer": "Show Answer",
     "nextCard": "Next Card",
     "practiced": "{{n}} practiced",
-    "cardProgress": "Card {{current}} of {{total}}"
+    "cardProgress": "Card {{current}} of {{total}}",
+    "shuffle": "Shuffle cards",
+    "restart": "Restart"
   },
   "batchImport": {
     "title": "Batch Import",
@@ -166,9 +168,11 @@
     "uploadHint": "Click to upload or drag and drop",
     "uploadFormats": "CSV or TXT files",
     "pasteContent": "Or paste CSV content directly",
+    "textareaPlaceholder": "word,translation,sentence,association\nhello,hello,Hello! How are you?,greeting",
     "errorTitle": "Error",
     "importComplete": "Import Complete",
-    "importResult": "{{imported}} cards imported, {{updated}} updated{{skipped, select, 0{} other{, {{skipped}} skipped}}}",
+    "importResult": "{{imported}} cards imported, {{updated}} updated",
+    "importResultSkipped": "{{imported}} cards imported, {{updated}} updated, {{skipped}} skipped",
     "importing": "Importing...",
     "importCards": "Import Cards",
     "deckCreated": "Deck \"{{name}}\" created",

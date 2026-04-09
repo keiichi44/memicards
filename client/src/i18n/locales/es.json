@@ -142,7 +142,9 @@
     "showAnswer": "Mostrar respuesta",
     "nextCard": "Siguiente tarjeta",
     "practiced": "{{n}} practicadas",
-    "cardProgress": "Tarjeta {{current}} de {{total}}"
+    "cardProgress": "Tarjeta {{current}} de {{total}}",
+    "shuffle": "Mezclar tarjetas",
+    "restart": "Reiniciar"
   },
   "batchImport": {
     "title": "Importación masiva",
@@ -166,9 +168,11 @@
     "uploadHint": "Haga clic o arrastre el archivo aquí",
     "uploadFormats": "Archivos CSV o TXT",
     "pasteContent": "O pegue el contenido CSV directamente",
+    "textareaPlaceholder": "palabra,traducción,ejemplo,asociación\nhola,hello,¡Hola! ¿Cómo está?,saludo",
     "errorTitle": "Error",
     "importComplete": "Importación completada",
     "importResult": "{{imported}} tarjetas importadas, {{updated}} actualizadas",
+    "importResultSkipped": "{{imported}} tarjetas importadas, {{updated}} actualizadas, {{skipped}} omitidas",
     "importing": "Importando...",
     "importCards": "Importar tarjetas",
     "deckCreated": "Mazo «{{name}}» creado",

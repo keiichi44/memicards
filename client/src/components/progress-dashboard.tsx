@@ -11,7 +11,7 @@ import { useProject } from "@/lib/project-context";
 import { useTranslation } from "react-i18next";
 
 export function ProgressDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { activeProject } = useProject();
 
   const { data: cards = [], isLoading: cardsLoading } = useQuery<FlashCard[]>({
@@ -105,7 +105,7 @@ export function ProgressDashboard() {
       const correctAnswers = dayReviews.filter(r => r.quality >= 3).length;
 
       last7Days.push({
-        date: date.toLocaleDateString("en-US", { weekday: "short" }),
+        date: date.toLocaleDateString(i18n.language || "en", { weekday: "short" }),
         cardsReviewed: dayReviews.length,
         cardsLearned: new Set(dayReviews.filter(r => r.previousInterval === 0).map(r => r.cardId)).size,
         correctAnswers,

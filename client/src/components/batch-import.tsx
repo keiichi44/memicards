@@ -280,7 +280,7 @@ export function BatchImport({ onComplete }: BatchImportProps) {
             <Label htmlFor="csv-content">{t("batchImport.pasteContent")}</Label>
             <Textarea
               id="csv-content"
-              placeholder="word,translation,sentence,association&#10;hello,привет,Hello! How are you?,greeting"
+              placeholder={t("batchImport.textareaPlaceholder")}
               value={csvContent}
               disabled={noDecks}
               onChange={(e) => {
@@ -307,11 +307,16 @@ export function BatchImport({ onComplete }: BatchImportProps) {
               <CheckCircle className="h-4 w-4 text-green-500" />
               <AlertTitle>{t("batchImport.importComplete")}</AlertTitle>
               <AlertDescription>
-                {t("batchImport.importResult", {
-                  imported: result.imported,
-                  updated: result.updated,
-                  skipped: result.skipped,
-                })}
+                {result.skipped > 0
+                  ? t("batchImport.importResultSkipped", {
+                      imported: result.imported,
+                      updated: result.updated,
+                      skipped: result.skipped,
+                    })
+                  : t("batchImport.importResult", {
+                      imported: result.imported,
+                      updated: result.updated,
+                    })}
               </AlertDescription>
             </Alert>
           )}

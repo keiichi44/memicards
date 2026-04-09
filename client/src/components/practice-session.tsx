@@ -147,10 +147,10 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={handleShuffle} title="Shuffle cards" data-testid="button-shuffle">
+          <Button variant="outline" size="icon" onClick={handleShuffle} title={t("practiceSession.shuffle")} data-testid="button-shuffle">
             <Shuffle className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={handleRestart} title="Restart" data-testid="button-restart">
+          <Button variant="outline" size="icon" onClick={handleRestart} title={t("practiceSession.restart")} data-testid="button-restart">
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
