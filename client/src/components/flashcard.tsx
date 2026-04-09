@@ -184,20 +184,30 @@ export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, s
 
       {showAnswer && onRate && !practiceMode && (
         <div className="mt-4 flex justify-center gap-2 flex-wrap animate-in fade-in slide-in-from-bottom-4 duration-300">
-          {simpleQualityRatings.map(({ quality, label, color }) => (
-            <Button
-              key={quality}
-              variant={color === "destructive" ? "destructive" : color === "accent" ? "default" : "secondary"}
-              className={cn(
-                "min-w-[60px] md:min-w-[80px]",
-                color === "accent" && "bg-accent text-accent-foreground"
-              )}
-              onClick={() => onRate(quality)}
-              data-testid={`button-rate-${label.toLowerCase()}`}
-            >
-              {label}
-            </Button>
-          ))}
+          {simpleQualityRatings.map(({ quality, label, color }) => {
+            const labelKey = label.toLowerCase() as "again" | "hard" | "good" | "easy";
+            const labelMap: Record<string, string> = {
+              again: t("flashcard.hintAgain"),
+              hard: t("flashcard.hintHard"),
+              good: t("flashcard.hintGood"),
+              easy: t("flashcard.hintEasy"),
+            };
+            const translatedLabel = labelMap[labelKey] || label;
+            return (
+              <Button
+                key={quality}
+                variant={color === "destructive" ? "destructive" : color === "accent" ? "default" : "secondary"}
+                className={cn(
+                  "min-w-[60px] md:min-w-[80px]",
+                  color === "accent" && "bg-accent text-accent-foreground"
+                )}
+                onClick={() => onRate(quality)}
+                data-testid={`button-rate-${label.toLowerCase()}`}
+              >
+                {translatedLabel}
+              </Button>
+            );
+          })}
         </div>
       )}
     </div>

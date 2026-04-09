@@ -288,6 +288,13 @@
     "stayHere": "Stay here",
     "interruptAndGo": "Interrupt and go"
   },
+  "languageSwitcher": {
+    "changeLanguage": "Change language"
+  },
+  "notFound": {
+    "title": "404 Page Not Found",
+    "desc": "Did you forget to add the page to the router?"
+  },
   "libraryList": {
     "title": "Decks Library",
     "subtitle": "Browse and import ready-made decks into your project.",

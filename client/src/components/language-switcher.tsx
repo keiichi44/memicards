@@ -1,4 +1,4 @@
-import { Globe } from "lucide-react";
+import { Globe, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,7 @@ const languages = [
 ];
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const currentLang = i18n.language?.split("-")[0] || "en";
 
   const handleChange = (code: string) => {
@@ -25,7 +25,7 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" data-testid="button-language-switcher" title="Change language">
+        <Button variant="ghost" size="icon" data-testid="button-language-switcher" title={t("languageSwitcher.changeLanguage")}>
           <Globe className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -34,10 +34,11 @@ export function LanguageSwitcher() {
           <DropdownMenuItem
             key={code}
             onClick={() => handleChange(code)}
-            className={currentLang === code ? "font-semibold" : ""}
+            className="flex items-center gap-2"
             data-testid={`menu-lang-${code}`}
           >
-            {label}
+            <Check className={`h-4 w-4 shrink-0 ${currentLang === code ? "opacity-100" : "opacity-0"}`} />
+            <span className={currentLang === code ? "font-semibold" : ""}>{label}</span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

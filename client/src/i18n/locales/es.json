@@ -288,6 +288,13 @@
     "stayHere": "Quedarse aquí",
     "interruptAndGo": "Interrumpir e ir"
   },
+  "languageSwitcher": {
+    "changeLanguage": "Cambiar idioma"
+  },
+  "notFound": {
+    "title": "404 — Página no encontrada",
+    "desc": "Parece que ha llegado a una página que no existe."
+  },
   "libraryList": {
     "title": "Biblioteca de mazos",
     "subtitle": "Explore e importe mazos ya preparados en su proyecto.",
