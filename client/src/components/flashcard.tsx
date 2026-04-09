@@ -21,8 +21,9 @@ interface FlashcardProps {
   practiceMode?: boolean;
 }
 
-export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, showAnswer, onFlip, practiceMode = false }: FlashcardProps) {
+export function Flashcard({ card, languageName, onRate, onToggleStar, showAnswer, onFlip, practiceMode = false }: FlashcardProps) {
   const { t } = useTranslation();
+  const resolvedLanguageName = languageName || t("cardList.word");
   const status = getCardStatus(card);
   const daysUntil = getDaysUntilReview(card);
   const [showHint, setShowHint] = useState(() => !localStorage.getItem(HINT_STORAGE_KEY));
@@ -138,7 +139,7 @@ export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, s
 
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-6">
             <div className="w-full">
-              <p className="text-sm text-muted-foreground mb-2">{languageName}</p>
+              <p className="text-sm text-muted-foreground mb-2">{resolvedLanguageName}</p>
               <p className="font-sans text-4xl md:text-5xl font-medium leading-relaxed" data-testid="text-armenian-word">
                 {card.armenian}
               </p>

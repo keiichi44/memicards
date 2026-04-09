@@ -62,10 +62,10 @@ export function ProjectSelector() {
   });
 
   const getNextName = () => {
-    const base = "Learning project";
+    const base = t("projectSelector.defaultProjectBase");
     const existingNumbers = projects
       .map(p => {
-        const match = p.name.match(/^Learning project\s*(\d*)$/);
+        const match = p.name.match(/^Learning project\s*(\d*)$/) || p.name.match(new RegExp(`^${base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*(\\d*)$`));
         if (match) return match[1] ? parseInt(match[1]) : 0;
         return -1;
       })

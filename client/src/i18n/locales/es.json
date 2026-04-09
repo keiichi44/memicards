@@ -100,7 +100,8 @@
     "moveButton": "Mover",
     "moveError": "No se pudo mover el mazo",
     "failedToRenameDeck": "No se pudo renombrar el mazo",
-    "toggleActive": "Activar/desactivar {{word}}"
+    "toggleActive": "Activar/desactivar {{word}}",
+    "cards_fallback": "Tarjetas"
   },
   "flashcard": {
     "hintTitle": "Cómo usar la tarjeta",
@@ -267,7 +268,8 @@
     "createNewProject": "Nuevo proyecto",
     "createNewProjectDesc": "Los proyectos le ayudan a organizar distintos objetivos de aprendizaje.",
     "projectNameLabel": "Nombre del proyecto",
-    "projectNamePlaceholder": "Ej.: Curso de español"
+    "projectNamePlaceholder": "Ej.: Curso de español",
+    "defaultProjectBase": "Proyecto de aprendizaje"
   },
   "addDeckPicker": {
     "title": "Agregar un mazo",

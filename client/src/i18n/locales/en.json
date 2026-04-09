@@ -100,7 +100,8 @@
     "moveButton": "Move",
     "moveError": "Failed to move deck",
     "failedToRenameDeck": "Failed to rename deck",
-    "toggleActive": "Toggle {{word}} active"
+    "toggleActive": "Toggle {{word}} active",
+    "cards_fallback": "Cards"
   },
   "flashcard": {
     "hintTitle": "How to use the card",
@@ -267,7 +268,8 @@
     "createNewProject": "Create New Project",
     "createNewProjectDesc": "Projects help you organize different learning goals separately.",
     "projectNameLabel": "Project Name",
-    "projectNamePlaceholder": "e.g., Spanish Course"
+    "projectNamePlaceholder": "e.g., Spanish Course",
+    "defaultProjectBase": "Learning project"
   },
   "addDeckPicker": {
     "title": "Add a deck",

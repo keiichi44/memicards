@@ -100,7 +100,8 @@
     "moveButton": "Переместить",
     "moveError": "Не удалось переместить колоду",
     "failedToRenameDeck": "Не удалось переименовать колоду",
-    "toggleActive": "Включить/выключить {{word}}"
+    "toggleActive": "Включить/выключить {{word}}",
+    "cards_fallback": "Карточки"
   },
   "flashcard": {
     "hintTitle": "Как пользоваться карточкой",
@@ -267,7 +268,8 @@
     "createNewProject": "Новый проект",
     "createNewProjectDesc": "Проекты помогают достигать разных учебных целей.",
     "projectNameLabel": "Название проекта",
-    "projectNamePlaceholder": "Например: Испанский курс"
+    "projectNamePlaceholder": "Например: Испанский курс",
+    "defaultProjectBase": "Учебный проект"
   },
   "addDeckPicker": {
     "title": "Добавить колоду",

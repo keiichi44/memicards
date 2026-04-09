@@ -326,7 +326,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
             {t("cardList.back")}
           </Button>
           <div>
-            <h2 className="text-xl font-semibold">{deck?.name || "Cards"}</h2>
+            <h2 className="text-xl font-semibold">{deck?.name || t("cardList.cards_fallback")}</h2>
             <p className="text-sm text-muted-foreground">{t("cardList.cardsTotal", { n: cards.length })}</p>
           </div>
         </div>
@@ -351,7 +351,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="armenian">{t("cardList.wordLabel", { language: deck?.language || "Word" })}</Label>
+                  <Label htmlFor="armenian">{t("cardList.wordLabel", { language: deck?.language || t("cardList.word") })}</Label>
                   <Input
                     id="armenian"
                     placeholder={t("cardList.wordPlaceholder")}

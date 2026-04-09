@@ -113,9 +113,9 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
     try {
       const text = error.message.replace(/^\d+:\s*/, "");
       const parsed = JSON.parse(text);
-      return parsed.error || "Something went wrong";
+      return parsed.error || t("batchImport.somethingWentWrong");
     } catch {
-      return "Something went wrong";
+      return t("batchImport.somethingWentWrong");
     }
   };
 
