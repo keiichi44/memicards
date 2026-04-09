@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BottomNavBar } from "@/components/bottom-nav-bar";
 import { ProjectProvider, useProject } from "@/lib/project-context";
@@ -123,6 +124,7 @@ function AuthenticatedApp() {
                 </div>
                 <div className="flex items-center gap-2">
                   <ThemeToggle />
+                  <LanguageSwitcher />
                   <UserButton
                     afterSignOutUrl="/"
                     appearance={{

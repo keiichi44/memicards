@@ -18,6 +18,7 @@ import { useProject } from "@/lib/project-context";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 
 interface LibraryDeck {
   filename: string;
@@ -27,6 +28,7 @@ interface LibraryDeck {
 }
 
 export function LibraryList() {
+  const { t } = useTranslation();
   const { activeProject } = useProject();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -48,12 +50,12 @@ export function LibraryList() {
       queryClient.invalidateQueries({ queryKey: ["/api/cards"] });
       setImportingDeck(null);
       toast({
-        title: "Deck imported",
-        description: `"${deck.name}" has been added to ${activeProject?.name || "your project"}.`,
+        title: t("libraryList.imported"),
+        description: t("libraryList.importedDesc", { name: deck.name, project: activeProject?.name || "" }),
       });
     },
     onError: () => {
-      toast({ title: "Import failed", description: "Something went wrong.", variant: "destructive" });
+      toast({ title: t("libraryList.importFailed"), description: t("batchImport.somethingWentWrong"), variant: "destructive" });
     },
   });
 
@@ -69,7 +71,7 @@ export function LibraryList() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[200px] text-muted-foreground gap-2">
         <BookOpen className="h-10 w-10" />
-        <p>No decks in the library yet.</p>
+        <p>{t("libraryList.noDecks")}</p>
       </div>
     );
   }
@@ -80,14 +82,14 @@ export function LibraryList() {
     if (!languageMap.has(lang)) languageMap.set(lang, []);
     languageMap.get(lang)!.push(deck);
   }
-  const sortedLanguages = [...languageMap.keys()].sort((a, b) => a.localeCompare(b));
+  const sortedLanguages = Array.from(languageMap.keys()).sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-semibold mb-2">Decks Library</h2>
+        <h2 className="text-2xl font-semibold mb-2">{t("libraryList.title")}</h2>
         <p className="text-muted-foreground">
-          Browse and import ready-made decks into your project.
+          {t("libraryList.subtitle")}
         </p>
       </div>
 
@@ -109,7 +111,7 @@ export function LibraryList() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge variant="outline">{deck.cardCount} cards</Badge>
+                    <Badge variant="outline">{t("deckList.cards", { n: deck.cardCount })}</Badge>
                   </div>
                   <Button
                     variant="secondary"
@@ -121,7 +123,7 @@ export function LibraryList() {
                     data-testid={`button-import-library-deck-${deck.filename}`}
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Import
+                    {t("libraryList.importButton")}
                   </Button>
                 </CardContent>
               </Card>
@@ -133,20 +135,20 @@ export function LibraryList() {
       <AlertDialog open={!!importingDeck} onOpenChange={(open) => { if (!open) setImportingDeck(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Import deck?</AlertDialogTitle>
+            <AlertDialogTitle>{t("libraryList.importDeckTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Do you want to copy "{importingDeck?.name}" to your "{activeProject?.name}"?
+              {t("libraryList.importDeckDesc", { name: importingDeck?.name, project: activeProject?.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-library-import">No</AlertDialogCancel>
+            <AlertDialogCancel data-testid="button-cancel-library-import">{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => importingDeck && importMutation.mutate(importingDeck)}
               disabled={importMutation.isPending}
               data-testid="button-confirm-library-import"
             >
               {importMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Yes
+              {t("common.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

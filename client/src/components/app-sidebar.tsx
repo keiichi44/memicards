@@ -16,35 +16,21 @@ import {
 import { ProjectSelector } from "@/components/project-selector";
 import { useProject } from "@/lib/project-context";
 import { useReviewGuard } from "@/lib/review-guard-context";
-
-const menuItems = [
-  {
-    title: "Decks",
-    url: "/",
-    icon: Layers,
-  },
-  {
-    title: "Import Cards",
-    url: "/import",
-    icon: Upload,
-  },
-  {
-    title: "Progress",
-    url: "/progress",
-    icon: BarChart3,
-  },
-  {
-    title: "Project Settings",
-    url: "/settings",
-    icon: Settings,
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export function AppSidebar() {
   const [location, navigate] = useLocation();
   const { activeProject } = useProject();
   const { isInSession, requestNavigation } = useReviewGuard();
-  
+  const { t } = useTranslation();
+
+  const menuItems = [
+    { title: t("nav.decks"), url: "/", icon: Layers },
+    { title: t("nav.importCards"), url: "/import", icon: Upload },
+    { title: t("nav.progress"), url: "/progress", icon: BarChart3 },
+    { title: t("nav.projectSettings"), url: "/settings", icon: Settings },
+  ];
+
   const handleNavClick = (e: React.MouseEvent, url: string) => {
     if (isInSession) {
       e.preventDefault();
@@ -59,7 +45,7 @@ export function AppSidebar() {
           <img src={logoImg} alt="memicards" className="w-10 h-10 rounded-md object-cover" />
           <div>
             <h1 className="font-semibold text-lg leading-tight">memicards</h1>
-            <p className="text-xs text-muted-foreground">Spaced Repetition</p>
+            <p className="text-xs text-muted-foreground">{t("nav.spacedRepetition")}</p>
           </div>
         </Link>
       </SidebarHeader>
@@ -69,15 +55,15 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => {
-                const isActive = location === item.url || 
+                const isActive = location === item.url ||
                   (item.url === "/" && location === "/");
-                
+
                 return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild 
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      asChild
                       isActive={isActive}
-                      data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
+                      data-testid={`nav-${item.url === "/" ? "decks" : item.url.replace("/", "")}`}
                     >
                       <Link href={item.url} onClick={(e) => handleNavClick(e, item.url)}>
                         <item.icon className="h-4 w-4" />
@@ -98,7 +84,7 @@ export function AppSidebar() {
           data-testid="link-send-feedback"
         >
           <Mail className="h-3.5 w-3.5" />
-          Send feedback
+          {t("nav.sendFeedback")}
         </a>
       </SidebarFooter>
     </Sidebar>
