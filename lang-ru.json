@@ -52,7 +52,7 @@
       "cancel": "Отмена",
       "deckName": "Название *",
       "deckLanguage": "Язык *",
-      "deckDescription": "Описание (необязательно)",
+      "deckDescription": "Описание (необязательно)",х
       "deckNamePlaceholder": "Например, Неделя 2",
       "deckLanguagePlaceholder": "Например, испанский, японский, армянский",
       "deckDescriptionPlaceholder": "Что в этой колоде?"
@@ -108,13 +108,13 @@
     "flashcard": {
       "hintTitle": "Как работать с карточкой",
       "hintIntro": "Попробуйте вспомнить обратную сторону и нажмите кнопку:",
-      "hintAgain": "Again",
+      "hintAgain": "Снова",
       "hintAgainDesc": "— Не вспомнили. Покажем снова скоро.",
-      "hintHard": "Hard",
+      "hintHard": "Сложно",
       "hintHardDesc": "— Вспомнили с усилием. Будет появляться чаще.",
-      "hintGood": "Good",
-      "hintGoodDesc": "— Вспомнили хорошо. Всё идёт по плану.",
-      "hintEasy": "Easy",
+      "hintGood": "Просто",
+      "hintGoodDesc": "— Вспомнили просто. Всё идёт по плану.",
+      "hintEasy": "Помню",
       "hintEasyDesc": "— Вспомнили мгновенно. Покажем нескоро.",
       "gotIt": "Понятно",
       "statusNew": "Новая",
