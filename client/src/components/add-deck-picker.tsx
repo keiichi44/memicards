@@ -44,7 +44,7 @@ export function AddDeckPicker({ open, onClose, onCreateDeck }: AddDeckPickerProp
             className="flex items-center gap-4 rounded-xl border p-4 text-left hover:bg-muted/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             data-testid="button-picker-create-deck"
           >
-            <img src="/images/deck-new.png" alt="Create deck" className="w-14 h-14 object-contain shrink-0" />
+            <img src="/images/deck-new.png" alt={t("addDeckPicker.createDeck")} className="w-14 h-14 object-contain shrink-0" />
             <div>
               <p className="font-semibold">{t("addDeckPicker.createDeck")}</p>
               <p className="text-sm text-muted-foreground">{t("addDeckPicker.createDeckDesc")}</p>
@@ -56,7 +56,7 @@ export function AddDeckPicker({ open, onClose, onCreateDeck }: AddDeckPickerProp
             className="flex items-center gap-4 rounded-xl border p-4 text-left hover:bg-muted/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             data-testid="button-picker-import-csv"
           >
-            <img src="/images/deck-csv.png" alt="Import CSV" className="w-14 h-14 object-contain shrink-0" />
+            <img src="/images/deck-csv.png" alt={t("addDeckPicker.importCSV")} className="w-14 h-14 object-contain shrink-0" />
             <div>
               <p className="font-semibold">{t("addDeckPicker.importCSV")}</p>
               <p className="text-sm text-muted-foreground">{t("addDeckPicker.importCSVDesc")}</p>
@@ -68,7 +68,7 @@ export function AddDeckPicker({ open, onClose, onCreateDeck }: AddDeckPickerProp
             className="flex items-center gap-4 rounded-xl border p-4 text-left hover:bg-muted/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             data-testid="button-picker-library"
           >
-            <img src="/images/deck-lib.png" alt="Decks Library" className="w-14 h-14 object-contain shrink-0" />
+            <img src="/images/deck-lib.png" alt={t("addDeckPicker.chooseLibrary")} className="w-14 h-14 object-contain shrink-0" />
             <div>
               <p className="font-semibold">{t("addDeckPicker.chooseLibrary")}</p>
               <p className="text-sm text-muted-foreground">{t("addDeckPicker.chooseLibraryDesc")}</p>

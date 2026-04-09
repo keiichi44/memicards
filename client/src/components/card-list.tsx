@@ -532,7 +532,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                       <Checkbox
                         checked={card.isActive}
                         onCheckedChange={() => handleToggleActive(card)}
-                        aria-label={`Toggle ${card.armenian} active`}
+                        aria-label={t("cardList.toggleActive", { word: card.armenian })}
                         data-testid={`checkbox-active-${card.id}`}
                       />
                     </TableCell>
@@ -553,7 +553,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                     <TableCell>{card.russian}</TableCell>
                     <TableCell className="hidden md:table-cell">
                       <Badge variant={status === "new" ? "default" : status === "learning" ? "secondary" : "outline"}>
-                        {status}
+                        {t(`flashcard.status${status.charAt(0).toUpperCase() + status.slice(1)}`)}
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell text-muted-foreground">

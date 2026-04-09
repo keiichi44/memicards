@@ -51,7 +51,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{activeProject?.name || "Project"}</SidebarGroupLabel>
+          <SidebarGroupLabel>{activeProject?.name || t("nav.project")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => {

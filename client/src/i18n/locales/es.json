@@ -5,13 +5,16 @@
     "progress": "Progreso",
     "projectSettings": "Configuración del proyecto",
     "spacedRepetition": "Repetición espaciada",
-    "sendFeedback": "Enviar comentarios"
+    "sendFeedback": "Enviar comentarios",
+    "project": "Proyecto"
   },
   "bottomNav": {
     "decks": "Mazos",
     "import": "Importar",
     "progress": "Progreso",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "ariaLabel": "Navegación móvil",
+    "navigateTo": "Ir a {{title}}"
   },
   "auth": {
     "subtitle": "Sistema de repetición espaciada"
@@ -96,7 +99,8 @@
     "moveSelect": "Seleccionar proyecto",
     "moveButton": "Mover",
     "moveError": "No se pudo mover el mazo",
-    "failedToRenameDeck": "No se pudo renombrar el mazo"
+    "failedToRenameDeck": "No se pudo renombrar el mazo",
+    "toggleActive": "Activar/desactivar {{word}}"
   },
   "flashcard": {
     "hintTitle": "Cómo usar la tarjeta",

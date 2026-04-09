@@ -303,7 +303,7 @@ export function ProgressDashboard() {
                     <p className="text-sm text-muted-foreground">{card.russian}</p>
                   </div>
                   <Badge variant="outline">
-                    {getCardStatus(card)}
+                    {(() => { const s = getCardStatus(card); return t(`flashcard.status${s.charAt(0).toUpperCase() + s.slice(1)}`); })()}
                   </Badge>
                 </div>
               ))}

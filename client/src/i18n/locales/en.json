@@ -5,13 +5,16 @@
     "progress": "Progress",
     "projectSettings": "Project Settings",
     "spacedRepetition": "Spaced Repetition",
-    "sendFeedback": "Send feedback"
+    "sendFeedback": "Send feedback",
+    "project": "Project"
   },
   "bottomNav": {
     "decks": "Decks",
     "import": "Import",
     "progress": "Progress",
-    "settings": "Settings"
+    "settings": "Settings",
+    "ariaLabel": "Mobile navigation",
+    "navigateTo": "Navigate to {{title}}"
   },
   "auth": {
     "subtitle": "Spaced Repetition System"
@@ -96,7 +99,8 @@
     "moveSelect": "Select project",
     "moveButton": "Move",
     "moveError": "Failed to move deck",
-    "failedToRenameDeck": "Failed to rename deck"
+    "failedToRenameDeck": "Failed to rename deck",
+    "toggleActive": "Toggle {{word}} active"
   },
   "flashcard": {
     "hintTitle": "How to use the card",

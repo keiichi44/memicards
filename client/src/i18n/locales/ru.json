@@ -5,13 +5,16 @@
     "progress": "Прогресс",
     "projectSettings": "Настройки проекта",
     "spacedRepetition": "Интервальное повторение",
-    "sendFeedback": "Обратная связь"
+    "sendFeedback": "Обратная связь",
+    "project": "Проект"
   },
   "bottomNav": {
     "decks": "Колоды",
     "import": "Импорт",
     "progress": "Прогресс",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "ariaLabel": "Мобильная навигация",
+    "navigateTo": "Перейти в {{title}}"
   },
   "auth": {
     "subtitle": "Система интервального повторения"
@@ -96,7 +99,8 @@
     "moveSelect": "Выберите проект",
     "moveButton": "Переместить",
     "moveError": "Не удалось переместить колоду",
-    "failedToRenameDeck": "Не удалось переименовать колоду"
+    "failedToRenameDeck": "Не удалось переименовать колоду",
+    "toggleActive": "Включить/выключить {{word}}"
   },
   "flashcard": {
     "hintTitle": "Как пользоваться карточкой",

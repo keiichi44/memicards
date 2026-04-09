@@ -19,7 +19,7 @@ export function BottomNavBar() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t md:hidden"
       role="navigation"
-      aria-label="Mobile navigation"
+      aria-label={t("bottomNav.ariaLabel")}
     >
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
@@ -39,7 +39,7 @@ export function BottomNavBar() {
                 }
               }}
               data-testid={`nav-mobile-${item.url === "/" ? "decks" : item.url.replace("/", "")}`}
-              aria-label={`Navigate to ${title}`}
+              aria-label={t("bottomNav.navigateTo", { title })}
               aria-current={isActive ? "page" : undefined}
               className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 isActive
