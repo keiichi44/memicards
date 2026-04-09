@@ -116,7 +116,7 @@
     "hintEasyDesc": "— Вспомнили мгновенно. Появится значительно позже.",
     "gotIt": "Понятно",
     "statusNew": "Новая",
-    "statusLearning": "Обучение с нуля",
+    "statusLearning": "Изучается",
     "statusGraduated": "Усвоена",
     "statusReview": "Повторение",
     "next": "Следующий: {{interval}}",
@@ -274,7 +274,7 @@
   "addDeckPicker": {
     "title": "Добавить колоду",
     "createDeck": "Создать колоду",
-    "createDeckDesc": "Начать с нуля",
+    "createDeckDesc": "Обучение с нуля",
     "importCSV": "Импорт CSV",
     "importCSVDesc": "Загрузить свой список слов",
     "chooseLibrary": "Выбрать из библиотеки",
