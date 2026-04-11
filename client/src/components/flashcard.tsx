@@ -182,20 +182,24 @@ export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, s
 
       {showAnswer && onRate && !practiceMode && (
         <div className="mt-4 flex justify-center gap-2 flex-wrap animate-in fade-in slide-in-from-bottom-4 duration-300">
-          {simpleQualityRatings.map(({ quality, label, color }) => (
-            <Button
-              key={quality}
-              variant={color === "destructive" ? "destructive" : color === "accent" ? "default" : "secondary"}
-              className={cn(
-                "min-w-[60px] md:min-w-[80px]",
-                color === "accent" && "bg-accent text-accent-foreground"
-              )}
-              onClick={() => onRate(quality)}
-              data-testid={`button-rate-${label.toLowerCase()}`}
-            >
-              {t(`flashcard.${label.toLowerCase()}`)}
-            </Button>
-          ))}
+          {simpleQualityRatings.map(({ quality, label, color }) => {
+            const qualityKeyMap: Record<number, string> = { 1: "again", 2: "hard", 4: "good", 5: "easy" };
+            const i18nKey = qualityKeyMap[quality] ?? label.toLowerCase();
+            return (
+              <Button
+                key={quality}
+                variant={color === "destructive" ? "destructive" : color === "accent" ? "default" : "secondary"}
+                className={cn(
+                  "min-w-[60px] md:min-w-[80px]",
+                  color === "accent" && "bg-accent text-accent-foreground"
+                )}
+                onClick={() => onRate(quality)}
+                data-testid={`button-rate-${label.toLowerCase()}`}
+              >
+                {t(`flashcard.${i18nKey}`)}
+              </Button>
+            );
+          })}
         </div>
       )}
     </div>
