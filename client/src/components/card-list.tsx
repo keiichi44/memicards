@@ -56,7 +56,6 @@ import { exportCardsToCSV } from "@/lib/storage";
 import { isDueToday, isNewCard, getCardStatus, formatInterval } from "@/lib/sm2";
 import { cn } from "@/lib/utils";
 import { useProject } from "@/lib/project-context";
-import { useTranslation } from "react-i18next";
 
 interface CardListProps {
   deckId: string;
@@ -64,7 +63,6 @@ interface CardListProps {
 }
 
 export function CardList({ deckId, onBack }: CardListProps) {
-  const { t } = useTranslation();
   const { activeProject, projects } = useProject();
   const [, setLocation] = useLocation();
   const [filter, setFilter] = useState<CardFilter["filter"]>("all");
@@ -81,18 +79,18 @@ export function CardList({ deckId, onBack }: CardListProps) {
   const [renameLanguage, setRenameLanguage] = useState("");
   const [renameDescription, setRenameDescription] = useState("");
   const [renameError, setRenameError] = useState("");
-
+  
   const [formData, setFormData] = useState({
     armenian: "",
     russian: "",
     sentence: "",
     association: "",
   });
-
+  
   const { data: deck } = useQuery<Deck>({
     queryKey: ["/api/decks", deckId],
   });
-
+  
   const { data: cards = [], isLoading } = useQuery<FlashCard[]>({
     queryKey: ["/api/cards", deckId],
     queryFn: async () => {
@@ -101,7 +99,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
       return res.json();
     },
   });
-
+  
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const res = await apiRequest("POST", "/api/cards", {
@@ -121,7 +119,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
       setIsCreateOpen(false);
     },
   });
-
+  
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<FlashCard> }) => {
       const res = await apiRequest("PATCH", `/api/cards/${id}`, data);
@@ -132,7 +130,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
     },
   });
-
+  
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       await apiRequest("DELETE", `/api/cards/${id}`);
@@ -143,7 +141,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
       setDeletingCard(null);
     },
   });
-
+  
   const duplicateMutation = useMutation({
     mutationFn: async ({ swap }: { swap: boolean }) => {
       const res = await apiRequest("POST", `/api/decks/${deckId}/duplicate`, { swap });
@@ -155,14 +153,14 @@ export function CardList({ deckId, onBack }: CardListProps) {
       onBack();
     },
   });
-
+  
   const parseMoveError = (error: Error): string => {
     try {
       const text = error.message.replace(/^\d+:\s*/, "");
       const parsed = JSON.parse(text);
-      return parsed.error || t("cardList.moveError");
+      return parsed.error || "Failed to move deck";
     } catch {
-      return t("cardList.moveError");
+      return "Failed to move deck";
     }
   };
 
@@ -196,7 +194,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
       setRenameError("");
     },
     onError: () => {
-      setRenameError(t("cardList.failedToRenameDeck"));
+      setRenameError("Failed to rename deck");
     },
   });
 
@@ -231,7 +229,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
 
   const filteredCards = useMemo(() => {
     let result = [...cards];
-
+    
     if (filter === "due") {
       result = result.filter(c => isDueToday(c));
     } else if (filter === "new") {
@@ -239,29 +237,29 @@ export function CardList({ deckId, onBack }: CardListProps) {
     } else if (filter === "starred") {
       result = result.filter(c => c.isStarred);
     }
-
+    
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(c =>
+      result = result.filter(c => 
         c.armenian.toLowerCase().includes(query) ||
         c.russian.toLowerCase().includes(query) ||
         c.sentence?.toLowerCase().includes(query) ||
         c.association?.toLowerCase().includes(query)
       );
     }
-
+    
     return result;
   }, [cards, filter, searchQuery]);
-
+  
   const resetForm = () => {
     setFormData({ armenian: "", russian: "", sentence: "", association: "" });
   };
-
+  
   const handleCreateCard = () => {
     if (!formData.armenian.trim() || !formData.russian.trim()) return;
     createMutation.mutate(formData);
   };
-
+  
   const handleUpdateCard = () => {
     if (!editingCard || !formData.armenian.trim() || !formData.russian.trim()) return;
     updateMutation.mutate({
@@ -276,20 +274,20 @@ export function CardList({ deckId, onBack }: CardListProps) {
     resetForm();
     setEditingCard(null);
   };
-
+  
   const handleDeleteCard = () => {
     if (!deletingCard) return;
     deleteMutation.mutate(deletingCard.id);
   };
-
+  
   const handleToggleStar = (card: FlashCard) => {
     updateMutation.mutate({ id: card.id, data: { isStarred: !card.isStarred } });
   };
-
+  
   const handleToggleActive = (card: FlashCard) => {
     updateMutation.mutate({ id: card.id, data: { isActive: !card.isActive } });
   };
-
+  
   const openEditDialog = (card: FlashCard) => {
     setEditingCard(card);
     setFormData({
@@ -299,7 +297,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
       association: card.association || "",
     });
   };
-
+  
   const handleExport = () => {
     const csv = exportCardsToCSV(filteredCards);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -308,7 +306,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
     link.download = `${deck?.name || "cards"}_export.csv`;
     link.click();
   };
-
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -316,45 +314,45 @@ export function CardList({ deckId, onBack }: CardListProps) {
       </div>
     );
   }
-
+  
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={onBack} data-testid="button-back-to-decks">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {t("cardList.back")}
+            Back
           </Button>
           <div>
-            <h2 className="text-xl font-semibold">{deck?.name || t("cardList.cards_fallback")}</h2>
-            <p className="text-sm text-muted-foreground">{t("cardList.cardsTotal", { n: cards.length })}</p>
+            <h2 className="text-xl font-semibold">{deck?.name || "Cards"}</h2>
+            <p className="text-sm text-muted-foreground">{cards.length} cards total</p>
           </div>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setLocation(`/deck/${deckId}/review`)} data-testid="button-study-deck">
             <Play className="h-4 w-4 mr-2" />
-            {t("cardList.study")}
+            Study
           </Button>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" data-testid="button-add-card">
                 <Plus className="h-4 w-4 mr-2" />
-                {t("cardList.addCard")}
+                Add Card
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>{t("cardList.addNewCard")}</DialogTitle>
+                <DialogTitle>Add New Card</DialogTitle>
                 <DialogDescription>
-                  {t("cardList.addNewCardDesc")}
+                  Create a new flashcard for this deck.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="armenian">{t("cardList.wordLabel", { language: deck?.language || t("cardList.word") })}</Label>
+                  <Label htmlFor="armenian">{deck?.language || "Word"} *</Label>
                   <Input
                     id="armenian"
-                    placeholder={t("cardList.wordPlaceholder")}
+                    placeholder="e.g., el libro"
                     value={formData.armenian}
                     onChange={(e) => setFormData(prev => ({ ...prev, armenian: e.target.value }))}
                     className="font-sans text-xl"
@@ -362,20 +360,20 @@ export function CardList({ deckId, onBack }: CardListProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="russian">{t("cardList.translationLabel")}</Label>
+                  <Label htmlFor="russian">Translation *</Label>
                   <Input
                     id="russian"
-                    placeholder={t("cardList.translationPlaceholder")}
+                    placeholder="e.g., книга"
                     value={formData.russian}
                     onChange={(e) => setFormData(prev => ({ ...prev, russian: e.target.value }))}
                     data-testid="input-card-russian"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="sentence">{t("cardList.sentenceLabel")}</Label>
+                  <Label htmlFor="sentence">Example Sentence (optional)</Label>
                   <Textarea
                     id="sentence"
-                    placeholder={t("cardList.sentencePlaceholder")}
+                    placeholder="Example sentence using this word"
                     value={formData.sentence}
                     onChange={(e) => setFormData(prev => ({ ...prev, sentence: e.target.value }))}
                     className="font-sans"
@@ -383,10 +381,10 @@ export function CardList({ deckId, onBack }: CardListProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="association">{t("cardList.associationLabel")}</Label>
+                  <Label htmlFor="association">Association/Mnemonic (optional)</Label>
                   <Textarea
                     id="association"
-                    placeholder={t("cardList.associationPlaceholder")}
+                    placeholder="Memory aid"
                     value={formData.association}
                     onChange={(e) => setFormData(prev => ({ ...prev, association: e.target.value }))}
                     data-testid="input-card-association"
@@ -395,15 +393,15 @@ export function CardList({ deckId, onBack }: CardListProps) {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => { resetForm(); setIsCreateOpen(false); }}>
-                  {t("common.cancel")}
+                  Cancel
                 </Button>
-                <Button
-                  onClick={handleCreateCard}
+                <Button 
+                  onClick={handleCreateCard} 
                   disabled={!formData.armenian.trim() || !formData.russian.trim() || createMutation.isPending}
                   data-testid="button-confirm-add-card"
                 >
                   {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  {t("cardList.addCard")}
+                  Add Card
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -420,12 +418,12 @@ export function CardList({ deckId, onBack }: CardListProps) {
                 data-testid="button-practice-from-menu"
               >
                 <Eye className="h-4 w-4 mr-2" />
-                {t("cardList.practiceCards")}
+                Practice cards
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={openRenameDialog} data-testid="button-rename-deck">
                 <Pencil className="h-4 w-4 mr-2" />
-                {t("cardList.renameDeck")}
+                Rename deck
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => duplicateMutation.mutate({ swap: false })}
@@ -433,7 +431,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                 data-testid="button-duplicate-as-is"
               >
                 <Copy className="h-4 w-4 mr-2" />
-                {t("cardList.duplicateAsIs")}
+                Duplicate as is
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => duplicateMutation.mutate({ swap: true })}
@@ -441,7 +439,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                 data-testid="button-duplicate-swapped"
               >
                 <ArrowRightLeft className="h-4 w-4 mr-2" />
-                {t("cardList.duplicateAndFlip")}
+                Duplicate and flip cards
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => { setTimeout(() => { setIsMoveOpen(true); setSelectedProjectId(null); setMoveError(""); }, 0); }}
@@ -449,12 +447,12 @@ export function CardList({ deckId, onBack }: CardListProps) {
                 data-testid="button-move-deck"
               >
                 <FolderInput className="h-4 w-4 mr-2" />
-                {t("cardList.moveToProject")}
+                Move to Project
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleExport} data-testid="button-export-cards">
                 <Download className="h-4 w-4 mr-2" />
-                {t("cardList.exportCSV")}
+                Export CSV
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -463,18 +461,18 @@ export function CardList({ deckId, onBack }: CardListProps) {
                 data-testid="button-delete-deck"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                {t("cardList.deleteDeck")}
+                Delete deck
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-
+      
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder={t("cardList.searchCards")}
+            placeholder="Search cards..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -484,24 +482,24 @@ export function CardList({ deckId, onBack }: CardListProps) {
         <Select value={filter} onValueChange={(v) => setFilter(v as CardFilter["filter"])}>
           <SelectTrigger className="w-full md:w-[180px]" data-testid="select-card-filter">
             <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder={t("cardList.filter")} />
+            <SelectValue placeholder="Filter" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t("cardList.filterAll")}</SelectItem>
-            <SelectItem value="due">{t("cardList.filterDue")}</SelectItem>
-            <SelectItem value="new">{t("cardList.filterNew")}</SelectItem>
-            <SelectItem value="starred">{t("cardList.filterStarred")}</SelectItem>
+            <SelectItem value="all">All Cards</SelectItem>
+            <SelectItem value="due">Due Today</SelectItem>
+            <SelectItem value="new">New</SelectItem>
+            <SelectItem value="starred">Starred</SelectItem>
           </SelectContent>
         </Select>
       </div>
-
+      
       {filteredCards.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">
-              {cards.length === 0
-                ? t("cardList.noCards")
-                : t("cardList.noCardsFilter")}
+              {cards.length === 0 
+                ? "No cards in this deck yet. Add your first card!"
+                : "No cards match your filter."}
             </p>
           </CardContent>
         </Card>
@@ -510,12 +508,12 @@ export function CardList({ deckId, onBack }: CardListProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12">{t("cardList.active")}</TableHead>
+                <TableHead className="w-12">Active</TableHead>
                 <TableHead className="w-12"></TableHead>
-                <TableHead>{deck?.language || t("cardList.word")}</TableHead>
-                <TableHead>{t("cardList.translation")}</TableHead>
-                <TableHead className="hidden md:table-cell">{t("cardList.status")}</TableHead>
-                <TableHead className="hidden lg:table-cell">{t("cardList.interval")}</TableHead>
+                <TableHead>{deck?.language || "Word"}</TableHead>
+                <TableHead>Translation</TableHead>
+                <TableHead className="hidden md:table-cell">Status</TableHead>
+                <TableHead className="hidden lg:table-cell">Interval</TableHead>
                 <TableHead className="w-24"></TableHead>
               </TableRow>
             </TableHeader>
@@ -523,8 +521,8 @@ export function CardList({ deckId, onBack }: CardListProps) {
               {filteredCards.map((card) => {
                 const status = getCardStatus(card);
                 return (
-                  <TableRow
-                    key={card.id}
+                  <TableRow 
+                    key={card.id} 
                     data-testid={`row-card-${card.id}`}
                     className={cn(!card.isActive && "opacity-50")}
                   >
@@ -532,7 +530,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                       <Checkbox
                         checked={card.isActive}
                         onCheckedChange={() => handleToggleActive(card)}
-                        aria-label={t("cardList.toggleActive", { word: card.armenian })}
+                        aria-label={`Toggle ${card.armenian} active`}
                         data-testid={`checkbox-active-${card.id}`}
                       />
                     </TableCell>
@@ -553,7 +551,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
                     <TableCell>{card.russian}</TableCell>
                     <TableCell className="hidden md:table-cell">
                       <Badge variant={status === "new" ? "default" : status === "learning" ? "secondary" : "outline"}>
-                        {t(`flashcard.status${status.charAt(0).toUpperCase() + status.slice(1)}`)}
+                        {status}
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell text-muted-foreground">
@@ -586,15 +584,15 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </Table>
         </div>
       )}
-
+      
       <Dialog open={!!editingCard} onOpenChange={(open) => { if (!open) { resetForm(); setEditingCard(null); } }}>
         <DialogContent className="max-w-lg" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
-            <DialogTitle>{t("cardList.editCard")}</DialogTitle>
+            <DialogTitle>Edit Card</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-armenian">{t("cardList.wordLabel", { language: deck?.language || t("cardList.word") })}</Label>
+              <Label htmlFor="edit-armenian">{deck?.language || "Word"} *</Label>
               <Input
                 id="edit-armenian"
                 value={formData.armenian}
@@ -604,7 +602,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-russian">{t("cardList.translationLabel")}</Label>
+              <Label htmlFor="edit-russian">Translation *</Label>
               <Input
                 id="edit-russian"
                 value={formData.russian}
@@ -613,7 +611,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-sentence">{t("cardList.sentenceLabel")}</Label>
+              <Label htmlFor="edit-sentence">Example Sentence</Label>
               <Textarea
                 id="edit-sentence"
                 value={formData.sentence}
@@ -623,7 +621,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-association">{t("cardList.associationLabel")}</Label>
+              <Label htmlFor="edit-association">Association/Mnemonic</Label>
               <Textarea
                 id="edit-association"
                 value={formData.association}
@@ -634,36 +632,36 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { resetForm(); setEditingCard(null); }}>
-              {t("common.cancel")}
+              Cancel
             </Button>
-            <Button
+            <Button 
               onClick={handleUpdateCard}
               disabled={!formData.armenian.trim() || !formData.russian.trim() || updateMutation.isPending}
               data-testid="button-confirm-edit-card"
             >
               {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t("deckList.saveChanges")}
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
+      
       <AlertDialog open={!!deletingCard} onOpenChange={(open) => !open && setDeletingCard(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("cardList.deleteCard")}</AlertDialogTitle>
+            <AlertDialogTitle>Delete Card?</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("cardList.deleteCardDesc")}
+              This will permanently delete this card and its review history. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteCard}
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteCard} 
               className="bg-destructive text-destructive-foreground"
               data-testid="button-confirm-delete-card"
             >
-              {t("common.delete")}
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -672,9 +670,9 @@ export function CardList({ deckId, onBack }: CardListProps) {
       <Dialog open={isMoveOpen} onOpenChange={(open) => { if (!open) { setIsMoveOpen(false); setMoveError(""); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("cardList.moveTitle")}</DialogTitle>
+            <DialogTitle>Move Deck</DialogTitle>
             <DialogDescription>
-              {t("cardList.moveDesc")}
+              Select a project to move "{deck?.name}" to. All cards and their progress will be preserved.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-4">
@@ -702,7 +700,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsMoveOpen(false)} data-testid="button-cancel-move">
-              {t("common.cancel")}
+              Cancel
             </Button>
             <Button
               onClick={() => selectedProjectId && moveMutation.mutate(selectedProjectId)}
@@ -710,7 +708,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
               data-testid="button-confirm-move"
             >
               {moveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t("cardList.moveButton")}
+              Move
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -719,11 +717,11 @@ export function CardList({ deckId, onBack }: CardListProps) {
       <Dialog open={isRenameOpen} onOpenChange={(open) => { if (!open) { setIsRenameOpen(false); setRenameError(""); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("cardList.renameDeckTitle")}</DialogTitle>
+            <DialogTitle>Rename Deck</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="rename-deck-name">{t("deckList.deckName")}</Label>
+              <Label htmlFor="rename-deck-name">Name *</Label>
               <Input
                 id="rename-deck-name"
                 value={renameName}
@@ -735,7 +733,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="rename-deck-language">{t("deckList.deckLanguage")}</Label>
+              <Label htmlFor="rename-deck-language">Language *</Label>
               <Input
                 id="rename-deck-language"
                 value={renameLanguage}
@@ -744,7 +742,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="rename-deck-description">{t("deckList.deckDescription")}</Label>
+              <Label htmlFor="rename-deck-description">Description</Label>
               <Textarea
                 id="rename-deck-description"
                 value={renameDescription}
@@ -755,7 +753,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsRenameOpen(false)}>
-              {t("common.cancel")}
+              Cancel
             </Button>
             <Button
               onClick={handleRenameDeck}
@@ -763,7 +761,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
               data-testid="button-confirm-rename-deck"
             >
               {renameMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t("deckList.saveChanges")}
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -772,20 +770,20 @@ export function CardList({ deckId, onBack }: CardListProps) {
       <AlertDialog open={isDeletingDeck} onOpenChange={(open) => !open && setIsDeletingDeck(false)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("deckList.deleteDeck")}</AlertDialogTitle>
+            <AlertDialogTitle>Delete Deck?</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("deckList.deleteDeckDesc", { name: deck?.name })}
+              This will permanently delete "{deck?.name}" and all its cards. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteDeckMutation.mutate()}
               className="bg-destructive text-destructive-foreground"
               data-testid="button-confirm-delete-deck"
             >
               {deleteDeckMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t("common.delete")}
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

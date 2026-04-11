@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react";
-import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +23,6 @@ const ReviewGuardContext = createContext<ReviewGuardContextType>({
 });
 
 export function ReviewGuardProvider({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
   const [isInSession, setIsInSession] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const pendingAction = useRef<(() => void) | null>(null);
@@ -62,17 +60,17 @@ export function ReviewGuardProvider({ children }: { children: ReactNode }) {
       <AlertDialog open={dialogOpen} onOpenChange={(open) => { if (!open) handleStay(); }}>
         <AlertDialogContent data-testid="dialog-interrupt-session">
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("reviewGuard.title")}</AlertDialogTitle>
+            <AlertDialogTitle>Do you want to interrupt the learning session?</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("reviewGuard.desc")}
+              Your progress has been saved, by the way.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleStay} data-testid="button-stay-here">
-              {t("reviewGuard.stayHere")}
+              Stay here
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleInterrupt} data-testid="button-interrupt-and-go">
-              {t("reviewGuard.interruptAndGo")}
+              Interrupt and go
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

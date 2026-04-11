@@ -134,8 +134,6 @@ The app uses Clerk for authentication:
 
 ## Recent Changes
 
-- **i18n (Internationalization)**: Full EN/RU/ES support with language switcher (globe icon in header). All UI components translated — deck list, card list, flashcard, review session, practice session, progress dashboard, settings, batch import, project selector, library list, onboarding, add-deck picker, auth page. Language persisted in `memicards_language` localStorage key. i18next with browser-language detection.
-
 - Added project organization layer: projects as top-level containers for decks, settings, and progress
 - ProjectProvider context with ProjectSelector dropdown in header for switching between projects
 - Auto-create default "Learning project" on first login, auto-name new projects incrementally

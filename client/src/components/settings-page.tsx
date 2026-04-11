@@ -23,10 +23,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { exportCardsToCSV, exportReviewsToCSV } from "@/lib/storage";
 import { useProject } from "@/lib/project-context";
 import { useLocation } from "wouter";
-import { useTranslation } from "react-i18next";
 
 export function SettingsPage() {
-  const { t } = useTranslation();
   const { toast } = useToast();
   const { activeProject, projects } = useProject();
   const [, setLocation] = useLocation();
@@ -51,19 +49,19 @@ export function SettingsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       setIsRenamingProject(false);
       toast({
-        title: t("settings.projectRenamed"),
-        description: t("settings.projectRenamedDesc"),
+        title: "Project renamed",
+        description: "The project name has been updated.",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: t("settings.renameFailed"),
-        description: error.message || t("settings.renameFailedDesc"),
+        title: "Rename failed",
+        description: error.message || "Could not rename the project.",
         variant: "destructive",
       });
     },
   });
-
+  
   const { data: settings, isLoading: settingsLoading } = useQuery<Settings>({
     queryKey: ["/api/settings", { projectId: activeProject?.id }],
     queryFn: async () => {
@@ -74,7 +72,7 @@ export function SettingsPage() {
     },
     enabled: !!activeProject,
   });
-
+  
   const { data: allCards = [] } = useQuery<FlashCard[]>({
     queryKey: ["/api/cards", { projectId: activeProject?.id }],
     queryFn: async () => {
@@ -85,7 +83,7 @@ export function SettingsPage() {
     },
     enabled: !!activeProject,
   });
-
+  
   const { data: allDecks = [] } = useQuery<Deck[]>({
     queryKey: ["/api/decks", { projectId: activeProject?.id }],
     queryFn: async () => {
@@ -96,7 +94,7 @@ export function SettingsPage() {
     },
     enabled: !!activeProject,
   });
-
+  
   const { data: allReviews = [] } = useQuery<Review[]>({
     queryKey: ["/api/reviews", { projectId: activeProject?.id }],
     queryFn: async () => {
@@ -107,9 +105,9 @@ export function SettingsPage() {
     },
     enabled: !!activeProject,
   });
-
+  
   const [localSettings, setLocalSettings] = useState<Partial<Settings>>({});
-
+  
   const updateMutation = useMutation({
     mutationFn: async (newSettings: Partial<Settings>) => {
       const url = activeProject?.id ? `/api/settings?projectId=${activeProject.id}` : "/api/settings";
@@ -121,8 +119,8 @@ export function SettingsPage() {
       setIsSaved(true);
       setLocalSettings({});
       toast({
-        title: t("settings.saved"),
-        description: t("settings.savedDesc"),
+        title: "Settings saved",
+        description: "Your preferences have been updated.",
       });
     },
   });
@@ -138,12 +136,12 @@ export function SettingsPage() {
       setIsDeletingProject(false);
       setLocation("/");
       toast({
-        title: t("settings.projectDeleted"),
-        description: t("settings.projectDeletedDesc"),
+        title: "Project deleted",
+        description: "The project and all its data have been removed.",
       });
     },
   });
-
+  
   if (settingsLoading || !settings) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -151,18 +149,18 @@ export function SettingsPage() {
       </div>
     );
   }
-
+  
   const currentSettings = { ...settings, ...localSettings };
-
+  
   const handleChange = <K extends keyof Settings>(key: K, value: Settings[K]) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }));
     setIsSaved(false);
   };
-
+  
   const handleSave = () => {
     updateMutation.mutate(localSettings);
   };
-
+  
   const handleExportData = async () => {
     const url = activeProject?.id ? `/api/export?projectId=${activeProject.id}` : "/api/export";
     const res = await fetch(url);
@@ -172,13 +170,13 @@ export function SettingsPage() {
     link.href = URL.createObjectURL(blob);
     link.download = `memicards-backup-${new Date().toISOString().split("T")[0]}.json`;
     link.click();
-
+    
     toast({
-      title: t("settings.dataExported"),
-      description: t("settings.dataExportedDesc"),
+      title: "Data exported",
+      description: "Your complete backup has been downloaded.",
     });
   };
-
+  
   const handleExportCards = () => {
     const csv = exportCardsToCSV(allCards);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -186,13 +184,13 @@ export function SettingsPage() {
     link.href = URL.createObjectURL(blob);
     link.download = `cards-${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
-
+    
     toast({
-      title: t("settings.cardsExported"),
-      description: t("settings.cardsExportedDesc", { n: allCards.length }),
+      title: "Cards exported",
+      description: `${allCards.length} cards exported to CSV.`,
     });
   };
-
+  
   const handleExportReviews = () => {
     const csv = exportReviewsToCSV(allReviews, allCards);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -200,24 +198,24 @@ export function SettingsPage() {
     link.href = URL.createObjectURL(blob);
     link.download = `review-history-${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
-
+    
     toast({
-      title: t("settings.reviewsExported"),
-      description: t("settings.reviewsExportedDesc", { n: allReviews.length }),
+      title: "Reviews exported",
+      description: `${allReviews.length} review records exported to CSV.`,
     });
   };
 
   const canDeleteProject = projects.length > 1;
-
+  
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
-        <h2 className="text-2xl font-semibold mb-2" data-testid="text-settings-title">{t("settings.title")}</h2>
+        <h2 className="text-2xl font-semibold mb-2" data-testid="text-settings-title">Project Settings</h2>
       </div>
-
+      
       <Card>
         <CardHeader>
-          <CardTitle>{t("settings.projectName")}</CardTitle>
+          <CardTitle>Project Name</CardTitle>
         </CardHeader>
         <CardContent>
           {isRenamingProject ? (
@@ -225,7 +223,7 @@ export function SettingsPage() {
               <Input
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                placeholder={t("settings.projectNamePlaceholder")}
+                placeholder="Enter project name"
                 className="flex-1 min-w-[200px]"
                 data-testid="input-project-name"
                 autoFocus
@@ -245,7 +243,7 @@ export function SettingsPage() {
                 data-testid="button-save-project-name"
               >
                 {renameProjectMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                {t("common.save")}
+                Save
               </Button>
               <Button
                 variant="outline"
@@ -255,7 +253,7 @@ export function SettingsPage() {
                 }}
                 data-testid="button-cancel-rename"
               >
-                {t("common.cancel")}
+                Cancel
               </Button>
             </div>
           ) : (
@@ -271,7 +269,7 @@ export function SettingsPage() {
                 data-testid="button-rename-project"
               >
                 <Pencil className="h-4 w-4 mr-2" />
-                {t("settings.rename")}
+                Rename
               </Button>
             </div>
           )}
@@ -280,17 +278,17 @@ export function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("settings.weekendMode")}</CardTitle>
+          <CardTitle>Weekend Learner Mode</CardTitle>
           <CardDescription>
-            {t("settings.weekendModeDesc")}
+            Adjust your daily card limits based on the day of the week
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="weekend-mode">{t("settings.enableWeekendMode")}</Label>
+              <Label htmlFor="weekend-mode">Enable weekend learner mode</Label>
               <p className="text-sm text-muted-foreground">
-                {t("settings.weekendModeSubLabel")}
+                Higher review load on weekends, lighter on weekdays
               </p>
             </div>
             <Switch
@@ -300,15 +298,15 @@ export function SettingsPage() {
               data-testid="switch-weekend-mode"
             />
           </div>
-
+          
           {currentSettings.weekendLearnerMode && (
             <>
               <Separator />
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-4">
-                  <h4 className="font-medium">{t("settings.weekdays")}</h4>
+                  <h4 className="font-medium">Weekdays (Mon-Fri)</h4>
                   <div className="space-y-2">
-                    <Label htmlFor="weekday-new">{t("settings.newCardsPerDay")}</Label>
+                    <Label htmlFor="weekday-new">New cards per day</Label>
                     <Input
                       id="weekday-new"
                       type="number"
@@ -320,7 +318,7 @@ export function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="weekday-review">{t("settings.reviewCardsPerDay")}</Label>
+                    <Label htmlFor="weekday-review">Review cards per day</Label>
                     <Input
                       id="weekday-review"
                       type="number"
@@ -333,9 +331,9 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <h4 className="font-medium">{t("settings.weekends")}</h4>
+                  <h4 className="font-medium">Weekends (Sat-Sun)</h4>
                   <div className="space-y-2">
-                    <Label htmlFor="weekend-new">{t("settings.newCardsPerDay")}</Label>
+                    <Label htmlFor="weekend-new">New cards per day</Label>
                     <Input
                       id="weekend-new"
                       type="number"
@@ -347,7 +345,7 @@ export function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="weekend-review">{t("settings.reviewCardsPerDay")}</Label>
+                    <Label htmlFor="weekend-review">Review cards per day</Label>
                     <Input
                       id="weekend-review"
                       type="number"
@@ -364,20 +362,20 @@ export function SettingsPage() {
           )}
         </CardContent>
       </Card>
-
+      
       <Card>
         <CardHeader>
-          <CardTitle>{t("settings.reviewPreferences")}</CardTitle>
+          <CardTitle>Review Preferences</CardTitle>
           <CardDescription>
-            {t("settings.reviewPreferencesDesc")}
+            Customize how your review sessions work
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="prioritize-starred">{t("settings.prioritizeStarred")}</Label>
+              <Label htmlFor="prioritize-starred">Prioritize starred cards</Label>
               <p className="text-sm text-muted-foreground">
-                {t("settings.prioritizeStarredDesc")}
+                Show difficult (starred) cards first in review sessions
               </p>
             </div>
             <Switch
@@ -387,11 +385,11 @@ export function SettingsPage() {
               data-testid="switch-prioritize-starred"
             />
           </div>
-
+          
           <Separator />
-
+          
           <div className="space-y-2">
-            <Label htmlFor="weekly-target">{t("settings.weeklyTarget")}</Label>
+            <Label htmlFor="weekly-target">Weekly card target</Label>
             <Input
               id="weekly-target"
               type="number"
@@ -402,38 +400,38 @@ export function SettingsPage() {
               data-testid="input-weekly-target"
             />
             <p className="text-sm text-muted-foreground">
-              {t("settings.weeklyTargetDesc")}
+              Goal for new cards to learn each week
             </p>
           </div>
         </CardContent>
       </Card>
-
+      
       <Card>
         <CardHeader>
-          <CardTitle>{t("settings.dataManagement")}</CardTitle>
+          <CardTitle>Data Management</CardTitle>
           <CardDescription>
-            {t("settings.dataManagementDesc")}
+            Export your data for backup
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 rounded-md bg-muted/50">
             <p className="text-sm">
-              {t("settings.currentData", { decks: allDecks.length, cards: allCards.length, reviews: allReviews.length })}
+              <strong>Current data:</strong> {allDecks.length} decks, {allCards.length} cards, {allReviews.length} reviews
             </p>
           </div>
-
+          
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={handleExportData} data-testid="button-export-all">
               <Download className="h-4 w-4 mr-2" />
-              {t("settings.exportJSON")}
+              Export All Data (JSON)
             </Button>
             <Button variant="outline" onClick={handleExportCards} data-testid="button-export-cards">
               <Download className="h-4 w-4 mr-2" />
-              {t("settings.exportCardsCSV")}
+              Export Cards (CSV)
             </Button>
             <Button variant="outline" onClick={handleExportReviews} data-testid="button-export-reviews">
               <Download className="h-4 w-4 mr-2" />
-              {t("settings.exportReviewsCSV")}
+              Export Reviews (CSV)
             </Button>
           </div>
         </CardContent>
@@ -441,11 +439,11 @@ export function SettingsPage() {
 
       <Card className={canDeleteProject ? "border-destructive/30" : ""}>
         <CardHeader>
-          <CardTitle>{t("settings.deleteProject")}</CardTitle>
+          <CardTitle>Delete Project</CardTitle>
           <CardDescription>
             {canDeleteProject
-              ? t("settings.deleteProjectDesc", { name: activeProject?.name })
-              : t("settings.deleteProjectOnlyOne")}
+              ? `Permanently delete "${activeProject?.name}" and all its decks, cards, and review history.`
+              : "You cannot delete your only project. Create another project first."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -456,38 +454,38 @@ export function SettingsPage() {
             data-testid="button-delete-project"
           >
             {deleteProjectMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
-            {t("settings.deleteProjectButton")}
+            Delete Project
           </Button>
         </CardContent>
       </Card>
-
+      
       <div className="flex justify-end">
-        <Button
-          onClick={handleSave}
+        <Button 
+          onClick={handleSave} 
           disabled={isSaved || updateMutation.isPending}
           data-testid="button-save-settings"
         >
           {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-          {isSaved ? t("settings.settingsSaved") : t("settings.saveSettings")}
+          {isSaved ? "Settings Saved" : "Save Settings"}
         </Button>
       </div>
 
       <AlertDialog open={isDeletingProject} onOpenChange={setIsDeletingProject}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("settings.deleteProject")}</AlertDialogTitle>
+            <AlertDialogTitle>Delete Project?</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("settings.deleteProjectConfirm", { name: activeProject?.name })}
+              This will permanently delete "{activeProject?.name}" and all its decks, cards, and review history. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => activeProject && deleteProjectMutation.mutate(activeProject.id)}
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => activeProject && deleteProjectMutation.mutate(activeProject.id)} 
               className="bg-destructive text-destructive-foreground"
               data-testid="button-confirm-delete-project"
             >
-              {t("settings.deleteProjectButton")}
+              Delete Project
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

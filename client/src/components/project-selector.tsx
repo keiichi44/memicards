@@ -16,7 +16,6 @@ import { Label } from "@/components/ui/label";
 import { useProject } from "@/lib/project-context";
 import { useReviewGuard } from "@/lib/review-guard-context";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useTranslation } from "react-i18next";
 
 function truncateName(name: string, maxLength = 18): string {
   if (name.length <= maxLength) return name;
@@ -24,7 +23,6 @@ function truncateName(name: string, maxLength = 18): string {
 }
 
 export function ProjectSelector() {
-  const { t } = useTranslation();
   const { projects, activeProject, setActiveProjectId } = useProject();
   const { requestNavigation } = useReviewGuard();
   const [location, navigate] = useLocation();
@@ -54,18 +52,18 @@ export function ProjectSelector() {
       try {
         const text = error.message.replace(/^\d+:\s*/, "");
         const parsed = JSON.parse(text);
-        setCreateError(parsed.error || t("projectSelector.createProject"));
+        setCreateError(parsed.error || "Failed to create project");
       } catch {
-        setCreateError(t("projectSelector.createProject"));
+        setCreateError("Failed to create project");
       }
     },
   });
 
   const getNextName = () => {
-    const base = t("projectSelector.defaultProjectBase");
+    const base = "Learning project";
     const existingNumbers = projects
       .map(p => {
-        const match = p.name.match(/^Learning project\s*(\d*)$/) || p.name.match(new RegExp(`^${base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*(\\d*)$`));
+        const match = p.name.match(/^Learning project\s*(\d*)$/);
         if (match) return match[1] ? parseInt(match[1]) : 0;
         return -1;
       })
@@ -123,9 +121,9 @@ export function ProjectSelector() {
       <Dialog open={isListOpen} onOpenChange={setIsListOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("projectSelector.selectProject")}</DialogTitle>
+            <DialogTitle>Select Project</DialogTitle>
             <DialogDescription>
-              {t("projectSelector.selectProjectDesc")}
+              Switch between your learning projects.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-1 py-2">
@@ -155,7 +153,7 @@ export function ProjectSelector() {
               data-testid="button-add-project"
             >
               <Plus className="h-4 w-4 mr-2" />
-              {t("projectSelector.createProject")}
+              Create Project
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -164,19 +162,19 @@ export function ProjectSelector() {
       <Dialog open={isCreateOpen} onOpenChange={(open) => { setIsCreateOpen(open); if (!open) setCreateError(""); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("projectSelector.createNewProject")}</DialogTitle>
+            <DialogTitle>Create New Project</DialogTitle>
             <DialogDescription>
-              {t("projectSelector.createNewProjectDesc")}
+              Projects help you organize different learning goals separately.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="project-name">{t("projectSelector.projectNameLabel")}</Label>
+              <Label htmlFor="project-name">Project Name</Label>
               <Input
                 id="project-name"
                 value={newName}
                 onChange={(e) => { setNewName(e.target.value); setCreateError(""); }}
-                placeholder={t("projectSelector.projectNamePlaceholder")}
+                placeholder="e.g., Spanish Course"
                 data-testid="input-project-name"
               />
               {createError && (
@@ -186,7 +184,7 @@ export function ProjectSelector() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-              {t("common.cancel")}
+              Cancel
             </Button>
             <Button
               onClick={handleCreate}
@@ -194,7 +192,7 @@ export function ProjectSelector() {
               data-testid="button-confirm-create-project"
             >
               {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t("projectSelector.createProject")}
+              Create Project
             </Button>
           </DialogFooter>
         </DialogContent>

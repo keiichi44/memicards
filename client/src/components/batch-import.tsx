@@ -27,14 +27,12 @@ import { parseCSV, importCards } from "@/lib/storage";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useProject } from "@/lib/project-context";
 import { useToast } from "@/hooks/use-toast";
-import { useTranslation } from "react-i18next";
 
 interface BatchImportProps {
   onComplete: () => void;
 }
 
 export function BatchImport({ onComplete }: BatchImportProps) {
-  const { t } = useTranslation();
   const { activeProject, projects } = useProject();
   const { toast } = useToast();
 
@@ -89,17 +87,17 @@ export function BatchImport({ onComplete }: BatchImportProps) {
       setNewDeckDescription("");
       setDeckError("");
       toast({
-        title: t("batchImport.deckCreated", { name: deck.name }),
-        description: t("batchImport.deckCreatedDesc"),
+        title: `Deck "${deck.name}" created`,
+        description: "Now select your CSV file or paste the content below.",
       });
     },
     onError: (err: Error) => {
       try {
         const text = err.message.replace(/^\d+:\s*/, "");
         const parsed = JSON.parse(text);
-        setDeckError(parsed.error || t("batchImport.somethingWentWrong"));
+        setDeckError(parsed.error || "Something went wrong");
       } catch {
-        setDeckError(t("batchImport.somethingWentWrong"));
+        setDeckError("Something went wrong");
       }
     },
   });
@@ -108,7 +106,7 @@ export function BatchImport({ onComplete }: BatchImportProps) {
     mutationFn: async () => {
       const parsedCards = parseCSV(csvContent, separator);
       if (parsedCards.length === 0) {
-        throw new Error(t("batchImport.noValidCards", { sep: separator }));
+        throw new Error(`No valid cards found in the CSV. Make sure format is: word${separator}translation${separator}sentence${separator}association`);
       }
       return importCards(parsedCards, selectedDeckId, updateExisting);
     },
@@ -122,7 +120,7 @@ export function BatchImport({ onComplete }: BatchImportProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
     },
     onError: (err) => {
-      setError(`${t("batchImport.importFailed")}: ${err instanceof Error ? err.message : t("batchImport.unknownError")}`);
+      setError(`Import failed: ${err instanceof Error ? err.message : "Unknown error"}`);
     },
   });
 
@@ -137,18 +135,18 @@ export function BatchImport({ onComplete }: BatchImportProps) {
       setError(null);
     };
     reader.onerror = () => {
-      setError(t("batchImport.failedToReadFile"));
+      setError("Failed to read file");
     };
     reader.readAsText(file);
   };
 
   const handleImport = () => {
     if (!selectedDeckId) {
-      setError(t("batchImport.selectDeckError"));
+      setError("Please select a deck");
       return;
     }
     if (!csvContent.trim()) {
-      setError(t("batchImport.provideCsvError"));
+      setError("Please provide CSV data");
       return;
     }
     setError(null);
@@ -169,39 +167,39 @@ export function BatchImport({ onComplete }: BatchImportProps) {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
-        <h2 className="text-2xl font-semibold mb-2">{t("batchImport.title")}</h2>
+        <h2 className="text-2xl font-semibold mb-2">Batch Import</h2>
         <p className="text-muted-foreground">
-          {t("batchImport.subtitle")}
+          Import multiple cards at once from a CSV file or paste directly.
         </p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{t("batchImport.howToTitle")}</CardTitle>
-          <CardDescription className="text-sm text-[#000000]">{t("batchImport.howToStep1")}</CardDescription>
+          <CardTitle className="text-lg">How to import</CardTitle>
+          <CardDescription className="text-sm text-[#000000]">1. Prepare a spreadsheet with columns: word, translation, sentence (optional), association (optional). This will be the structure of your deck. Each row represents a card, E.g.: book | книга | The book is on the table | reading material</CardDescription>
           <a href="/csv-template.csv" download="csv-template.csv" className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-1" data-testid="link-download-csv-template">
             <Download className="h-3 w-3" />
-            {t("batchImport.downloadTemplate")}
+            Download CSV template
           </a>
-          <CardDescription className="text-sm text-[#000000]">{t("batchImport.howToStep2")}</CardDescription>
+          <CardDescription className="text-sm text-[#000000]">2. Save your spreadsheet as a .csv file. Upload the CSV or copy and paste it into the field above. If the decks aren't exporting correctly, try selecting another CSV separator.</CardDescription>
         </CardHeader>
         <CardContent>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{t("batchImport.importCSVTitle")}</CardTitle>
+          <CardTitle className="text-lg">Import CSV file</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="deck-select">{t("batchImport.targetDeck")}</Label>
+            <Label htmlFor="deck-select">Target Deck *</Label>
             <Select value={selectedDeckId} onValueChange={setSelectedDeckId} disabled={noDecks}>
               <SelectTrigger id="deck-select" data-testid="select-import-deck">
-                <SelectValue placeholder={noDecks ? t("batchImport.noDecksYet") : t("batchImport.selectDeck")} />
+                <SelectValue placeholder={noDecks ? "No decks yet — create one below" : "Select a deck"} />
               </SelectTrigger>
               <SelectContent>
                 {sortedDecks.map((deck) => (
                   <SelectItem key={deck.id} value={deck.id} data-testid={`select-deck-${deck.id}`}>
-                    {deck.name} ({projectMap.get(deck.projectId || "")?.name || t("batchImport.noProject")})
+                    {deck.name} ({projectMap.get(deck.projectId || "")?.name || "No project"})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -213,12 +211,12 @@ export function BatchImport({ onComplete }: BatchImportProps) {
               data-testid="button-create-deck-inline"
             >
               <Plus className="h-3.5 w-3.5 mr-1.5" />
-              {t("batchImport.createNewDeck")}
+              Create new deck
             </Button>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="separator-select">{t("batchImport.csvSeparator")}</Label>
+            <Label htmlFor="separator-select">CSV Separator</Label>
             <Select
               value={separator}
               onValueChange={(val) => setSeparator(val as "," | ";")}
@@ -228,18 +226,18 @@ export function BatchImport({ onComplete }: BatchImportProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value=",">{t("batchImport.comma")}</SelectItem>
-                <SelectItem value=";">{t("batchImport.semicolon")}</SelectItem>
+                <SelectItem value=",">Comma (,)</SelectItem>
+                <SelectItem value=";">Semicolon (;)</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-sm text-muted-foreground">{t("batchImport.separatorHint")}</p>
+            <p className="text-sm text-muted-foreground">If you get incorrect import results, try selecting a different separator.</p>
           </div>
 
           <div className={`flex items-center justify-between ${noDecks ? "opacity-50 pointer-events-none" : ""}`}>
             <div className="space-y-0.5">
-              <Label htmlFor="update-existing">{t("batchImport.updateExisting")}</Label>
+              <Label htmlFor="update-existing">Update existing cards</Label>
               <p className="text-sm text-muted-foreground">
-                {t("batchImport.updateExistingDesc")}
+                If a card with the same word exists, update it
               </p>
             </div>
             <Switch
@@ -252,7 +250,7 @@ export function BatchImport({ onComplete }: BatchImportProps) {
           </div>
 
           <div className="space-y-2">
-            <Label>{t("batchImport.uploadCSV")}</Label>
+            <Label>Upload CSV File</Label>
             <div className={`border-2 border-dashed rounded-md p-6 text-center ${noDecks ? "opacity-50 pointer-events-none" : ""}`}>
               <input
                 type="file"
@@ -267,20 +265,20 @@ export function BatchImport({ onComplete }: BatchImportProps) {
               <label htmlFor="file-upload" className={noDecks ? "cursor-default" : "cursor-pointer"}>
                 <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">
-                  {t("batchImport.uploadHint")}
+                  Click to upload or drag and drop
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t("batchImport.uploadFormats")}
+                  CSV or TXT files
                 </p>
               </label>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="csv-content">{t("batchImport.pasteContent")}</Label>
+            <Label htmlFor="csv-content">Or paste CSV content directly</Label>
             <Textarea
               id="csv-content"
-              placeholder={t("batchImport.textareaPlaceholder")}
+              placeholder="word,translation,sentence,association&#10;hello,привет,Hello! How are you?,greeting"
               value={csvContent}
               disabled={noDecks}
               onChange={(e) => {
@@ -297,7 +295,7 @@ export function BatchImport({ onComplete }: BatchImportProps) {
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>{t("batchImport.errorTitle")}</AlertTitle>
+              <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -305,25 +303,17 @@ export function BatchImport({ onComplete }: BatchImportProps) {
           {result && (
             <Alert>
               <CheckCircle className="h-4 w-4 text-green-500" />
-              <AlertTitle>{t("batchImport.importComplete")}</AlertTitle>
+              <AlertTitle>Import Complete</AlertTitle>
               <AlertDescription>
-                {result.skipped > 0
-                  ? t("batchImport.importResultSkipped", {
-                      imported: result.imported,
-                      updated: result.updated,
-                      skipped: result.skipped,
-                    })
-                  : t("batchImport.importResult", {
-                      imported: result.imported,
-                      updated: result.updated,
-                    })}
+                {result.imported} cards imported, {result.updated} updated
+                {result.skipped > 0 && `, ${result.skipped} skipped`}
               </AlertDescription>
             </Alert>
           )}
 
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={onComplete} data-testid="button-cancel-import">
-              {result ? t("common.done") : t("common.cancel")}
+              {result ? "Done" : "Cancel"}
             </Button>
             <Button
               onClick={handleImport}
@@ -331,7 +321,7 @@ export function BatchImport({ onComplete }: BatchImportProps) {
               data-testid="button-import-cards"
             >
               {importMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
-              {importMutation.isPending ? t("batchImport.importing") : t("batchImport.importCards")}
+              {importMutation.isPending ? "Importing..." : "Import Cards"}
             </Button>
           </div>
         </CardContent>
@@ -340,14 +330,14 @@ export function BatchImport({ onComplete }: BatchImportProps) {
       <Dialog open={isCreateDeckOpen} onOpenChange={(open) => { setIsCreateDeckOpen(open); if (!open) setDeckError(""); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("deckList.createDeck")}</DialogTitle>
+            <DialogTitle>Create New Deck</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="new-deck-name">{t("deckList.deckName")}</Label>
+              <Label htmlFor="new-deck-name">Name *</Label>
               <Input
                 id="new-deck-name"
-                placeholder={t("deckList.deckNamePlaceholder")}
+                placeholder="e.g., Week 2"
                 value={newDeckName}
                 onChange={(e) => { setNewDeckName(e.target.value); setDeckError(""); }}
                 data-testid="input-new-deck-name"
@@ -357,20 +347,20 @@ export function BatchImport({ onComplete }: BatchImportProps) {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-deck-language">{t("deckList.deckLanguage")}</Label>
+              <Label htmlFor="new-deck-language">Language *</Label>
               <Input
                 id="new-deck-language"
-                placeholder={t("deckList.deckLanguagePlaceholder")}
+                placeholder="e.g., Spanish, Japanese, Armenian"
                 value={newDeckLanguage}
                 onChange={(e) => setNewDeckLanguage(e.target.value)}
                 data-testid="input-new-deck-language"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-deck-description">{t("deckList.deckDescription")}</Label>
+              <Label htmlFor="new-deck-description">Description (optional)</Label>
               <Textarea
                 id="new-deck-description"
-                placeholder={t("deckList.deckDescriptionPlaceholder")}
+                placeholder="What's in this deck?"
                 value={newDeckDescription}
                 onChange={(e) => setNewDeckDescription(e.target.value)}
                 data-testid="input-new-deck-description"
@@ -379,7 +369,7 @@ export function BatchImport({ onComplete }: BatchImportProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateDeckOpen(false)}>
-              {t("common.cancel")}
+              Cancel
             </Button>
             <Button
               onClick={handleCreateDeck}
@@ -387,7 +377,7 @@ export function BatchImport({ onComplete }: BatchImportProps) {
               data-testid="button-confirm-create-deck-inline"
             >
               {createDeckMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t("deckList.createDeck")}
+              Create Deck
             </Button>
           </DialogFooter>
         </DialogContent>

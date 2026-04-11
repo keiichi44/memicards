@@ -2,11 +2,9 @@ import { useLocation } from "wouter";
 import { BatchImport } from "@/components/batch-import";
 import { LibraryList } from "@/components/library-list";
 import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
 
 export default function Import() {
   const [location, setLocation] = useLocation();
-  const { t } = useTranslation();
   const tab = location === "/import/lib" ? "library" : "batch";
 
   return (
@@ -18,7 +16,7 @@ export default function Import() {
           onClick={() => setLocation("/import")}
           data-testid="button-tab-batch-import"
         >
-          {t("batchImport.title")}
+          Batch Import
         </Button>
         <Button
           variant={tab === "library" ? "default" : "ghost"}
@@ -26,7 +24,7 @@ export default function Import() {
           onClick={() => setLocation("/import/lib")}
           data-testid="button-tab-decks-library"
         >
-          {t("libraryList.title")}
+          Decks Library
         </Button>
       </div>
 

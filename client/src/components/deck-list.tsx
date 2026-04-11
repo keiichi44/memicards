@@ -32,7 +32,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isDueToday, isNewCard } from "@/lib/sm2";
 import { useProject } from "@/lib/project-context";
 import { useLocation } from "wouter";
-import { useTranslation } from "react-i18next";
 
 interface DeckWithCount extends Deck {
   cardCount: number;
@@ -48,7 +47,6 @@ interface DeckListProps {
 }
 
 export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckListProps) {
-  const { t } = useTranslation();
   const { activeProject } = useProject();
   const [, setLocation] = useLocation();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -73,7 +71,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
     },
     enabled: !!activeProject,
   });
-
+  
   const { data: allCards = [] } = useQuery<FlashCard[]>({
     queryKey: ["/api/cards", { projectId: activeProject?.id }],
     queryFn: async () => {
@@ -84,7 +82,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
     },
     enabled: !!activeProject,
   });
-
+  
   useEffect(() => {
     if (!decksLoading && decks.length === 0 && onboardingKey) {
       const done = localStorage.getItem(onboardingKey);
@@ -108,14 +106,14 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const activeCards = allCards.filter(c => c.isActive);
   const totalDue = activeCards.filter(c => isDueToday(c)).length;
   const totalNew = activeCards.filter(c => isNewCard(c)).length;
-
+  
   const parseMutationError = (error: Error): string => {
     try {
       const text = error.message.replace(/^\d+:\s*/, "");
       const parsed = JSON.parse(text);
-      return parsed.error || t("batchImport.somethingWentWrong");
+      return parsed.error || "Something went wrong";
     } catch {
-      return t("batchImport.somethingWentWrong");
+      return "Something went wrong";
     }
   };
 
@@ -137,7 +135,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       setDeckError(parseMutationError(error));
     },
   });
-
+  
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: { name: string; language: string; description: string } }) => {
       const res = await apiRequest("PATCH", `/api/decks/${id}`, data);
@@ -156,7 +154,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       setDeckError(parseMutationError(error));
     },
   });
-
+  
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       await apiRequest("DELETE", `/api/decks/${id}`);
@@ -167,34 +165,34 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       setDeletingDeck(null);
     },
   });
-
+  
   const handleCreateDeck = () => {
     if (!newDeckName.trim() || !newDeckLanguage.trim()) return;
     setDeckError("");
     createMutation.mutate({ name: newDeckName.trim(), language: newDeckLanguage.trim(), description: newDeckDescription.trim() });
   };
-
+  
   const handleUpdateDeck = () => {
     if (!editingDeck || !newDeckName.trim() || !newDeckLanguage.trim()) return;
     setDeckError("");
-    updateMutation.mutate({
-      id: editingDeck.id,
-      data: { name: newDeckName.trim(), language: newDeckLanguage.trim(), description: newDeckDescription.trim() }
+    updateMutation.mutate({ 
+      id: editingDeck.id, 
+      data: { name: newDeckName.trim(), language: newDeckLanguage.trim(), description: newDeckDescription.trim() } 
     });
   };
-
+  
   const handleDeleteDeck = () => {
     if (!deletingDeck) return;
     deleteMutation.mutate(deletingDeck.id);
   };
-
+  
   const openEditDialog = (deck: Deck) => {
     setEditingDeck(deck);
     setNewDeckName(deck.name);
     setNewDeckLanguage(deck.language || "");
     setNewDeckDescription(deck.description || "");
   };
-
+  
   if (decksLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -202,33 +200,33 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       </div>
     );
   }
-
+  
   return (
     <div className="space-y-6">
       <Card className="border-dashed">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-lg" data-testid="text-all-decks-review">{t("deckList.allDecksReview")}</h3>
+              <h3 className="font-semibold text-lg" data-testid="text-all-decks-review">All decks Review</h3>
               <p className="text-sm text-muted-foreground">
-                {t("deckList.dueToday", { n: totalDue, m: totalNew })}
+                {totalDue} due today, {totalNew} new cards
               </p>
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={() => onStartReview()}
+              <Button 
+                onClick={() => onStartReview()} 
                 disabled={totalDue === 0 && totalNew === 0}
                 data-testid="button-start-all-review"
               >
                 <Play className="h-4 w-4 mr-2" />
-                {t("deckList.startReview")}
+                Start Review
               </Button>
-              <Button
+              <Button 
                 variant="outline"
                 size="icon"
-                onClick={() => onStartPractice()}
+                onClick={() => onStartPractice()} 
                 disabled={allCards.length === 0}
-                title={t("deckList.practiceMode")}
+                title="Practice mode"
                 data-testid="button-start-all-practice"
               >
                 <Eye className="h-4 w-4" />
@@ -238,26 +236,26 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
         </CardContent>
       </Card>
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold">{t("deckList.yourDecks")}</h2>
+        <h2 className="text-xl font-semibold">Your Decks</h2>
         <Button onClick={() => setIsPickerOpen(true)} data-testid="button-create-deck">
           <Plus className="h-4 w-4 mr-2" />
-          {t("deckList.newDeck")}
+          New Deck
         </Button>
       </div>
       <Dialog open={isCreateOpen} onOpenChange={(open) => { setIsCreateOpen(open); if (!open) setDeckError(""); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("deckList.createDeck")}</DialogTitle>
+            <DialogTitle>Create New Deck</DialogTitle>
             <DialogDescription>
-              {t("deckList.createDeckDesc")}
+              Create a new deck to organize your flashcards.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="deck-name">{t("deckList.deckName")}</Label>
+              <Label htmlFor="deck-name">Name *</Label>
               <Input
                 id="deck-name"
-                placeholder={t("deckList.deckNamePlaceholder")}
+                placeholder="e.g., Week 2"
                 value={newDeckName}
                 onChange={(e) => { setNewDeckName(e.target.value); setDeckError(""); }}
                 data-testid="input-deck-name"
@@ -267,20 +265,20 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="deck-language">{t("deckList.deckLanguage")}</Label>
+              <Label htmlFor="deck-language">Language *</Label>
               <Input
                 id="deck-language"
-                placeholder={t("deckList.deckLanguagePlaceholder")}
+                placeholder="e.g., Spanish, Japanese, Armenian"
                 value={newDeckLanguage}
                 onChange={(e) => setNewDeckLanguage(e.target.value)}
                 data-testid="input-deck-language"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="deck-description">{t("deckList.deckDescription")}</Label>
+              <Label htmlFor="deck-description">Description (optional)</Label>
               <Textarea
                 id="deck-description"
-                placeholder={t("deckList.deckDescriptionPlaceholder")}
+                placeholder="What's in this deck?"
                 value={newDeckDescription}
                 onChange={(e) => setNewDeckDescription(e.target.value)}
                 data-testid="input-deck-description"
@@ -289,15 +287,15 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-              {t("deckList.cancel")}
+              Cancel
             </Button>
-            <Button
-              onClick={handleCreateDeck}
+            <Button 
+              onClick={handleCreateDeck} 
               disabled={!newDeckName.trim() || !newDeckLanguage.trim() || createMutation.isPending}
               data-testid="button-confirm-create-deck"
             >
               {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t("deckList.createDeck")}
+              Create Deck
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -307,10 +305,10 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           {decks.map((deck) => {
             const deckCards = allCards.filter(c => c.deckId === deck.id);
             const newCount = deckCards.filter(c => isNewCard(c)).length;
-
+            
             return (
-              <Card
-                key={deck.id}
+              <Card 
+                key={deck.id} 
                 className="hover-elevate cursor-pointer"
                 onClick={() => onSelectDeck(deck.id)}
                 data-testid={`card-deck-${deck.id}`}
@@ -349,15 +347,15 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge variant="outline">{t("deckList.cards", { n: deck.cardCount })}</Badge>
-                    {deck.dueCount > 0 && <Badge variant="default">{t("deckList.due", { n: deck.dueCount })}</Badge>}
-                    {newCount > 0 && <Badge variant="secondary">{t("deckList.new_badge", { n: newCount })}</Badge>}
-                    {deck.starredCount > 0 && <Badge variant="outline" className="text-yellow-600">{t("deckList.starred", { n: deck.starredCount })}</Badge>}
-                    {deck.inactiveCount > 0 && <Badge variant="outline" className="text-muted-foreground">{t("deckList.off", { n: deck.inactiveCount })}</Badge>}
+                    <Badge variant="outline">{deck.cardCount} cards</Badge>
+                    {deck.dueCount > 0 && <Badge variant="default">{deck.dueCount} due</Badge>}
+                    {newCount > 0 && <Badge variant="secondary">{newCount} new</Badge>}
+                    {deck.starredCount > 0 && <Badge variant="outline" className="text-yellow-600">{deck.starredCount} starred</Badge>}
+                    {deck.inactiveCount > 0 && <Badge variant="outline" className="text-muted-foreground">{deck.inactiveCount} off</Badge>}
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      className="flex-1"
+                    <Button 
+                      className="flex-1" 
                       variant="outline"
                       disabled={deck.dueCount === 0 && newCount === 0}
                       onClick={(e) => {
@@ -367,9 +365,9 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                       data-testid={`button-review-deck-${deck.id}`}
                     >
                       <Play className="h-4 w-4 mr-2" />
-                      {t("deckList.study")}
+                      Study
                     </Button>
-                    <Button
+                    <Button 
                       variant="ghost"
                       size="icon"
                       disabled={deck.cardCount === 0}
@@ -377,7 +375,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                         e.stopPropagation();
                         onStartPractice(deck.id);
                       }}
-                      title={t("deckList.practiceMode")}
+                      title="Practice mode"
                       data-testid={`button-practice-deck-${deck.id}`}
                     >
                       <Eye className="h-4 w-4" />
@@ -394,22 +392,22 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           <div className="flex items-start gap-4">
             <Lightbulb className="h-8 w-8 text-muted-foreground flex-shrink-0 mt-1" />
             <div className="flex-1">
-              <h3 className="font-semibold mb-3" data-testid="text-tips-heading">{t("deckList.tipsHeading")}</h3>
+              <h3 className="font-semibold mb-3" data-testid="text-tips-heading">Shape an effective learning curve</h3>
               <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside" data-testid="list-tips">
-                <li data-testid="text-tip-1">{t("deckList.tip1")}</li>
-                <li data-testid="text-tip-2">{t("deckList.tip2")}</li>
-                <li data-testid="text-tip-3">{t("deckList.tip3")}</li>
-                <li data-testid="text-tip-4">{t("deckList.tip4")}</li>
-                <li data-testid="text-tip-5">{t("deckList.tip5")}</li>
+                <li data-testid="text-tip-1">Creating a deck with 20-30 cards is ideal for learning.</li>
+                <li data-testid="text-tip-2">If you have more than 30, divide them into decks based on complexity.</li>
+                <li data-testid="text-tip-3">Begin learning 20 cards a week to get accustomed to the process.</li>
+                <li data-testid="text-tip-4">Use Weekend mode for intensive learning.</li>
+                <li data-testid="text-tip-5">Import your cards via CSV mapping or enter them manually.</li>
               </ul>
               <div className="mt-4 flex gap-2 flex-wrap">
                 <Button onClick={() => setIsPickerOpen(true)} data-testid="button-create-first-deck">
                   <Plus className="h-4 w-4 mr-2" />
-                  {t("deckList.addADeck")}
+                  Add a deck
                 </Button>
                 <Button variant="outline" onClick={() => setLocation("/import/lib")} data-testid="button-decks-library">
                   <BookOpen className="h-4 w-4 mr-2" />
-                  {t("deckList.decksLibrary")}
+                  Decks Library
                 </Button>
               </div>
             </div>
@@ -419,11 +417,11 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       <Dialog open={!!editingDeck} onOpenChange={(open) => { if (!open) { setEditingDeck(null); setDeckError(""); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("deckList.editDeck")}</DialogTitle>
+            <DialogTitle>Edit Deck</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-deck-name">{t("deckList.deckName")}</Label>
+              <Label htmlFor="edit-deck-name">Name *</Label>
               <Input
                 id="edit-deck-name"
                 value={newDeckName}
@@ -435,7 +433,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-deck-language">{t("deckList.deckLanguage")}</Label>
+              <Label htmlFor="edit-deck-language">Language *</Label>
               <Input
                 id="edit-deck-language"
                 value={newDeckLanguage}
@@ -444,7 +442,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-deck-description">{t("deckList.deckDescription")}</Label>
+              <Label htmlFor="edit-deck-description">Description</Label>
               <Textarea
                 id="edit-deck-description"
                 value={newDeckDescription}
@@ -455,15 +453,15 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingDeck(null)}>
-              {t("deckList.cancel")}
+              Cancel
             </Button>
-            <Button
-              onClick={handleUpdateDeck}
+            <Button 
+              onClick={handleUpdateDeck} 
               disabled={!newDeckName.trim() || !newDeckLanguage.trim() || updateMutation.isPending}
               data-testid="button-confirm-edit-deck"
             >
               {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t("deckList.saveChanges")}
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -471,19 +469,19 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       <AlertDialog open={!!deletingDeck} onOpenChange={(open) => !open && setDeletingDeck(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("deckList.deleteDeck")}</AlertDialogTitle>
+            <AlertDialogTitle>Delete Deck?</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("deckList.deleteDeckDesc", { name: deletingDeck?.name })}
+              This will permanently delete "{deletingDeck?.name}" and all its cards. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("deckList.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteDeck}
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteDeck} 
               className="bg-destructive text-destructive-foreground"
               data-testid="button-confirm-delete-deck"
             >
-              {t("deckList.delete")}
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
