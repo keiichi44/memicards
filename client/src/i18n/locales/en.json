@@ -127,6 +127,7 @@
       "accuracy": "Accuracy",
       "correct": "{n} correct",
       "backToDecks": "Back to Decks",
+      "reviewAgain": "Review Again",
       "nothingDue": "All caught up!",
       "nothingDueDesc": "No cards due today. Come back tomorrow or add new cards.",
       "cardProgress": "{current} / {total}"
@@ -136,7 +137,11 @@
       "back": "Back",
       "done": "Done",
       "noCards": "No active cards in this deck to practice.",
-      "cardProgress": "{current} / {total}"
+      "cardProgress": "{current} / {total}",
+      "showAnswer": "Show Answer",
+      "nextCard": "Next Card",
+      "shuffle": "Shuffle cards",
+      "restart": "Restart"
     },
     "batchImport": {
       "title": "Batch Import",

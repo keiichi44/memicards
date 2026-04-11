@@ -134,17 +134,22 @@
       "accuracy": "Precisión",
       "correct": "{n} correctas",
       "backToDecks": "Volver a mazos",
+      "reviewAgain": "Repasar de nuevo",
       "nothingDue": "¡Todo al día!",
       "nothingDueDesc": "No queda nada por hoy. Vuelva mañana o añada nuevas tarjetas.",
       "cardProgress": "{current} / {total}"
     },
 
     "practiceSession": {
-      "practiceMode": "Practice Mode",
+      "practiceMode": "Modo práctica",
       "back": "Volver",
       "done": "Listo",
       "noCards": "No hay tarjetas en este mazo para practicar.",
-      "cardProgress": "{current} / {total}"
+      "cardProgress": "{current} / {total}",
+      "showAnswer": "Mostrar respuesta",
+      "nextCard": "Siguiente tarjeta",
+      "shuffle": "Barajar tarjetas",
+      "restart": "Reiniciar"
     },
 
     "batchImport": {

@@ -196,7 +196,7 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
             <div className="grid grid-cols-2 gap-4 text-center">
               <div>
                 <p className="text-3xl font-bold text-primary">{completed}</p>
-                <p className="text-sm text-muted-foreground">{t("reviewSession.reviewed", { n: "" }).replace(" ", "")}</p>
+                <p className="text-sm text-muted-foreground">{t("reviewSession.reviewed", { n: completed })}</p>
               </div>
               <div>
                 <p className="text-3xl font-bold text-accent">{accuracy}%</p>
@@ -210,7 +210,7 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
             {t("practiceSession.done")}
           </Button>
           <Button onClick={() => { setIsInitialized(false); }} variant="outline" data-testid="button-review-again">
-            {t("reviewSession.backToDecks")}
+            {t("reviewSession.reviewAgain")}
           </Button>
         </div>
       </div>

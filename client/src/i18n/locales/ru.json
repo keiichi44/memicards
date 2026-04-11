@@ -134,6 +134,7 @@
       "accuracy": "Точность",
       "correct": "Правильно: {n}",
       "backToDecks": "К колодам",
+      "reviewAgain": "Повторить снова",
       "nothingDue": "На сегодня всё!",
       "nothingDueDesc": "Вы всё повторили. Возвращайтесь завтра или добавьте новые карточки.",
       "cardProgress": "{current} / {total}"
@@ -144,7 +145,11 @@
       "back": "Назад",
       "done": "Готово",
       "noCards": "В этой колоде нет карточек для практики.",
-      "cardProgress": "{current} / {total}"
+      "cardProgress": "{current} / {total}",
+      "showAnswer": "Показать ответ",
+      "nextCard": "Следующая карточка",
+      "shuffle": "Перемешать карточки",
+      "restart": "Начать заново"
     },
 
     "batchImport": {

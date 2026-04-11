@@ -145,7 +145,7 @@ export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, s
             {showAnswer && (
               <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
                 <div className="border-t pt-4">
-                  <p className="text-sm text-muted-foreground mb-2">Translation</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t("cardList.translation")}</p>
                   <p className="text-2xl md:text-3xl font-medium" data-testid="text-russian-translation">
                     {card.russian}
                   </p>
