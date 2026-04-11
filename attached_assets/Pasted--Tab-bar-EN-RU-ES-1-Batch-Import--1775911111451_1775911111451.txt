@@ -1,0 +1,56 @@
+Вот переводы:
+
+---
+
+**Tab bar**
+
+| # | EN | RU | ES |
+|---|----|----|-----|
+| 1 | Batch Import | Пакетный импорт | Importación por lotes |
+| 2 | Decks Library | Библиотека колод | Biblioteca de mazos |
+
+---
+
+**Decks Library list**
+
+| # | EN | RU | ES |
+|---|----|----|-----|
+| 3 | Decks Library | Библиотека колод | Biblioteca de mazos |
+| 4 | Browse and import ready-made decks into your project. | Готовые колоды для добавления в ваш проект. | Explore e importe mazos ya preparados en su proyecto. |
+| 5 | `{n} cards` | `{n} карточек` | `{n} tarjetas` |
+| 6 | Import | Импортировать | Importar |
+| 7 | No decks in the library yet. | Библиотека пока пуста. | La biblioteca está vacía por ahora. |
+| 8 | Import deck? | Импортировать колоду? | ¿Importar mazo? |
+| 9 | Do you want to copy "{deckName}" to your "{projectName}"? | Добавить «{deckName}» в проект «{projectName}»? | ¿Desea copiar «{deckName}» en su proyecto «{projectName}»? |
+| 10 | No | Нет | No |
+| 11 | Yes | Да | Sí |
+| 12 | Deck imported | Колода добавлена | Mazo importado |
+| 13 | "{deckName}" has been added to {projectName}. | «{deckName}» добавлена в «{projectName}». | «{deckName}» se ha añadido a {projectName}. |
+| 14 | Import failed | Ошибка импорта | Error al importar |
+| 15 | Something went wrong. | Что-то пошло не так. | Algo salió mal. |
+
+---
+
+**Deck detail page**
+
+| # | EN | RU | ES |
+|---|----|----|-----|
+| 16 | Deck not found. | Колода не найдена. | Mazo no encontrado. |
+| 17 | Back to Library | Вернуться в библиотеку | Volver a la biblioteca |
+| 18 | `{n} cards` | `{n} карточек` | `{n} tarjetas` |
+| 19 | Import to {projectName} | Добавить в «{projectName}» | Importar a {projectName} |
+| 20 | Word | Слово | Palabra |
+| 21 | Translation | Перевод | Traducción |
+| 22 | Example | Пример | Ejemplo |
+| 23 | Association | Ассоциация | Asociación |
+| 24 | Import deck? | Импортировать колоду? | ¿Importar mazo? |
+| 25 | Do you want to copy "{deckName}" to your "{projectName}"? | Добавить «{deckName}» в проект «{projectName}»? | ¿Desea copiar «{deckName}» en su proyecto «{projectName}»? |
+| 26 | No / Yes | Нет / Да | No / Sí |
+
+---
+
+Два момента на проверку:
+
+**`{n} карточек`** — в русском нужно склонение: 1 карточка, 2 карточки, 5 карточек. Если в коде используется простая подстановка числа без pluralization — сейчас будет «2 карточек» вместо «2 карточки». Стоит это учесть при имплементации, либо использовать нейтральное **«{n} карт»** которое не склоняется.
+
+**`Import to {projectName}`** — в русском я использовал кавычки-ёлочки («») для названия проекта чтобы оно визуально выделялось. Если названия проектов могут быть длинными — в шапке кнопки может быть тесно, имей в виду.
