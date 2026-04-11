@@ -56,10 +56,19 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
     },
   });
 
-  const { data: deck } = useQuery<Deck>({
+  const { data: deck, isLoading: deckLoading } = useQuery<Deck>({
     queryKey: ["/api/decks", deckId],
     enabled: !!deckId,
   });
+
+  const { data: allDecks = [] } = useQuery<Deck[]>({
+    queryKey: ["/api/decks", { projectId: activeProject?.id }],
+    enabled: !deckId && !!activeProject?.id,
+  });
+
+  const deckLanguageMap = deckId && deck
+    ? { [deck.id]: deck.language }
+    : Object.fromEntries(allDecks.map(d => [d.id, d.language]));
 
   const reviewMutation = useMutation({
     mutationFn: async ({ cardId, quality }: { cardId: string; quality: number }) => {
@@ -125,10 +134,11 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
   }, [allCards, settings]);
 
   useEffect(() => {
-    if (!isInitialized && settings && allCards.length >= 0 && !cardsLoading) {
+    const deckReady = !deckId || !deckLoading;
+    if (!isInitialized && settings && allCards.length >= 0 && !cardsLoading && deckReady) {
       loadReviewQueue();
     }
-  }, [allCards, settings, cardsLoading, isInitialized, loadReviewQueue]);
+  }, [allCards, settings, cardsLoading, isInitialized, loadReviewQueue, deckId, deckLoading]);
 
   const currentCard = queue[currentIndex];
 
@@ -236,7 +246,7 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
       {currentCard && (
         <Flashcard
           card={currentCard}
-          languageName={deck?.language}
+          languageName={deckLanguageMap[currentCard.deckId]}
           onRate={handleRate}
           onToggleStar={handleToggleStar}
           showAnswer={showAnswer}

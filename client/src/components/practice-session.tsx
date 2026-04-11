@@ -50,10 +50,19 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
     },
   });
 
-  const { data: deck } = useQuery<Deck>({
+  const { data: deck, isLoading: deckLoading } = useQuery<Deck>({
     queryKey: ["/api/decks", deckId],
     enabled: !!deckId,
   });
+
+  const { data: allDecks = [] } = useQuery<Deck[]>({
+    queryKey: ["/api/decks", { projectId: activeProject?.id }],
+    enabled: !deckId && !!activeProject?.id,
+  });
+
+  const deckLanguageMap = deckId && deck
+    ? { [deck.id]: deck.language }
+    : Object.fromEntries(allDecks.map(d => [d.id, d.language]));
 
   const isActiveSession = shuffledCards.length > 0;
 
@@ -74,10 +83,11 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
   }, [allCards]);
 
   useEffect(() => {
-    if (!isInitialized && allCards.length > 0 && !isLoading) {
+    const deckReady = !deckId || !deckLoading;
+    if (!isInitialized && allCards.length > 0 && !isLoading && deckReady) {
       loadCards();
     }
-  }, [allCards, isLoading, isInitialized, loadCards]);
+  }, [allCards, isLoading, isInitialized, loadCards, deckId, deckLoading]);
 
   const currentCard = shuffledCards[currentIndex];
 
@@ -158,7 +168,7 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
 
       <Flashcard
         card={currentCard}
-        languageName={deck?.language}
+        languageName={deckLanguageMap[currentCard.deckId]}
         showAnswer={showAnswer}
         onFlip={() => setShowAnswer(!showAnswer)}
         practiceMode={true}
