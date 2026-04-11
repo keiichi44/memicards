@@ -111,7 +111,7 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
     loadCards();
   };
 
-  if (isLoading) {
+  if (isLoading || (deckId && deckLoading)) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -119,7 +119,7 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
     );
   }
 
-  if (shuffledCards.length === 0) {
+  if (!isInitialized || shuffledCards.length === 0) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
