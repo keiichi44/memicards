@@ -26,10 +26,18 @@ export function LanguageSelector() {
 
   useEffect(() => {
     const key = getLangKey(user?.id);
-    if (key) {
-      const saved = localStorage.getItem(key);
-      if (saved && saved !== i18n.language) {
+    if (!key) return;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      if (saved !== i18n.language) {
         i18n.changeLanguage(saved);
+      }
+    } else {
+      const browserLang = navigator.language?.split("-")[0] ?? "en";
+      const supported = ["en", "ru", "es"];
+      const detected = supported.includes(browserLang) ? browserLang : "en";
+      if (detected !== i18n.language) {
+        i18n.changeLanguage(detected);
       }
     }
   }, [user?.id, i18n]);
