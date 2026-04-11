@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -18,6 +19,7 @@ interface ReviewSessionProps {
 }
 
 export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps) {
+  const { t } = useTranslation();
   const { activeProject } = useProject();
   const { setInSession } = useReviewGuard();
   const [queue, setQueue] = useState<FlashCard[]>([]);
@@ -26,7 +28,7 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
   const [completed, setCompleted] = useState(0);
   const [sessionStats, setSessionStats] = useState({ correct: 0, total: 0 });
   const [isInitialized, setIsInitialized] = useState(false);
-  
+
   const { data: allCards = [], isLoading: cardsLoading } = useQuery<FlashCard[]>({
     queryKey: deckId ? ["/api/cards", deckId] : ["/api/cards", { projectId: activeProject?.id }],
     queryFn: async () => {
@@ -43,7 +45,7 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
       return res.json();
     },
   });
-  
+
   const { data: settings } = useQuery<Settings>({
     queryKey: ["/api/settings", { projectId: activeProject?.id }],
     queryFn: async () => {
@@ -53,12 +55,12 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
       return res.json();
     },
   });
-  
+
   const { data: deck } = useQuery<Deck>({
     queryKey: ["/api/decks", deckId],
     enabled: !!deckId,
   });
-  
+
   const reviewMutation = useMutation({
     mutationFn: async ({ cardId, quality }: { cardId: string; quality: number }) => {
       const res = await apiRequest("POST", `/api/cards/${cardId}/review`, { quality });
@@ -69,7 +71,7 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
     },
   });
-  
+
   const starMutation = useMutation({
     mutationFn: async ({ cardId, isStarred }: { cardId: string; isStarred: boolean }) => {
       const res = await apiRequest("PATCH", `/api/cards/${cardId}`, { isStarred });
@@ -80,7 +82,7 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
       queryClient.invalidateQueries({ queryKey: ["/api/cards"], refetchType: "all" });
     },
   });
-  
+
   const isActiveSession = queue.length > 0 && currentIndex < queue.length;
 
   useEffect(() => {
@@ -92,72 +94,71 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
 
   const loadReviewQueue = useCallback(() => {
     if (!settings || allCards.length === 0) return;
-    
-    // Only include active cards in review sessions
+
     const activeCards = allCards.filter(c => c.isActive);
     const dueCards = activeCards.filter(c => isDueToday(c));
     const newCards = activeCards.filter(c => isNewCard(c));
-    
+
     const weekendMode = settings.weekendLearnerMode;
     const isWeekendDay = isWeekend();
-    
-    const maxNewCards = weekendMode 
+
+    const maxNewCards = weekendMode
       ? (isWeekendDay ? settings.weekendNewCards : settings.weekdayNewCards)
       : 10;
     const maxReviewCards = weekendMode
       ? (isWeekendDay ? settings.weekendReviewCards : settings.weekdayReviewCards)
       : 50;
-    
+
     const sortedDue = sortCardsByPriority(dueCards, settings.prioritizeStarred);
     const sortedNew = sortCardsByPriority(newCards.filter(c => !isDueToday(c)), settings.prioritizeStarred);
-    
+
     const reviewQueue = [
       ...sortedDue.slice(0, maxReviewCards),
       ...sortedNew.slice(0, maxNewCards),
     ];
-    
+
     setQueue(reviewQueue);
     setCurrentIndex(0);
     setCompleted(0);
     setShowAnswer(false);
     setIsInitialized(true);
   }, [allCards, settings]);
-  
+
   useEffect(() => {
     if (!isInitialized && settings && allCards.length >= 0 && !cardsLoading) {
       loadReviewQueue();
     }
   }, [allCards, settings, cardsLoading, isInitialized, loadReviewQueue]);
-  
+
   const currentCard = queue[currentIndex];
-  
+
   const handleRate = (quality: QualityRating) => {
     if (!currentCard) return;
-    
+
     reviewMutation.mutate({ cardId: currentCard.id, quality });
-    
+
     setSessionStats(prev => ({
       correct: prev.correct + (quality >= 3 ? 1 : 0),
       total: prev.total + 1,
     }));
-    
+
     setCompleted(prev => prev + 1);
     setShowAnswer(false);
-    
+
     if (currentIndex < queue.length - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
       setQueue([]);
     }
   };
-  
+
   const handleToggleStar = () => {
     if (!currentCard) return;
     starMutation.mutate({ cardId: currentCard.id, isStarred: !currentCard.isStarred });
   };
-  
+
   const progressPercent = queue.length > 0 ? (completed / queue.length) * 100 : 100;
-  
+
   if (cardsLoading || !isInitialized) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -165,73 +166,73 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
       </div>
     );
   }
-  
+
   if (queue.length === 0 && completed === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <CheckCircle className="h-16 w-16 text-muted-foreground" />
-        <h2 className="text-2xl font-semibold">No cards to review</h2>
+        <h2 className="text-2xl font-semibold">{t("reviewSession.nothingDue")}</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          All caught up! Add new cards or wait for scheduled reviews.
+          {t("reviewSession.nothingDueDesc")}
         </p>
         <Button onClick={onBack} variant="outline" data-testid="button-back-to-decks">
-          Back to Decks
+          {t("reviewSession.backToDecks")}
         </Button>
       </div>
     );
   }
-  
+
   if (queue.length === 0 && completed > 0) {
-    const accuracy = sessionStats.total > 0 
+    const accuracy = sessionStats.total > 0
       ? Math.round((sessionStats.correct / sessionStats.total) * 100)
       : 0;
-    
+
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
         <CheckCircle className="h-20 w-20 text-green-500" />
-        <h2 className="text-3xl font-semibold">Session Complete!</h2>
+        <h2 className="text-3xl font-semibold">{t("reviewSession.sessionComplete")}</h2>
         <Card className="w-full max-w-sm">
           <CardContent className="pt-6">
             <div className="grid grid-cols-2 gap-4 text-center">
               <div>
                 <p className="text-3xl font-bold text-primary">{completed}</p>
-                <p className="text-sm text-muted-foreground">Cards reviewed</p>
+                <p className="text-sm text-muted-foreground">{t("reviewSession.reviewed", { n: "" }).replace(" ", "")}</p>
               </div>
               <div>
                 <p className="text-3xl font-bold text-accent">{accuracy}%</p>
-                <p className="text-sm text-muted-foreground">Accuracy</p>
+                <p className="text-sm text-muted-foreground">{t("reviewSession.accuracy")}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <div className="flex gap-2">
           <Button onClick={onComplete} data-testid="button-finish-session">
-            Done
+            {t("practiceSession.done")}
           </Button>
           <Button onClick={() => { setIsInitialized(false); }} variant="outline" data-testid="button-review-again">
-            Review Again
+            {t("reviewSession.backToDecks")}
           </Button>
         </div>
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <Button variant="ghost" onClick={onBack} data-testid="button-back">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          {t("reviewSession.back")}
         </Button>
         <div className="flex-1 max-w-md">
           <div className="flex justify-between text-sm text-muted-foreground mb-1">
-            <span>{completed} / {queue.length}</span>
+            <span>{t("reviewSession.cardProgress", { current: completed, total: queue.length })}</span>
             <span>{Math.round(progressPercent)}%</span>
           </div>
           <Progress value={progressPercent} className="h-2" />
         </div>
       </div>
-      
+
       {currentCard && (
         <Flashcard
           card={currentCard}

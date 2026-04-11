@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Plus, ChevronDown, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +24,7 @@ function truncateName(name: string, maxLength = 18): string {
 }
 
 export function ProjectSelector() {
+  const { t } = useTranslation();
   const { projects, activeProject, setActiveProjectId } = useProject();
   const { requestNavigation } = useReviewGuard();
   const [location, navigate] = useLocation();
@@ -121,9 +123,9 @@ export function ProjectSelector() {
       <Dialog open={isListOpen} onOpenChange={setIsListOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Select Project</DialogTitle>
+            <DialogTitle>{t("projectSelector.selectProject")}</DialogTitle>
             <DialogDescription>
-              Switch between your learning projects.
+              {t("projectSelector.selectProjectDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-1 py-2">
@@ -153,7 +155,7 @@ export function ProjectSelector() {
               data-testid="button-add-project"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Create Project
+              {t("projectSelector.createProject")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -162,19 +164,19 @@ export function ProjectSelector() {
       <Dialog open={isCreateOpen} onOpenChange={(open) => { setIsCreateOpen(open); if (!open) setCreateError(""); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Project</DialogTitle>
+            <DialogTitle>{t("projectSelector.createNewProject")}</DialogTitle>
             <DialogDescription>
-              Projects help you organize different learning goals separately.
+              {t("projectSelector.createNewProjectDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="project-name">Project Name</Label>
+              <Label htmlFor="project-name">{t("projectSelector.projectNameLabel")}</Label>
               <Input
                 id="project-name"
                 value={newName}
                 onChange={(e) => { setNewName(e.target.value); setCreateError(""); }}
-                placeholder="e.g., Spanish Course"
+                placeholder={t("projectSelector.projectNamePlaceholder")}
                 data-testid="input-project-name"
               />
               {createError && (
@@ -184,7 +186,7 @@ export function ProjectSelector() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleCreate}
@@ -192,7 +194,7 @@ export function ProjectSelector() {
               data-testid="button-confirm-create-project"
             >
               {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Create Project
+              {t("projectSelector.createNewProject")}
             </Button>
           </DialogFooter>
         </DialogContent>

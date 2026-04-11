@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Shuffle, RotateCcw, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Flashcard } from "@/components/flashcard";
@@ -23,6 +24,7 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
+  const { t } = useTranslation();
   const { activeProject } = useProject();
   const { setInSession } = useReviewGuard();
   const [shuffledCards, setShuffledCards] = useState<FlashCard[]>([]);
@@ -47,7 +49,7 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
       return res.json();
     },
   });
-  
+
   const { data: deck } = useQuery<Deck>({
     queryKey: ["/api/decks", deckId],
     enabled: !!deckId,
@@ -63,7 +65,6 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
   }, [isActiveSession, setInSession]);
 
   const loadCards = useCallback(() => {
-    // Only include active cards in practice sessions
     const activeCards = allCards.filter(c => c.isActive);
     setShuffledCards(shuffleArray(activeCards));
     setCurrentIndex(0);
@@ -115,14 +116,14 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
           <Button variant="ghost" size="icon" onClick={onBack} data-testid="button-practice-back">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h2 className="text-2xl font-semibold">Practice Mode</h2>
+          <h2 className="text-2xl font-semibold">{t("practiceSession.practiceMode")}</h2>
         </div>
-        
+
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">No cards available to practice.</p>
+            <p className="text-muted-foreground">{t("practiceSession.noCards")}</p>
             <Button variant="outline" onClick={onBack} className="mt-4">
-              Go Back
+              {t("practiceSession.back")}
             </Button>
           </CardContent>
         </Card>
@@ -138,13 +139,13 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h2 className="text-2xl font-semibold">Practice Mode</h2>
+            <h2 className="text-2xl font-semibold">{t("practiceSession.practiceMode")}</h2>
             <p className="text-sm text-muted-foreground">
-              Card {currentIndex + 1} of {shuffledCards.length} • {practiceCount} practiced
+              {t("practiceSession.cardProgress", { current: currentIndex + 1, total: shuffledCards.length })}
             </p>
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           <Button variant="outline" size="icon" onClick={handleShuffle} title="Shuffle cards" data-testid="button-shuffle">
             <Shuffle className="h-4 w-4" />
@@ -153,10 +154,6 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
-      </div>
-
-      <div className="text-center text-sm text-muted-foreground bg-muted/50 py-2 px-4 rounded-md">
-        Practice mode - results are not saved
       </div>
 
       <Flashcard
@@ -169,8 +166,8 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
 
       <div className="flex justify-center">
         {!showAnswer ? (
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             onClick={() => setShowAnswer(true)}
             className="min-w-[200px]"
             data-testid="button-show-answer"
@@ -178,8 +175,8 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
             Show Answer
           </Button>
         ) : (
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             onClick={handleNext}
             className="min-w-[200px]"
             data-testid="button-next-card"

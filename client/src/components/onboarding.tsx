@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,29 +13,21 @@ interface OnboardingProps {
   onCreateDeck: () => void;
 }
 
-const steps = [
-  {
-    title: "Spaced Repetition",
-    description:
-      "Your brain remembers things better when you review them at increasing intervals, right before you\u2019re about to forget them.\n\nThis app uses this method to figure out the optimal moment to quiz you.",
-    image: "/images/onboarding-step1.svg",
-  },
-  {
-    title: "Organize Your Learning",
-    description:
-      "Use projects to organise your learning tracks, e.g., \u201cChinese\u201d, \u201cSpanish\u201d, and set up a specific schedule for each.\n\nPlace 20-30 items into a single deck to smooth the learning curve.",
-    image: "/images/onboarding-step2.svg",
-  },
-  {
-    title: "Learn Anywhere",
-    description:
-      "Learn on a desktop or a mobile and track your project progress in the stats dashboard. Practice intensively by flipping the deck or using Weekend mode.\n\nHappy learning!",
-    image: "/images/onboarding-step3.svg",
-  },
+const STEP_IMAGES = [
+  "/images/onboarding-step1.svg",
+  "/images/onboarding-step2.svg",
+  "/images/onboarding-step3.svg",
 ];
 
 export function Onboarding({ open, onComplete, onCreateDeck }: OnboardingProps) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
+
+  const steps = [
+    { title: t("onboarding.step1Title"), description: t("onboarding.step1Desc"), image: STEP_IMAGES[0] },
+    { title: t("onboarding.step2Title"), description: t("onboarding.step2Desc"), image: STEP_IMAGES[1] },
+    { title: t("onboarding.step3Title"), description: t("onboarding.step3Desc"), image: STEP_IMAGES[2] },
+  ];
 
   const isLast = step === steps.length - 1;
   const isFirst = step === 0;
@@ -120,7 +113,7 @@ export function Onboarding({ open, onComplete, onCreateDeck }: OnboardingProps) 
                 data-testid="button-onboarding-back"
               >
                 <ChevronLeft className="h-4 w-4 mr-1" />
-                Back
+                {t("onboarding.back")}
               </Button>
             ) : (
               <Button
@@ -130,7 +123,7 @@ export function Onboarding({ open, onComplete, onCreateDeck }: OnboardingProps) 
                 style={{ color: "white" }}
                 data-testid="button-onboarding-skip"
               >
-                Skip
+                {t("onboarding.skip")}
               </Button>
             )}
 
@@ -139,7 +132,7 @@ export function Onboarding({ open, onComplete, onCreateDeck }: OnboardingProps) 
               className="bg-white text-orange-600 border-white font-semibold"
               data-testid="button-onboarding-next"
             >
-              {isLast ? "Create a deck" : "Next"}
+              {isLast ? t("onboarding.createADeck") : t("onboarding.next")}
               {!isLast && <ChevronRight className="h-4 w-4 ml-1" />}
             </Button>
           </div>

@@ -26,6 +26,7 @@ This application helps you learn vocabulary using spaced repetition. Key feature
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Clerk (email, Google, Facebook login + password recovery)
 - **Algorithm**: SM-2 spaced repetition implementation (server-side)
+- **Internationalization**: i18next + react-i18next + i18next-browser-languagedetector; EN/RU/ES locale files at `client/src/i18n/locales/`; single-brace interpolation `{key}`; language stored in `lang_${userId}` localStorage key
 
 ## Project Structure
 
@@ -157,6 +158,7 @@ The app uses Clerk for authentication:
 - Added Google Analytics (gtag.js, Measurement ID: G-7JJN79B86T) with SPA page view tracking
 - Added review hint card: onboarding overlay explaining rating buttons on first review, with "?" icon to re-show
 - Added Decks Library: curated CSV decks in /Library folder, browsable + importable via Import page tab and home page tips button
+- Added internationalization (i18n) with i18next: EN/RU/ES languages, language selector in header and on auth page, per-user language preference stored in localStorage
 
 ## Card Active Toggle
 

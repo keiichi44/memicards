@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -10,6 +11,7 @@ import { isDueToday, isNewCard, getCardStatus } from "@/lib/sm2";
 import { useProject } from "@/lib/project-context";
 
 export function ProgressDashboard() {
+  const { t } = useTranslation();
   const { activeProject } = useProject();
 
   const { data: cards = [], isLoading: cardsLoading } = useQuery<FlashCard[]>({
@@ -22,7 +24,7 @@ export function ProgressDashboard() {
     },
     enabled: !!activeProject,
   });
-  
+
   const { data: reviews = [] } = useQuery<Review[]>({
     queryKey: ["/api/reviews", { projectId: activeProject?.id }],
     queryFn: async () => {
@@ -33,7 +35,7 @@ export function ProgressDashboard() {
     },
     enabled: !!activeProject,
   });
-  
+
   const { data: settings } = useQuery<Settings>({
     queryKey: ["/api/settings", { projectId: activeProject?.id }],
     queryFn: async () => {
@@ -44,7 +46,7 @@ export function ProgressDashboard() {
     },
     enabled: !!activeProject,
   });
-  
+
   const stats = useMemo(() => {
     const totalCards = cards.length;
     const dueToday = cards.filter(c => isDueToday(c)).length;
@@ -52,20 +54,20 @@ export function ProgressDashboard() {
     const starredCards = cards.filter(c => c.isStarred).length;
     const graduatedCards = cards.filter(c => getCardStatus(c) === "graduated").length;
     const learningCards = cards.filter(c => getCardStatus(c) === "learning").length;
-    
+
     const now = new Date();
     const weekStart = new Date(now);
     weekStart.setDate(now.getDate() - now.getDay());
     weekStart.setHours(0, 0, 0, 0);
-    
+
     const thisWeekReviews = reviews.filter(r => new Date(r.reviewedAt) >= weekStart);
     const uniqueCardsReviewedThisWeek = new Set(thisWeekReviews.map(r => r.cardId)).size;
-    
+
     const correctReviews = reviews.filter(r => r.quality >= 3).length;
     const retentionRate = reviews.length > 0 ? Math.round((correctReviews / reviews.length) * 100) : 0;
-    
+
     const daysRemaining = 7 - now.getDay();
-    
+
     return {
       totalCards,
       dueToday,
@@ -82,26 +84,26 @@ export function ProgressDashboard() {
       totalReviews: reviews.length,
     };
   }, [cards, reviews, settings]);
-  
+
   const dailyData = useMemo(() => {
     const last7Days: DailyStats[] = [];
     const now = new Date();
-    
+
     for (let i = 6; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
       date.setHours(0, 0, 0, 0);
-      
+
       const nextDate = new Date(date);
       nextDate.setDate(nextDate.getDate() + 1);
-      
+
       const dayReviews = reviews.filter(r => {
         const reviewDate = new Date(r.reviewedAt);
         return reviewDate >= date && reviewDate < nextDate;
       });
-      
+
       const correctAnswers = dayReviews.filter(r => r.quality >= 3).length;
-      
+
       last7Days.push({
         date: date.toLocaleDateString("en-US", { weekday: "short" }),
         cardsReviewed: dayReviews.length,
@@ -110,18 +112,18 @@ export function ProgressDashboard() {
         totalAnswers: dayReviews.length,
       });
     }
-    
+
     return last7Days;
   }, [reviews]);
-  
+
   const starredList = useMemo(() => {
     return cards.filter(c => c.isStarred).slice(0, 10);
   }, [cards]);
-  
-  const progressPercent = stats.weeklyProgress.target > 0 
+
+  const progressPercent = stats.weeklyProgress.target > 0
     ? Math.min((stats.weeklyProgress.cardsLearned / stats.weeklyProgress.target) * 100, 100)
     : 0;
-  
+
   if (cardsLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -129,100 +131,100 @@ export function ProgressDashboard() {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold mb-2">Progress Dashboard</h2>
-        <p className="text-muted-foreground">Track your learning progress</p>
+        <h2 className="text-2xl font-semibold mb-2">{t("progress.title")}</h2>
+        <p className="text-muted-foreground">{t("progress.subtitle")}</p>
       </div>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
-            <CardTitle className="text-sm font-medium">Total Cards</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("progress.totalCards")}</CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalCards}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.graduatedCards} graduated, {stats.learningCards} learning
+              {t("progress.graduatedLearning", { graduated: stats.graduatedCards, learning: stats.learningCards })}
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
-            <CardTitle className="text-sm font-medium">Due Today</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("progress.dueToday")}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.dueToday}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.newCards} new cards available
+              {t("progress.newAvailable", { n: stats.newCards })}
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
-            <CardTitle className="text-sm font-medium">Retention Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("progress.retentionRate")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.retentionRate}%</div>
             <p className="text-xs text-muted-foreground">
-              From {stats.totalReviews} total reviews
+              {t("progress.fromReviews", { n: stats.totalReviews })}
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
-            <CardTitle className="text-sm font-medium">Difficult Cards</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("progress.difficultCards")}</CardTitle>
             <Star className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.starredCards}</div>
             <p className="text-xs text-muted-foreground">
-              Marked for extra practice
+              {t("progress.markedForPractice")}
             </p>
           </CardContent>
         </Card>
       </div>
-      
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-2">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-primary" />
-                Weekly Goal
+                {t("progress.weeklyGoal")}
               </CardTitle>
               <CardDescription>
-                {stats.weeklyProgress.cardsLearned} of {stats.weeklyProgress.target} cards this week
+                {t("progress.weeklyGoalDesc", { learned: stats.weeklyProgress.cardsLearned, target: stats.weeklyProgress.target })}
               </CardDescription>
             </div>
             <Badge variant={progressPercent >= 100 ? "default" : "secondary"}>
-              {stats.weeklyProgress.daysRemaining} days left
+              {t("progress.daysLeft", { n: stats.weeklyProgress.daysRemaining })}
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
           <Progress value={progressPercent} className="h-3" />
           <p className="text-sm text-muted-foreground mt-2">
-            {progressPercent >= 100 
-              ? "Goal reached! Great work this week!"
-              : `${Math.round(progressPercent)}% complete`}
+            {progressPercent >= 100
+              ? t("progress.goalReached")
+              : t("progress.percentComplete", { n: Math.round(progressPercent) })}
           </p>
         </CardContent>
       </Card>
-      
+
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Daily Reviews</CardTitle>
-            <CardDescription>Cards reviewed over the past week</CardDescription>
+            <CardTitle>{t("progress.dailyReviews")}</CardTitle>
+            <CardDescription>{t("progress.dailyReviewsDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[200px]">
@@ -230,8 +232,8 @@ export function ProgressDashboard() {
                 <BarChart data={dailyData}>
                   <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    contentStyle={{ 
+                  <Tooltip
+                    contentStyle={{
                       backgroundColor: "hsl(var(--card))",
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "6px",
@@ -243,11 +245,11 @@ export function ProgressDashboard() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
-            <CardTitle>Accuracy Trend</CardTitle>
-            <CardDescription>Correct answers over time</CardDescription>
+            <CardTitle>{t("progress.accuracyTrend")}</CardTitle>
+            <CardDescription>{t("progress.accuracyTrendDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[200px]">
@@ -255,17 +257,17 @@ export function ProgressDashboard() {
                 <LineChart data={dailyData}>
                   <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    contentStyle={{ 
+                  <Tooltip
+                    contentStyle={{
                       backgroundColor: "hsl(var(--card))",
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "6px",
                     }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="correctAnswers" 
-                    stroke="hsl(var(--accent))" 
+                  <Line
+                    type="monotone"
+                    dataKey="correctAnswers"
+                    stroke="hsl(var(--accent))"
                     strokeWidth={2}
                     dot={{ fill: "hsl(var(--accent))" }}
                   />
@@ -275,21 +277,21 @@ export function ProgressDashboard() {
           </CardContent>
         </Card>
       </div>
-      
+
       {starredList.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Star className="h-5 w-5 text-yellow-500" />
-              Difficult Words
+              {t("progress.difficultWordsTitle")}
             </CardTitle>
-            <CardDescription>Cards you've marked for extra practice</CardDescription>
+            <CardDescription>{t("progress.difficultWordsDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-2 md:grid-cols-2">
               {starredList.map((card) => (
-                <div 
-                  key={card.id} 
+                <div
+                  key={card.id}
                   className="flex items-center justify-between p-3 rounded-md bg-muted/50"
                 >
                   <div>

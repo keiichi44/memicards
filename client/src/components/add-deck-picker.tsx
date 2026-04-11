@@ -1,4 +1,5 @@
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ interface AddDeckPickerProps {
 }
 
 export function AddDeckPicker({ open, onClose, onCreateDeck }: AddDeckPickerProps) {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
 
   const handleCreateDeck = () => {
@@ -34,7 +36,7 @@ export function AddDeckPicker({ open, onClose, onCreateDeck }: AddDeckPickerProp
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-sm p-6">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl">Add a deck</DialogTitle>
+          <DialogTitle className="text-center text-xl">{t("addDeckPicker.title")}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-2">
           <button
@@ -44,8 +46,8 @@ export function AddDeckPicker({ open, onClose, onCreateDeck }: AddDeckPickerProp
           >
             <img src="/images/deck-new.png" alt="Create deck" className="w-14 h-14 object-contain shrink-0" />
             <div>
-              <p className="font-semibold">Create a deck</p>
-              <p className="text-sm text-muted-foreground">Start from scratch</p>
+              <p className="font-semibold">{t("addDeckPicker.createDeck")}</p>
+              <p className="text-sm text-muted-foreground">{t("addDeckPicker.createDeckDesc")}</p>
             </div>
           </button>
 
@@ -56,8 +58,8 @@ export function AddDeckPicker({ open, onClose, onCreateDeck }: AddDeckPickerProp
           >
             <img src="/images/deck-csv.png" alt="Import CSV" className="w-14 h-14 object-contain shrink-0" />
             <div>
-              <p className="font-semibold">Import CSV</p>
-              <p className="text-sm text-muted-foreground">Upload your own word list</p>
+              <p className="font-semibold">{t("addDeckPicker.importCSV")}</p>
+              <p className="text-sm text-muted-foreground">{t("addDeckPicker.importCSVDesc")}</p>
             </div>
           </button>
 
@@ -68,8 +70,8 @@ export function AddDeckPicker({ open, onClose, onCreateDeck }: AddDeckPickerProp
           >
             <img src="/images/deck-lib.png" alt="Decks Library" className="w-14 h-14 object-contain shrink-0" />
             <div>
-              <p className="font-semibold">Choose from Library</p>
-              <p className="text-sm text-muted-foreground">Browse ready-made decks</p>
+              <p className="font-semibold">{t("addDeckPicker.chooseLibrary")}</p>
+              <p className="text-sm text-muted-foreground">{t("addDeckPicker.chooseLibraryDesc")}</p>
             </div>
           </button>
         </div>
