@@ -341,7 +341,8 @@
       "colWord": "Palabra",
       "colTranslation": "Traducción",
       "colExample": "Ejemplo",
-      "colAssociation": "Asociación"
+      "colAssociation": "Asociación",
+      "otherLanguage": "Otro"
     }
   }
 }

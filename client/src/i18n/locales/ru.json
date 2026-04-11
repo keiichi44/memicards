@@ -341,7 +341,8 @@
       "colWord": "Слово",
       "colTranslation": "Перевод",
       "colExample": "Пример",
-      "colAssociation": "Ассоциация"
+      "colAssociation": "Ассоциация",
+      "otherLanguage": "Другой"
     }
   }
 }

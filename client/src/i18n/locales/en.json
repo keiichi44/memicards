@@ -325,7 +325,8 @@
       "colWord": "Word",
       "colTranslation": "Translation",
       "colExample": "Example",
-      "colAssociation": "Association"
+      "colAssociation": "Association",
+      "otherLanguage": "Other"
     }
   }
 }

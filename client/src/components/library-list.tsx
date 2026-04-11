@@ -51,7 +51,7 @@ export function LibraryList() {
       setImportingDeck(null);
       toast({
         title: t("library.toastImportedTitle"),
-        description: t("library.toastImportedDesc", { deckName: deck.name, projectName: activeProject?.name || "" }),
+        description: t("library.toastImportedDesc", { deckName: deck.name, projectName: activeProject?.name ?? "" }),
       });
     },
     onError: () => {
@@ -76,9 +76,10 @@ export function LibraryList() {
     );
   }
 
+  const otherLabel = t("library.otherLanguage");
   const languageMap = new Map<string, LibraryDeck[]>();
   for (const deck of decks) {
-    const lang = deck.language || "Other";
+    const lang = deck.language || otherLabel;
     if (!languageMap.has(lang)) languageMap.set(lang, []);
     languageMap.get(lang)!.push(deck);
   }
