@@ -71,7 +71,7 @@ export default function LibraryDeckPage() {
       setShowImportDialog(false);
       toast({
         title: t("library.toastImportedTitle"),
-        description: t("library.toastImportedDesc", { deckName: data?.name || "", projectName: activeProject?.name || "" }),
+        description: t("library.toastImportedDesc", { deckName: data?.name || "", projectName: activeProject?.name ?? t("library.projectFallback") }),
       });
     },
     onError: () => {
@@ -121,7 +121,7 @@ export default function LibraryDeckPage() {
         </div>
         <Button variant="secondary" onClick={() => setShowImportDialog(true)} data-testid="button-import-library-deck-header">
           <Download className="h-4 w-4 mr-2" />
-          {t("library.importTo", { projectName: activeProject?.name || "" })}
+          {t("library.importTo", { projectName: activeProject?.name ?? t("library.projectFallback") })}
         </Button>
       </div>
 
@@ -157,7 +157,7 @@ export default function LibraryDeckPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t("library.importDialogTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("library.importDialogDesc", { deckName: data.name, projectName: activeProject?.name || "" })}
+              {t("library.importDialogDesc", { deckName: data.name, projectName: activeProject?.name ?? t("library.projectFallback") })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

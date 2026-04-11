@@ -342,7 +342,8 @@
       "colTranslation": "Traducción",
       "colExample": "Ejemplo",
       "colAssociation": "Asociación",
-      "otherLanguage": "Otro"
+      "otherLanguage": "Otro",
+      "projectFallback": "su proyecto"
     }
   }
 }

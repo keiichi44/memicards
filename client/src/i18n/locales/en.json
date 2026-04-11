@@ -326,7 +326,8 @@
       "colTranslation": "Translation",
       "colExample": "Example",
       "colAssociation": "Association",
-      "otherLanguage": "Other"
+      "otherLanguage": "Other",
+      "projectFallback": "your project"
     }
   }
 }

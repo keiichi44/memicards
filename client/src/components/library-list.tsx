@@ -51,7 +51,7 @@ export function LibraryList() {
       setImportingDeck(null);
       toast({
         title: t("library.toastImportedTitle"),
-        description: t("library.toastImportedDesc", { deckName: deck.name, projectName: activeProject?.name ?? "" }),
+        description: t("library.toastImportedDesc", { deckName: deck.name, projectName: activeProject?.name ?? t("library.projectFallback") }),
       });
     },
     onError: () => {
@@ -138,7 +138,7 @@ export function LibraryList() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t("library.importDialogTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("library.importDialogDesc", { deckName: importingDeck?.name || "", projectName: activeProject?.name || "" })}
+              {t("library.importDialogDesc", { deckName: importingDeck?.name || "", projectName: activeProject?.name ?? t("library.projectFallback") })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

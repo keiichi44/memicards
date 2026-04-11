@@ -342,7 +342,8 @@
       "colTranslation": "Перевод",
       "colExample": "Пример",
       "colAssociation": "Ассоциация",
-      "otherLanguage": "Другой"
+      "otherLanguage": "Другой",
+      "projectFallback": "ваш проект"
     }
   }
 }
