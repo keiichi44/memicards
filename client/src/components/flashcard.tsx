@@ -193,7 +193,7 @@ export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, s
               onClick={() => onRate(quality)}
               data-testid={`button-rate-${label.toLowerCase()}`}
             >
-              {label}
+              {t(`flashcard.${label.toLowerCase()}`)}
             </Button>
           ))}
         </div>

@@ -124,7 +124,11 @@
       "next": "Siguiente: {interval}",
       "tapToReveal": "Toque para revelar",
       "example": "Ejemplo",
-      "memory": "Asociación"
+      "memory": "Asociación",
+      "again": "Otra vez",
+      "hard": "Difícil",
+      "good": "Bien",
+      "easy": "Fácil"
     },
 
     "reviewSession": {

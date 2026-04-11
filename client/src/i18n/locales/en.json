@@ -118,7 +118,11 @@
       "next": "Next: {interval}",
       "tapToReveal": "Tap to reveal",
       "example": "Example",
-      "memory": "Association"
+      "memory": "Association",
+      "again": "Again",
+      "hard": "Hard",
+      "good": "Good",
+      "easy": "Easy"
     },
     "reviewSession": {
       "back": "Back",

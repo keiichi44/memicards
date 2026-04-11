@@ -124,7 +124,11 @@
       "next": "Следующий: {interval}",
       "tapToReveal": "Нажмите, чтобы открыть",
       "example": "Пример",
-      "memory": "Ассоциация"
+      "memory": "Ассоциация",
+      "again": "Снова",
+      "hard": "Сложно",
+      "good": "Просто",
+      "easy": "Просто"
     },
 
     "reviewSession": {
