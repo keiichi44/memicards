@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Download, Loader2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,7 @@ export default function LibraryDeckPage() {
   const [, setLocation] = useLocation();
   const { activeProject } = useProject();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [showImportDialog, setShowImportDialog] = useState(false);
 
   const { data, isLoading, isError } = useQuery<LibraryDeckData>({
@@ -68,12 +70,12 @@ export default function LibraryDeckPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/cards"] });
       setShowImportDialog(false);
       toast({
-        title: "Deck imported",
-        description: `"${data?.name}" has been added to ${activeProject?.name || "your project"}.`,
+        title: t("library.toastImportedTitle"),
+        description: t("library.toastImportedDesc", { deckName: data?.name || "", projectName: activeProject?.name || "" }),
       });
     },
     onError: () => {
-      toast({ title: "Import failed", description: "Something went wrong.", variant: "destructive" });
+      toast({ title: t("library.toastFailedTitle"), description: t("library.toastFailedDesc"), variant: "destructive" });
     },
   });
 
@@ -89,9 +91,9 @@ export default function LibraryDeckPage() {
     return (
       <div className="p-6 flex flex-col items-center gap-4 text-muted-foreground">
         <BookOpen className="h-12 w-12" />
-        <p>Deck not found.</p>
+        <p>{t("library.deckNotFound")}</p>
         <Button variant="outline" onClick={() => setLocation("/import/lib")}>
-          Back to Library
+          {t("library.backToLibrary")}
         </Button>
       </div>
     );
@@ -114,12 +116,12 @@ export default function LibraryDeckPage() {
               <h1 className="text-2xl font-semibold">{data.name}</h1>
               <Badge variant="secondary">{data.language}</Badge>
             </div>
-            <p className="text-sm text-muted-foreground">{data.cards.length} cards</p>
+            <p className="text-sm text-muted-foreground">{t("library.cards", { n: data.cards.length })}</p>
           </div>
         </div>
         <Button variant="secondary" onClick={() => setShowImportDialog(true)} data-testid="button-import-library-deck-header">
           <Download className="h-4 w-4 mr-2" />
-          Import to {activeProject?.name || "project"}
+          {t("library.importTo", { projectName: activeProject?.name || "" })}
         </Button>
       </div>
 
@@ -127,10 +129,10 @@ export default function LibraryDeckPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Word</TableHead>
-              <TableHead>Translation</TableHead>
-              <TableHead className="hidden md:table-cell">Example</TableHead>
-              <TableHead className="hidden lg:table-cell">Association</TableHead>
+              <TableHead>{t("library.colWord")}</TableHead>
+              <TableHead>{t("library.colTranslation")}</TableHead>
+              <TableHead className="hidden md:table-cell">{t("library.colExample")}</TableHead>
+              <TableHead className="hidden lg:table-cell">{t("library.colAssociation")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -153,20 +155,20 @@ export default function LibraryDeckPage() {
       <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Import deck?</AlertDialogTitle>
+            <AlertDialogTitle>{t("library.importDialogTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Do you want to copy "{data.name}" to your "{activeProject?.name}"?
+              {t("library.importDialogDesc", { deckName: data.name, projectName: activeProject?.name || "" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-library-import-detail">No</AlertDialogCancel>
+            <AlertDialogCancel data-testid="button-cancel-library-import-detail">{t("library.no")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => importMutation.mutate()}
               disabled={importMutation.isPending}
               data-testid="button-confirm-library-import-detail"
             >
               {importMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Yes
+              {t("library.yes")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

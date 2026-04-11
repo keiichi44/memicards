@@ -316,6 +316,32 @@
       "delete": "Удалить",
       "confirm": "Подтвердить",
       "loading": "Загрузка..."
+    },
+    "import": {
+      "tabBatchImport": "Пакетный импорт",
+      "tabDecksLibrary": "Библиотека колод"
+    },
+    "library": {
+      "title": "Библиотека колод",
+      "subtitle": "Готовые колоды для добавления в ваш проект.",
+      "cards": "{n} карт",
+      "import": "Импортировать",
+      "empty": "Библиотека пока пуста.",
+      "importDialogTitle": "Импортировать колоду?",
+      "importDialogDesc": "Добавить «{deckName}» в проект «{projectName}»?",
+      "no": "Нет",
+      "yes": "Да",
+      "toastImportedTitle": "Колода добавлена",
+      "toastImportedDesc": "«{deckName}» добавлена в «{projectName}».",
+      "toastFailedTitle": "Ошибка импорта",
+      "toastFailedDesc": "Что-то пошло не так.",
+      "deckNotFound": "Колода не найдена.",
+      "backToLibrary": "Вернуться в библиотеку",
+      "importTo": "Добавить в «{projectName}»",
+      "colWord": "Слово",
+      "colTranslation": "Перевод",
+      "colExample": "Пример",
+      "colAssociation": "Ассоциация"
     }
   }
 }

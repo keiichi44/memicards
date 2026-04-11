@@ -316,6 +316,32 @@
       "delete": "Eliminar",
       "confirm": "Confirmar",
       "loading": "Cargando..."
+    },
+    "import": {
+      "tabBatchImport": "Importación por lotes",
+      "tabDecksLibrary": "Biblioteca de mazos"
+    },
+    "library": {
+      "title": "Biblioteca de mazos",
+      "subtitle": "Explore e importe mazos ya preparados en su proyecto.",
+      "cards": "{n} tarjetas",
+      "import": "Importar",
+      "empty": "La biblioteca está vacía por ahora.",
+      "importDialogTitle": "¿Importar mazo?",
+      "importDialogDesc": "¿Desea copiar «{deckName}» en su proyecto «{projectName}»?",
+      "no": "No",
+      "yes": "Sí",
+      "toastImportedTitle": "Mazo importado",
+      "toastImportedDesc": "«{deckName}» se ha añadido a {projectName}.",
+      "toastFailedTitle": "Error al importar",
+      "toastFailedDesc": "Algo salió mal.",
+      "deckNotFound": "Mazo no encontrado.",
+      "backToLibrary": "Volver a la biblioteca",
+      "importTo": "Importar a {projectName}",
+      "colWord": "Palabra",
+      "colTranslation": "Traducción",
+      "colExample": "Ejemplo",
+      "colAssociation": "Asociación"
     }
   }
 }

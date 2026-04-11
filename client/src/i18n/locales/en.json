@@ -300,6 +300,32 @@
       "delete": "Delete",
       "confirm": "Confirm",
       "loading": "Loading..."
+    },
+    "import": {
+      "tabBatchImport": "Batch Import",
+      "tabDecksLibrary": "Decks Library"
+    },
+    "library": {
+      "title": "Decks Library",
+      "subtitle": "Browse and import ready-made decks into your project.",
+      "cards": "{n} cards",
+      "import": "Import",
+      "empty": "No decks in the library yet.",
+      "importDialogTitle": "Import deck?",
+      "importDialogDesc": "Do you want to copy \"{deckName}\" to your \"{projectName}\"?",
+      "no": "No",
+      "yes": "Yes",
+      "toastImportedTitle": "Deck imported",
+      "toastImportedDesc": "\"{deckName}\" has been added to {projectName}.",
+      "toastFailedTitle": "Import failed",
+      "toastFailedDesc": "Something went wrong.",
+      "deckNotFound": "Deck not found.",
+      "backToLibrary": "Back to Library",
+      "importTo": "Import to {projectName}",
+      "colWord": "Word",
+      "colTranslation": "Translation",
+      "colExample": "Example",
+      "colAssociation": "Association"
     }
   }
 }
