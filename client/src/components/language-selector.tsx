@@ -14,6 +14,8 @@ const LANGUAGES = [
   { code: "en", label: "EN" },
   { code: "ru", label: "RU" },
   { code: "es", label: "ES" },
+  { code: "de", label: "DE" },
+  { code: "sr", label: "SR" },
 ];
 
 function getLangKey(userId?: string) {
@@ -34,7 +36,7 @@ export function LanguageSelector() {
       }
     } else {
       const browserLang = navigator.language?.split("-")[0] ?? "en";
-      const supported = ["en", "ru", "es"];
+      const supported = ["en", "ru", "es", "de", "sr"];
       const detected = supported.includes(browserLang) ? browserLang : "en";
       if (detected !== i18n.language) {
         i18n.changeLanguage(detected);

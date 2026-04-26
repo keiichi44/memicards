@@ -4,6 +4,8 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import en from './locales/en.json';
 import ru from './locales/ru.json';
 import es from './locales/es.json';
+import de from './locales/de.json';
+import sr from './locales/sr.json';
 
 i18n
   .use(LanguageDetector)
@@ -13,6 +15,8 @@ i18n
       en: { translation: en.en },
       ru: { translation: ru.ru },
       es: { translation: es.es },
+      de: { translation: de.de },
+      sr: { translation: sr.sr },
     },
     fallbackLng: 'en',
     interpolation: {
