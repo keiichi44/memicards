@@ -239,55 +239,53 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   return (
     <div className="space-y-6">
       <Card className="border-dashed">
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 className="font-semibold text-lg" data-testid="text-all-decks-review">{t("deckList.allDecksReview")}</h3>
-              <p className="text-sm text-muted-foreground">
-                {t("deckList.dueToday", { n: totalDue, m: totalNew })}
-              </p>
+        <CardContent className="pt-6 space-y-3">
+          <div>
+            <h3 className="font-semibold text-lg" data-testid="text-all-decks-review">{t("deckList.allDecksReview")}</h3>
+            <p className="text-sm text-muted-foreground">
+              {t("deckList.dueToday", { n: totalDue, m: totalNew })}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <input
+                placeholder={t("deckList.searchPlaceholder")}
+                value={globalSearchQuery}
+                onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-8 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                data-testid="input-global-search"
+              />
+              {globalSearchQuery && (
+                <button
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setGlobalSearchQuery("")}
+                  data-testid="button-clear-global-search"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-              <div className="flex items-center border rounded-md bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-0 h-10 px-3 gap-2 flex-1 w-full sm:w-auto">
-                <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <input
-                  placeholder={t("deckList.searchPlaceholder")}
-                  value={globalSearchQuery}
-                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
-                  className="flex-1 bg-transparent outline-none text-sm min-w-0"
-                  data-testid="input-global-search"
-                />
-                {globalSearchQuery && (
-                  <button
-                    className="text-muted-foreground hover:text-foreground flex-shrink-0"
-                    onClick={() => setGlobalSearchQuery("")}
-                    data-testid="button-clear-global-search"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <Button
-                  onClick={() => onStartReview()}
-                  disabled={totalDue === 0 && totalNew === 0}
-                  data-testid="button-start-all-review"
-                >
-                  <Play className="h-4 w-4 mr-2" />
-                  {t("deckList.startReview")}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-10 w-10"
-                  onClick={() => onStartPractice()}
-                  disabled={allCards.length === 0}
-                  title={t("deckList.practiceMode")}
-                  data-testid="button-start-all-practice"
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <Button
+                onClick={() => onStartReview()}
+                disabled={totalDue === 0 && totalNew === 0}
+                data-testid="button-start-all-review"
+              >
+                <Play className="h-4 w-4 mr-2" />
+                {t("deckList.startReview")}
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-10 w-10"
+                onClick={() => onStartPractice()}
+                disabled={allCards.length === 0}
+                title={t("deckList.practiceMode")}
+                data-testid="button-start-all-practice"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </CardContent>
