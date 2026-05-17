@@ -84,6 +84,9 @@ export async function registerRoutes(
       const primary = emailAddresses.find((e) => e.id === primaryId) ?? emailAddresses[0];
 
       if (primary?.email_address) {
+        if (!process.env.RESEND_API_KEY) {
+          console.error("RESEND_API_KEY is not set — greeting email will not be sent");
+        }
         try {
           const resend = new Resend(process.env.RESEND_API_KEY);
           const scheduledAt = new Date(Date.now() + emailConfig.delayMinutes * 60 * 1000).toISOString();

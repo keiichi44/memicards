@@ -3,8 +3,8 @@
 // Restart the server after saving changes.
 
 export const emailConfig = {
-  /** Resend template ID or alias — either "tmpl_xxxxxxxxxxxx" or a human-readable alias like "first-greet-template" */
-  templateId: "your-template-alias-or-id",
+  /** Resend template ID — copy from Resend Dashboard → Email Templates */
+  templateId: "tmpl_xxxxxxxxxxxx",
 
   /** Sender email address — must be a verified domain in Resend */
   fromEmail: "hello@yourdomain.com",
