@@ -38,6 +38,18 @@ export async function registerRoutes(
 ): Promise<Server> {
 
   // === CLERK WEBHOOK (must be before clerkMiddleware so it is unauthenticated) ===
+  interface ClerkEmailAddress {
+    id: string;
+    email_address: string;
+  }
+  interface ClerkUserCreatedEvent {
+    type: string;
+    data: {
+      primary_email_address_id: string;
+      email_addresses: ClerkEmailAddress[];
+    };
+  }
+
   app.post("/api/webhooks/clerk", async (req: Request, res: Response) => {
     const secret = process.env.CLERK_WEBHOOK_SECRET;
     if (!secret) {
@@ -53,22 +65,22 @@ export async function registerRoutes(
       return res.status(400).json({ error: "Missing svix headers" });
     }
 
-    let event: any;
+    let event: ClerkUserCreatedEvent;
     try {
       const wh = new Webhook(secret);
       event = wh.verify(req.rawBody as string | Buffer, {
         "svix-id": svixId,
         "svix-timestamp": svixTimestamp,
         "svix-signature": svixSignature,
-      });
+      }) as ClerkUserCreatedEvent;
     } catch (err) {
       console.error("Webhook signature verification failed:", err);
       return res.status(400).json({ error: "Invalid webhook signature" });
     }
 
     if (event.type === "user.created") {
-      const emailAddresses: Array<{ email_address: string; id: string }> = event.data.email_addresses ?? [];
-      const primaryId: string | undefined = event.data.primary_email_address_id;
+      const emailAddresses: ClerkEmailAddress[] = event.data.email_addresses ?? [];
+      const primaryId = event.data.primary_email_address_id;
       const primary = emailAddresses.find((e) => e.id === primaryId) ?? emailAddresses[0];
 
       if (primary?.email_address) {
@@ -78,9 +90,11 @@ export async function registerRoutes(
           await resend.emails.send({
             from: emailConfig.fromEmail,
             to: primary.email_address,
-            scheduled_at: scheduledAt,
-            template: emailConfig.templateId,
-          } as any);
+            scheduledAt,
+            template: {
+              id: emailConfig.templateId,
+            },
+          });
           console.log(`Greeting email scheduled for ${primary.email_address} at ${scheduledAt}`);
         } catch (err) {
           console.error("Failed to schedule greeting email:", err);
