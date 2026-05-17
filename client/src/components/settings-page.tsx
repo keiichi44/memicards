@@ -24,12 +24,14 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { exportCardsToCSV, exportReviewsToCSV } from "@/lib/storage";
 import { useProject } from "@/lib/project-context";
 import { useLocation } from "wouter";
+import { useReviewGuard } from "@/lib/review-guard-context";
 
 export function SettingsPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { activeProject, projects } = useProject();
   const [, setLocation] = useLocation();
+  const { setHasUnsavedChanges } = useReviewGuard();
   const [isSaved, setIsSaved] = useState(true);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
   const [projectName, setProjectName] = useState(activeProject?.name ?? "");
@@ -39,6 +41,12 @@ export function SettingsPage() {
     setProjectName(activeProject?.name ?? "");
     setIsRenamingProject(false);
   }, [activeProject?.name]);
+
+  useEffect(() => {
+    return () => {
+      setHasUnsavedChanges(false);
+    };
+  }, [setHasUnsavedChanges]);
 
   const renameProjectMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -120,6 +128,7 @@ export function SettingsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
       setIsSaved(true);
       setLocalSettings({});
+      setHasUnsavedChanges(false);
       toast({
         title: t("settings.settingsSavedTitle"),
         description: t("settings.settingsSavedDesc"),
@@ -157,6 +166,7 @@ export function SettingsPage() {
   const handleChange = <K extends keyof Settings>(key: K, value: Settings[K]) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }));
     setIsSaved(false);
+    setHasUnsavedChanges(true);
   };
 
   const handleSave = () => {

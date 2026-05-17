@@ -294,6 +294,12 @@
       "stayHere": "Ostani",
       "interruptAndGo": "Prekini i izađi"
     },
+    "unsavedGuard": {
+      "title": "Izaći bez čuvanja?",
+      "desc": "Promene podešavanja još nisu sačuvane.",
+      "stayHere": "Ostani",
+      "leaveAnyway": "Izađi svejedno"
+    },
     "common": {
       "cancel": "Otkaži",
       "save": "Sačuvaj",

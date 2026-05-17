@@ -6,7 +6,7 @@ import { useReviewGuard } from "@/lib/review-guard-context";
 export function BottomNavBar() {
   const { t } = useTranslation();
   const [location, navigate] = useLocation();
-  const { isInSession, requestNavigation } = useReviewGuard();
+  const { isInSession, hasUnsavedChanges, requestNavigation } = useReviewGuard();
 
   const navItems = [
     { title: t("bottomNav.decks"), url: "/", icon: Layers },
@@ -31,7 +31,7 @@ export function BottomNavBar() {
               href={item.url}
               onClick={(e) => {
                 e.preventDefault();
-                if (isInSession) {
+                if (isInSession || hasUnsavedChanges) {
                   requestNavigation(() => navigate(item.url));
                 } else {
                   navigate(item.url);

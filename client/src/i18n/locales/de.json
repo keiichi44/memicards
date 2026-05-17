@@ -294,6 +294,12 @@
       "stayHere": "Hierbleiben",
       "interruptAndGo": "Unterbrechen und verlassen"
     },
+    "unsavedGuard": {
+      "title": "Ohne Speichern verlassen?",
+      "desc": "Die Einstellungen wurden noch nicht gespeichert.",
+      "stayHere": "Hierbleiben",
+      "leaveAnyway": "Trotzdem verlassen"
+    },
     "common": {
       "cancel": "Abbrechen",
       "save": "Speichern",

@@ -22,7 +22,7 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const [location, navigate] = useLocation();
   const { activeProject } = useProject();
-  const { isInSession, requestNavigation } = useReviewGuard();
+  const { isInSession, hasUnsavedChanges, requestNavigation } = useReviewGuard();
 
   const menuItems = [
     { title: t("nav.decks"), url: "/", icon: Layers },
@@ -32,7 +32,7 @@ export function AppSidebar() {
   ];
 
   const handleNavClick = (e: React.MouseEvent, url: string) => {
-    if (isInSession) {
+    if (isInSession || hasUnsavedChanges) {
       e.preventDefault();
       requestNavigation(() => navigate(url));
     }

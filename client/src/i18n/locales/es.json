@@ -309,6 +309,12 @@
       "stayHere": "Quedarse",
       "interruptAndGo": "Interrumpir y salir"
     },
+    "unsavedGuard": {
+      "title": "¿Salir sin guardar?",
+      "desc": "Los cambios en la configuración aún no se han guardado.",
+      "stayHere": "Quedarse",
+      "leaveAnyway": "Salir de todas formas"
+    },
 
     "common": {
       "cancel": "Cancelar",

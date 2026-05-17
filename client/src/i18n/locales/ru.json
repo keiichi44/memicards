@@ -309,6 +309,12 @@
       "stayHere": "Остаться",
       "interruptAndGo": "Прервать и выйти"
     },
+    "unsavedGuard": {
+      "title": "Уйти без сохранения?",
+      "desc": "Изменения настроек ещё не сохранены.",
+      "stayHere": "Остаться",
+      "leaveAnyway": "Уйти"
+    },
 
     "common": {
       "cancel": "Отмена",

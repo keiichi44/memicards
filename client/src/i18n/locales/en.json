@@ -294,6 +294,12 @@
       "stayHere": "Stay here",
       "interruptAndGo": "Interrupt and go"
     },
+    "unsavedGuard": {
+      "title": "Leave without saving?",
+      "desc": "Your settings changes have not been saved yet.",
+      "stayHere": "Stay here",
+      "leaveAnyway": "Leave anyway"
+    },
     "common": {
       "cancel": "Cancel",
       "save": "Save",
