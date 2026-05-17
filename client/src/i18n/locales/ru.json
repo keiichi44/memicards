@@ -55,7 +55,17 @@
       "deckDescription": "Описание (необязательно)",
       "deckNamePlaceholder": "Например, Неделя 2",
       "deckLanguagePlaceholder": "Например, испанский, японский, армянский",
-      "deckDescriptionPlaceholder": "Что в этой колоде?"
+      "deckDescriptionPlaceholder": "Что в этой колоде?",
+      "searchPlaceholder": "Поиск по всем карточкам…",
+      "searchSummary": "{results} результатов в {decks} колодах",
+      "searchEmpty": "Нет карточек по запросу.",
+      "backToDecks": "К колодам",
+      "colWord": "Слово",
+      "colTranslation": "Перевод",
+      "colStatus": "Статус",
+      "colInterval": "Интервал",
+      "colDeck": "Колода",
+      "unknownDeck": "Неизвестно"
     },
 
     "cardList": {

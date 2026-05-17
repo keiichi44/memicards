@@ -251,7 +251,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               <div className="flex items-center border rounded-md bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-0 h-10 px-3 gap-2 flex-1 min-w-[200px]">
                 <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 <input
-                  placeholder="Search all cards…"
+                  placeholder={t("deckList.searchPlaceholder")}
                   value={globalSearchQuery}
                   onChange={(e) => setGlobalSearchQuery(e.target.value)}
                   className="flex-1 bg-transparent outline-none text-sm min-w-0"
@@ -295,13 +295,13 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       {globalSearchQuery.trim() ? (
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground" data-testid="text-global-search-summary">
-            {globalSearchResults.length} result{globalSearchResults.length !== 1 ? "s" : ""} across {globalSearchDeckCount} deck{globalSearchDeckCount !== 1 ? "s" : ""}
+            {t("deckList.searchSummary", { results: globalSearchResults.length, decks: globalSearchDeckCount })}
           </p>
           {globalSearchResults.length === 0 ? (
             <div className="text-center py-12 space-y-4" data-testid="text-global-search-empty">
-              <p className="text-muted-foreground">No cards match your search.</p>
+              <p className="text-muted-foreground">{t("deckList.searchEmpty")}</p>
               <Button variant="outline" onClick={() => setGlobalSearchQuery("")} data-testid="button-back-to-decks">
-                Back to Decks
+                {t("deckList.backToDecks")}
               </Button>
             </div>
           ) : (
@@ -310,11 +310,11 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12"></TableHead>
-                    <TableHead>Word</TableHead>
-                    <TableHead>Translation</TableHead>
-                    <TableHead className="hidden md:table-cell">Status</TableHead>
-                    <TableHead className="hidden lg:table-cell">Interval</TableHead>
-                    <TableHead>Deck</TableHead>
+                    <TableHead>{t("deckList.colWord")}</TableHead>
+                    <TableHead>{t("deckList.colTranslation")}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t("deckList.colStatus")}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{t("deckList.colInterval")}</TableHead>
+                    <TableHead>{t("deckList.colDeck")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -352,7 +352,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                               {deck.name}
                             </button>
                           ) : (
-                            <span className="text-muted-foreground text-sm">Unknown</span>
+                            <span className="text-muted-foreground text-sm">{t("deckList.unknownDeck")}</span>
                           )}
                         </TableCell>
                       </TableRow>

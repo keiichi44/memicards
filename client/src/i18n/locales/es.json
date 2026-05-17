@@ -55,7 +55,17 @@
       "deckDescription": "Descripción (opcional)",
       "deckNamePlaceholder": "Ej.: Semana 2",
       "deckLanguagePlaceholder": "Ej.: español, japonés, armenio",
-      "deckDescriptionPlaceholder": "¿Qué contiene este mazo?"
+      "deckDescriptionPlaceholder": "¿Qué contiene este mazo?",
+      "searchPlaceholder": "Buscar en todas las tarjetas…",
+      "searchSummary": "{results} resultados en {decks} mazos",
+      "searchEmpty": "No hay tarjetas que coincidan con su búsqueda.",
+      "backToDecks": "Volver a los mazos",
+      "colWord": "Palabra",
+      "colTranslation": "Traducción",
+      "colStatus": "Estado",
+      "colInterval": "Intervalo",
+      "colDeck": "Mazo",
+      "unknownDeck": "Desconocido"
     },
 
     "cardList": {

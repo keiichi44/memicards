@@ -51,7 +51,17 @@
       "deckDescription": "Opis (opciono)",
       "deckNamePlaceholder": "npr. Nedelja 2",
       "deckLanguagePlaceholder": "npr. španski, japanski, jermenski",
-      "deckDescriptionPlaceholder": "Šta je u ovom špilu?"
+      "deckDescriptionPlaceholder": "Šta je u ovom špilu?",
+      "searchPlaceholder": "Pretraži sve karte…",
+      "searchSummary": "{results} rezultata u {decks} špilova",
+      "searchEmpty": "Nema karata koje odgovaraju pretrazi.",
+      "backToDecks": "Na špilove",
+      "colWord": "Reč",
+      "colTranslation": "Prevod",
+      "colStatus": "Status",
+      "colInterval": "Interval",
+      "colDeck": "Špil",
+      "unknownDeck": "Nepoznato"
     },
     "cardList": {
       "back": "Nazad",

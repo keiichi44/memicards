@@ -51,7 +51,17 @@
       "deckDescription": "Beschreibung (optional)",
       "deckNamePlaceholder": "z. B. Woche 2",
       "deckLanguagePlaceholder": "z. B. Spanisch, Japanisch, Armenisch",
-      "deckDescriptionPlaceholder": "Was ist in diesem Deck?"
+      "deckDescriptionPlaceholder": "Was ist in diesem Deck?",
+      "searchPlaceholder": "Alle Karten durchsuchen…",
+      "searchSummary": "{results} Ergebnisse in {decks} Decks",
+      "searchEmpty": "Keine Karten entsprechen Ihrer Suche.",
+      "backToDecks": "Zu den Decks",
+      "colWord": "Wort",
+      "colTranslation": "Übersetzung",
+      "colStatus": "Status",
+      "colInterval": "Intervall",
+      "colDeck": "Deck",
+      "unknownDeck": "Unbekannt"
     },
     "cardList": {
       "back": "Zurück",
