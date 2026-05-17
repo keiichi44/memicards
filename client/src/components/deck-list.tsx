@@ -271,7 +271,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                 onClick={() => onStartReview()}
                 disabled={totalDue === 0 && totalNew === 0}
                 size="icon"
-                className="sm:w-auto sm:px-4"
+                className="h-10 w-10 sm:w-auto sm:px-4"
                 title={t("deckList.startReview")}
                 data-testid="button-start-all-review"
               >
