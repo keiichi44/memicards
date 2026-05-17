@@ -4,10 +4,10 @@
 
 export const emailConfig = {
   /** Resend template ID — copy from Resend Dashboard → Email Templates */
-  templateId: "tmpl_xxxxxxxxxxxx",
+  templateId: "first-greet-template",
 
   /** Sender email address — must be a verified domain in Resend */
-  fromEmail: "hello@yourdomain.com",
+  fromEmail: "jovan@memicards.org",
 
   /** Minutes to wait after registration before sending the greeting email */
   delayMinutes: 10,
