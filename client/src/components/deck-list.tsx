@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Lightbulb, Play, Trash2, Edit2, Eye, Loader2, BookOpen } from "lucide-react";
+import { Plus, Lightbulb, Play, Trash2, Edit2, Eye, Loader2, BookOpen, Search, X, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Onboarding } from "@/components/onboarding";
 import { AddDeckPicker } from "@/components/add-deck-picker";
@@ -9,6 +9,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
+import { getCardStatus, formatInterval } from "@/lib/sm2";
 import {
   Dialog,
   DialogContent,
@@ -60,6 +70,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const [newDeckDescription, setNewDeckDescription] = useState("");
   const [deckError, setDeckError] = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState("");
 
   const onboardingKey = activeProject ? `onboarding_done_${activeProject.id}` : null;
 
@@ -108,6 +119,28 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const activeCards = allCards.filter(c => c.isActive);
   const totalDue = activeCards.filter(c => isDueToday(c)).length;
   const totalNew = activeCards.filter(c => isNewCard(c)).length;
+
+  const deckMap = useMemo(() => {
+    const map = new Map<string, DeckWithCount>();
+    decks.forEach(d => map.set(d.id, d));
+    return map;
+  }, [decks]);
+
+  const globalSearchResults = useMemo(() => {
+    const q = globalSearchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return allCards.filter(c =>
+      c.armenian.toLowerCase().includes(q) ||
+      c.russian.toLowerCase().includes(q) ||
+      c.sentence?.toLowerCase().includes(q) ||
+      c.association?.toLowerCase().includes(q)
+    );
+  }, [allCards, globalSearchQuery]);
+
+  const globalSearchDeckCount = useMemo(() => {
+    const ids = new Set(globalSearchResults.map(c => c.deckId));
+    return ids.size;
+  }, [globalSearchResults]);
 
   const parseMutationError = (error: Error): string => {
     try {
@@ -214,29 +247,124 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                 {t("deckList.dueToday", { n: totalDue, m: totalNew })}
               </p>
             </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => onStartReview()}
-                disabled={totalDue === 0 && totalNew === 0}
-                data-testid="button-start-all-review"
-              >
-                <Play className="h-4 w-4 mr-2" />
-                {t("deckList.startReview")}
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onStartPractice()}
-                disabled={allCards.length === 0}
-                title={t("deckList.practiceMode")}
-                data-testid="button-start-all-practice"
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+              <div className="flex items-center border rounded-md bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-0 h-10 px-3 gap-2 flex-1 min-w-[200px]">
+                <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <input
+                  placeholder="Search all cards…"
+                  value={globalSearchQuery}
+                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                  className="flex-1 bg-transparent outline-none text-sm min-w-0"
+                  data-testid="input-global-search"
+                />
+                {globalSearchQuery && (
+                  <button
+                    className="text-muted-foreground hover:text-foreground flex-shrink-0"
+                    onClick={() => setGlobalSearchQuery("")}
+                    data-testid="button-clear-global-search"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  onClick={() => onStartReview()}
+                  disabled={totalDue === 0 && totalNew === 0}
+                  data-testid="button-start-all-review"
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  {t("deckList.startReview")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10"
+                  onClick={() => onStartPractice()}
+                  disabled={allCards.length === 0}
+                  title={t("deckList.practiceMode")}
+                  data-testid="button-start-all-practice"
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
+      {globalSearchQuery.trim() ? (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground" data-testid="text-global-search-summary">
+            {globalSearchResults.length} result{globalSearchResults.length !== 1 ? "s" : ""} across {globalSearchDeckCount} deck{globalSearchDeckCount !== 1 ? "s" : ""}
+          </p>
+          {globalSearchResults.length === 0 ? (
+            <div className="text-center py-12 space-y-4" data-testid="text-global-search-empty">
+              <p className="text-muted-foreground">No cards match your search.</p>
+              <Button variant="outline" onClick={() => setGlobalSearchQuery("")} data-testid="button-back-to-decks">
+                Back to Decks
+              </Button>
+            </div>
+          ) : (
+            <div className="rounded-md border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12"></TableHead>
+                    <TableHead>Word</TableHead>
+                    <TableHead>Translation</TableHead>
+                    <TableHead className="hidden md:table-cell">Status</TableHead>
+                    <TableHead className="hidden lg:table-cell">Interval</TableHead>
+                    <TableHead>Deck</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {globalSearchResults.map((card) => {
+                    const status = getCardStatus(card);
+                    const deck = deckMap.get(card.deckId);
+                    return (
+                      <TableRow key={card.id} data-testid={`row-global-card-${card.id}`}>
+                        <TableCell>
+                          <Star className={cn(
+                            "h-4 w-4",
+                            card.isStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+                          )} />
+                        </TableCell>
+                        <TableCell className="font-sans text-lg">{card.armenian}</TableCell>
+                        <TableCell>{card.russian}</TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Badge variant={status === "new" ? "default" : status === "learning" ? "secondary" : "outline"}>
+                            {status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-muted-foreground">
+                          {formatInterval(card.interval)}
+                        </TableCell>
+                        <TableCell>
+                          {deck ? (
+                            <button
+                              className="text-primary hover:underline text-sm font-medium"
+                              onClick={() => {
+                                setGlobalSearchQuery("");
+                                onSelectDeck(deck.id);
+                              }}
+                              data-testid={`link-deck-${deck.id}-card-${card.id}`}
+                            >
+                              {deck.name}
+                            </button>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Unknown</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </div>
+      ) : (
+      <>
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-xl font-semibold">{t("deckList.yourDecks")}</h2>
         <Button onClick={() => setIsPickerOpen(true)} data-testid="button-create-deck">
@@ -244,64 +372,6 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           {t("deckList.newDeck")}
         </Button>
       </div>
-      <Dialog open={isCreateOpen} onOpenChange={(open) => { setIsCreateOpen(open); if (!open) setDeckError(""); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("deckList.createDeck")}</DialogTitle>
-            <DialogDescription>
-              {t("deckList.createDeckDesc")}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="deck-name">{t("deckList.deckName")}</Label>
-              <Input
-                id="deck-name"
-                placeholder={t("deckList.deckNamePlaceholder")}
-                value={newDeckName}
-                onChange={(e) => { setNewDeckName(e.target.value); setDeckError(""); }}
-                data-testid="input-deck-name"
-              />
-              {deckError && (
-                <p className="text-sm text-destructive" data-testid="text-deck-create-error">{deckError}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="deck-language">{t("deckList.deckLanguage")}</Label>
-              <Input
-                id="deck-language"
-                placeholder={t("deckList.deckLanguagePlaceholder")}
-                value={newDeckLanguage}
-                onChange={(e) => setNewDeckLanguage(e.target.value)}
-                data-testid="input-deck-language"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="deck-description">{t("deckList.deckDescription")}</Label>
-              <Textarea
-                id="deck-description"
-                placeholder={t("deckList.deckDescriptionPlaceholder")}
-                value={newDeckDescription}
-                onChange={(e) => setNewDeckDescription(e.target.value)}
-                data-testid="input-deck-description"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-              {t("deckList.cancel")}
-            </Button>
-            <Button
-              onClick={handleCreateDeck}
-              disabled={!newDeckName.trim() || !newDeckLanguage.trim() || createMutation.isPending}
-              data-testid="button-confirm-create-deck"
-            >
-              {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t("deckList.createDeck")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       {decks.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {decks.map((deck) => {
@@ -416,6 +486,66 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </div>
         </CardContent>
       </Card>
+      </>
+      )}
+      <Dialog open={isCreateOpen} onOpenChange={(open) => { setIsCreateOpen(open); if (!open) setDeckError(""); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("deckList.createDeck")}</DialogTitle>
+            <DialogDescription>
+              {t("deckList.createDeckDesc")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="deck-name">{t("deckList.deckName")}</Label>
+              <Input
+                id="deck-name"
+                placeholder={t("deckList.deckNamePlaceholder")}
+                value={newDeckName}
+                onChange={(e) => { setNewDeckName(e.target.value); setDeckError(""); }}
+                data-testid="input-deck-name"
+              />
+              {deckError && (
+                <p className="text-sm text-destructive" data-testid="text-deck-create-error">{deckError}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="deck-language">{t("deckList.deckLanguage")}</Label>
+              <Input
+                id="deck-language"
+                placeholder={t("deckList.deckLanguagePlaceholder")}
+                value={newDeckLanguage}
+                onChange={(e) => setNewDeckLanguage(e.target.value)}
+                data-testid="input-deck-language"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="deck-description">{t("deckList.deckDescription")}</Label>
+              <Textarea
+                id="deck-description"
+                placeholder={t("deckList.deckDescriptionPlaceholder")}
+                value={newDeckDescription}
+                onChange={(e) => setNewDeckDescription(e.target.value)}
+                data-testid="input-deck-description"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+              {t("deckList.cancel")}
+            </Button>
+            <Button
+              onClick={handleCreateDeck}
+              disabled={!newDeckName.trim() || !newDeckLanguage.trim() || createMutation.isPending}
+              data-testid="button-confirm-create-deck"
+            >
+              {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {t("deckList.createDeck")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={!!editingDeck} onOpenChange={(open) => { if (!open) { setEditingDeck(null); setDeckError(""); } }}>
         <DialogContent>
           <DialogHeader>
