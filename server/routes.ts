@@ -7,6 +7,9 @@ import { insertDeckSchema, insertCardSchema, batchImportSchema, insertSettingsSc
 import { nanoid } from "nanoid";
 import { calculateSM2 } from "./sm2";
 import { clerkMiddleware, getAuth, requireAuth } from "@clerk/express";
+import { Webhook } from "svix";
+import { Resend } from "resend";
+import { emailConfig } from "./email.config";
 
 function getUserId(req: Request): string {
   const auth = getAuth(req);
@@ -33,6 +36,60 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+
+  // === CLERK WEBHOOK (must be before clerkMiddleware so it is unauthenticated) ===
+  app.post("/api/webhooks/clerk", async (req: Request, res: Response) => {
+    const secret = process.env.CLERK_WEBHOOK_SECRET;
+    if (!secret) {
+      console.error("CLERK_WEBHOOK_SECRET is not set");
+      return res.status(500).json({ error: "Webhook secret not configured" });
+    }
+
+    const svixId = req.headers["svix-id"] as string;
+    const svixTimestamp = req.headers["svix-timestamp"] as string;
+    const svixSignature = req.headers["svix-signature"] as string;
+
+    if (!svixId || !svixTimestamp || !svixSignature) {
+      return res.status(400).json({ error: "Missing svix headers" });
+    }
+
+    let event: any;
+    try {
+      const wh = new Webhook(secret);
+      event = wh.verify(req.rawBody as string | Buffer, {
+        "svix-id": svixId,
+        "svix-timestamp": svixTimestamp,
+        "svix-signature": svixSignature,
+      });
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err);
+      return res.status(400).json({ error: "Invalid webhook signature" });
+    }
+
+    if (event.type === "user.created") {
+      const emailAddresses: Array<{ email_address: string; id: string }> = event.data.email_addresses ?? [];
+      const primaryId: string | undefined = event.data.primary_email_address_id;
+      const primary = emailAddresses.find((e) => e.id === primaryId) ?? emailAddresses[0];
+
+      if (primary?.email_address) {
+        try {
+          const resend = new Resend(process.env.RESEND_API_KEY);
+          const scheduledAt = new Date(Date.now() + emailConfig.delayMinutes * 60 * 1000).toISOString();
+          await resend.emails.send({
+            from: emailConfig.fromEmail,
+            to: primary.email_address,
+            scheduled_at: scheduledAt,
+            template: emailConfig.templateId,
+          } as any);
+          console.log(`Greeting email scheduled for ${primary.email_address} at ${scheduledAt}`);
+        } catch (err) {
+          console.error("Failed to schedule greeting email:", err);
+        }
+      }
+    }
+
+    return res.status(200).json({ received: true });
+  });
 
   app.use(clerkMiddleware());
   
