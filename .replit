@@ -49,3 +49,7 @@ CLERK_SECRET_KEY = "sk_test_i1LWradJpCGXPh1bHtR5cBgCEJWChbOLVZyIqobMZL"
 CLERK_PUBLISHABLE_KEY = "pk_test_c21hc2hpbmctb3N0cmljaC01LmNsZXJrLmFjY291bnRzLmRldiQ"
 RESEND_API_KEY = "re_CSSn7jwa_8aYHn3K3sq5yCLhoVGh1KuxC"
 CLERK_WEBHOOK_SECRET = "whsec_OkDl90GXTD5WrI1Rwjde0z4rySsWQHWO"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 90000
