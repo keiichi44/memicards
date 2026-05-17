@@ -240,7 +240,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
     <div className="space-y-6">
       <Card className="border-dashed">
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h3 className="font-semibold text-lg" data-testid="text-all-decks-review">{t("deckList.allDecksReview")}</h3>
               <p className="text-sm text-muted-foreground">
