@@ -270,10 +270,13 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               <Button
                 onClick={() => onStartReview()}
                 disabled={totalDue === 0 && totalNew === 0}
+                size="icon"
+                className="sm:w-auto sm:px-4"
+                title={t("deckList.startReview")}
                 data-testid="button-start-all-review"
               >
-                <Play className="h-4 w-4 mr-2" />
-                {t("deckList.startReview")}
+                <Play className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">{t("deckList.startReview")}</span>
               </Button>
               <Button
                 variant="outline"
