@@ -331,9 +331,9 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setLocation(`/deck/${deckId}/review`)} data-testid="button-study-deck">
-            <Play className="h-4 w-4 mr-2" />
-            {t("cardList.study")}
+          <Button onClick={() => setLocation(`/deck/${deckId}/review`)} data-testid="button-study-deck" aria-label={t("cardList.study")}>
+            <Play className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">{t("cardList.study")}</span>
           </Button>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
