@@ -248,7 +248,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-              <div className="flex items-center border rounded-md bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-0 h-10 px-3 gap-2 flex-1 min-w-[200px]">
+              <div className="flex items-center border rounded-md bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-0 h-10 px-3 gap-2 flex-1 w-full sm:w-auto">
                 <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 <input
                   placeholder={t("deckList.searchPlaceholder")}
