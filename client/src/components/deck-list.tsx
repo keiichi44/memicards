@@ -247,25 +247,6 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
             </p>
           </div>
           <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <input
-                placeholder={t("deckList.searchPlaceholder")}
-                value={globalSearchQuery}
-                onChange={(e) => setGlobalSearchQuery(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-8 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                data-testid="input-global-search"
-              />
-              {globalSearchQuery && (
-                <button
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  onClick={() => setGlobalSearchQuery("")}
-                  data-testid="button-clear-global-search"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              )}
-            </div>
             <div className="flex gap-2 flex-shrink-0">
               <Button
                 onClick={() => onStartReview()}
@@ -289,6 +270,25 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               >
                 <Eye className="h-4 w-4" />
               </Button>
+            </div>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <input
+                placeholder={t("deckList.searchPlaceholder")}
+                value={globalSearchQuery}
+                onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-8 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                data-testid="input-global-search"
+              />
+              {globalSearchQuery && (
+                <button
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setGlobalSearchQuery("")}
+                  data-testid="button-clear-global-search"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
             </div>
           </div>
         </CardContent>
