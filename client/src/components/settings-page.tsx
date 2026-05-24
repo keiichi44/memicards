@@ -117,6 +117,7 @@ export function SettingsPage() {
   });
 
   const [localSettings, setLocalSettings] = useState<Partial<Settings>>({});
+  const [draftValues, setDraftValues] = useState<Partial<Record<string, string>>>({});
 
   const updateMutation = useMutation({
     mutationFn: async (newSettings: Partial<Settings>) => {
@@ -128,6 +129,7 @@ export function SettingsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
       setIsSaved(true);
       setLocalSettings({});
+      setDraftValues({});
       setHasUnsavedChanges(false);
       toast({
         title: t("settings.settingsSavedTitle"),
@@ -321,11 +323,25 @@ export function SettingsPage() {
                     <Label htmlFor="weekday-new">{t("settings.newCardsPerDay")}</Label>
                     <Input
                       id="weekday-new"
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       min={0}
                       max={50}
-                      value={currentSettings.weekdayNewCards}
-                      onChange={(e) => handleChange("weekdayNewCards", parseInt(e.target.value) || 0)}
+                      value={draftValues["weekdayNewCards"] ?? currentSettings.weekdayNewCards}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "");
+                        setDraftValues(prev => ({ ...prev, weekdayNewCards: digits }));
+                        setIsSaved(false);
+                        setHasUnsavedChanges(true);
+                      }}
+                      onBlur={() => {
+                        const raw = draftValues["weekdayNewCards"];
+                        if (raw === undefined) return;
+                        const parsed = raw === "" ? 0 : parseInt(raw, 10);
+                        const clamped = Math.min(50, Math.max(0, parsed));
+                        handleChange("weekdayNewCards", clamped);
+                        setDraftValues(prev => { const n = { ...prev }; delete n["weekdayNewCards"]; return n; });
+                      }}
                       data-testid="input-weekday-new"
                     />
                   </div>
@@ -333,11 +349,25 @@ export function SettingsPage() {
                     <Label htmlFor="weekday-review">{t("settings.reviewCardsPerDay")}</Label>
                     <Input
                       id="weekday-review"
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       min={0}
                       max={200}
-                      value={currentSettings.weekdayReviewCards}
-                      onChange={(e) => handleChange("weekdayReviewCards", parseInt(e.target.value) || 0)}
+                      value={draftValues["weekdayReviewCards"] ?? currentSettings.weekdayReviewCards}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "");
+                        setDraftValues(prev => ({ ...prev, weekdayReviewCards: digits }));
+                        setIsSaved(false);
+                        setHasUnsavedChanges(true);
+                      }}
+                      onBlur={() => {
+                        const raw = draftValues["weekdayReviewCards"];
+                        if (raw === undefined) return;
+                        const parsed = raw === "" ? 0 : parseInt(raw, 10);
+                        const clamped = Math.min(200, Math.max(0, parsed));
+                        handleChange("weekdayReviewCards", clamped);
+                        setDraftValues(prev => { const n = { ...prev }; delete n["weekdayReviewCards"]; return n; });
+                      }}
                       data-testid="input-weekday-review"
                     />
                   </div>
@@ -348,11 +378,25 @@ export function SettingsPage() {
                     <Label htmlFor="weekend-new">{t("settings.newCardsPerDay")}</Label>
                     <Input
                       id="weekend-new"
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       min={0}
                       max={100}
-                      value={currentSettings.weekendNewCards}
-                      onChange={(e) => handleChange("weekendNewCards", parseInt(e.target.value) || 0)}
+                      value={draftValues["weekendNewCards"] ?? currentSettings.weekendNewCards}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "");
+                        setDraftValues(prev => ({ ...prev, weekendNewCards: digits }));
+                        setIsSaved(false);
+                        setHasUnsavedChanges(true);
+                      }}
+                      onBlur={() => {
+                        const raw = draftValues["weekendNewCards"];
+                        if (raw === undefined) return;
+                        const parsed = raw === "" ? 0 : parseInt(raw, 10);
+                        const clamped = Math.min(100, Math.max(0, parsed));
+                        handleChange("weekendNewCards", clamped);
+                        setDraftValues(prev => { const n = { ...prev }; delete n["weekendNewCards"]; return n; });
+                      }}
                       data-testid="input-weekend-new"
                     />
                   </div>
@@ -360,11 +404,25 @@ export function SettingsPage() {
                     <Label htmlFor="weekend-review">{t("settings.reviewCardsPerDay")}</Label>
                     <Input
                       id="weekend-review"
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       min={0}
                       max={300}
-                      value={currentSettings.weekendReviewCards}
-                      onChange={(e) => handleChange("weekendReviewCards", parseInt(e.target.value) || 0)}
+                      value={draftValues["weekendReviewCards"] ?? currentSettings.weekendReviewCards}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "");
+                        setDraftValues(prev => ({ ...prev, weekendReviewCards: digits }));
+                        setIsSaved(false);
+                        setHasUnsavedChanges(true);
+                      }}
+                      onBlur={() => {
+                        const raw = draftValues["weekendReviewCards"];
+                        if (raw === undefined) return;
+                        const parsed = raw === "" ? 0 : parseInt(raw, 10);
+                        const clamped = Math.min(300, Math.max(0, parsed));
+                        handleChange("weekendReviewCards", clamped);
+                        setDraftValues(prev => { const n = { ...prev }; delete n["weekendReviewCards"]; return n; });
+                      }}
                       data-testid="input-weekend-review"
                     />
                   </div>
@@ -404,11 +462,25 @@ export function SettingsPage() {
             <Label htmlFor="weekly-target">{t("settings.weeklyTarget")}</Label>
             <Input
               id="weekly-target"
-              type="number"
+              type="text"
+              inputMode="numeric"
               min={10}
               max={200}
-              value={currentSettings.weeklyCardTarget}
-              onChange={(e) => handleChange("weeklyCardTarget", parseInt(e.target.value) || 50)}
+              value={draftValues["weeklyCardTarget"] ?? currentSettings.weeklyCardTarget}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "");
+                setDraftValues(prev => ({ ...prev, weeklyCardTarget: digits }));
+                setIsSaved(false);
+                setHasUnsavedChanges(true);
+              }}
+              onBlur={() => {
+                const raw = draftValues["weeklyCardTarget"];
+                if (raw === undefined) return;
+                const parsed = raw === "" ? 0 : parseInt(raw, 10);
+                const clamped = Math.min(200, Math.max(0, parsed));
+                handleChange("weeklyCardTarget", clamped);
+                setDraftValues(prev => { const n = { ...prev }; delete n["weeklyCardTarget"]; return n; });
+              }}
               data-testid="input-weekly-target"
             />
             <p className="text-sm text-muted-foreground">
