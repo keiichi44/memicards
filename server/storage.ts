@@ -124,13 +124,27 @@ export class DatabaseStorage implements IStorage {
   }
   
   async updateDeck(id: string, deck: Partial<InsertDeck>): Promise<Deck | undefined> {
-    const updateData: Record<string, any> = { ...deck };
-    if (deck.isActive === false) {
-      updateData.deactivatedAt = new Date();
-    } else if (deck.isActive === true) {
-      updateData.deactivatedAt = null;
+    const setValues: {
+      name?: string;
+      language?: string;
+      description?: string;
+      projectId?: string | null;
+      isActive?: boolean;
+      deactivatedAt?: Date | null;
+    } = {};
+
+    if (deck.name !== undefined) setValues.name = deck.name;
+    if (deck.language !== undefined) setValues.language = deck.language;
+    if (deck.description !== undefined) setValues.description = deck.description;
+    if (deck.projectId !== undefined) setValues.projectId = deck.projectId;
+    if (deck.isActive !== undefined) {
+      setValues.isActive = deck.isActive;
+      setValues.deactivatedAt = deck.isActive ? null : new Date();
     }
-    const [updated] = await db.update(decks).set(updateData).where(eq(decks.id, id)).returning();
+
+    if (Object.keys(setValues).length === 0) return undefined;
+
+    const [updated] = await db.update(decks).set(setValues).where(eq(decks.id, id)).returning();
     return updated || undefined;
   }
 
