@@ -4,7 +4,7 @@
 
 export const emailConfig = {
   /** Resend template ID — copy from Resend Dashboard → Email Templates */
-  templateId: "first-greet-template",
+  templateId: "first-greet-auto",
 
   /** Sender email address — must be a verified domain in Resend */
   fromEmail: "jovan@memicards.org",

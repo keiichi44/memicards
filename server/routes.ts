@@ -82,6 +82,7 @@ export async function registerRoutes(
       const emailAddresses: ClerkEmailAddress[] = event.data.email_addresses ?? [];
       const primaryId = event.data.primary_email_address_id;
       const primary = emailAddresses.find((e) => e.id === primaryId) ?? emailAddresses[0];
+      const firstName = event.data.first_name ?? "";
 
       if (primary?.email_address) {
         if (!process.env.RESEND_API_KEY) {
@@ -96,6 +97,7 @@ export async function registerRoutes(
             scheduledAt,
             template: {
               id: emailConfig.templateId,
+              variables: { first_name: firstName },
             },
           });
           console.log(`Greeting email scheduled for ${primary.email_address} at ${scheduledAt}`);
