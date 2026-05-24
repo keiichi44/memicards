@@ -84,6 +84,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
   const [renameDescription, setRenameDescription] = useState("");
   const [renameError, setRenameError] = useState("");
   const [isResumeDialogOpen, setIsResumeDialogOpen] = useState(false);
+  const [isPausingDeck, setIsPausingDeck] = useState(false);
 
   const [formData, setFormData] = useState({
     armenian: "",
@@ -488,6 +489,23 @@ export function CardList({ deckId, onBack }: CardListProps) {
                 {t("cardList.practiceCards")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              {deck?.isActive === false ? (
+                <DropdownMenuItem
+                  onClick={handleResumeDeck}
+                  data-testid="button-resume-deck-menu"
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  {t("deckList.resumeDeck")}
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={() => setTimeout(() => setIsPausingDeck(true), 0)}
+                  data-testid="button-pause-deck-menu"
+                >
+                  <Pause className="h-4 w-4 mr-2" />
+                  {t("deckList.pauseDeck")}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={openRenameDialog} data-testid="button-rename-deck">
                 <Pencil className="h-4 w-4 mr-2" />
                 {t("cardList.renameDeck")}
@@ -833,6 +851,32 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isPausingDeck} onOpenChange={(open) => !open && setIsPausingDeck(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deckList.pauseTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deckList.pauseDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => toggleActiveMutation.mutate(false, {
+                onSuccess: () => {
+                  toast({ description: t("deckList.toastPaused") });
+                  setIsPausingDeck(false);
+                }
+              })}
+              data-testid="button-confirm-pause-deck"
+            >
+              {toggleActiveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {t("deckList.pauseConfirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={isDeletingDeck} onOpenChange={(open) => !open && setIsDeletingDeck(false)}>
         <AlertDialogContent>
