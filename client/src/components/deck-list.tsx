@@ -482,6 +482,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="hidden sm:inline-flex"
                           onClick={(e) => {
                             e.stopPropagation();
                             setPausingDeck(deck);
