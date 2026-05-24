@@ -478,24 +478,20 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                       <CardTitle className="text-lg truncate">{deck.name}</CardTitle>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      {isInactive && (
-                        <Badge variant="secondary" className="text-xs" data-testid={`badge-paused-${deck.id}`}>
-                          {t("deckList.pausedBadge")}
-                        </Badge>
+                      {!isInactive && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPausingDeck(deck);
+                          }}
+                          title={t("deckList.pauseDeck")}
+                          data-testid={`button-pause-deck-${deck.id}`}
+                        >
+                          <Pause className="h-4 w-4 text-muted-foreground" />
+                        </Button>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={isInactive}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPausingDeck(deck);
-                        }}
-                        title={t("deckList.pauseDeck")}
-                        data-testid={`button-pause-deck-${deck.id}`}
-                      >
-                        <Pause className="h-4 w-4 text-muted-foreground" />
-                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
