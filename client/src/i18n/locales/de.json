@@ -61,7 +61,20 @@
       "colStatus": "Status",
       "colInterval": "Intervall",
       "colDeck": "Deck",
-      "unknownDeck": "Unbekannt"
+      "unknownDeck": "Unbekannt",
+      "pauseDeck": "Deck pausieren",
+      "resumeDeck": "Deck fortsetzen",
+      "pausedBadge": "Pausiert",
+      "pauseTitle": "Dieses Deck pausieren?",
+      "pauseDesc": "Das Deck wird aus Statistiken und Lernsitzungen ausgeblendet. Die Karten behalten ihren Fortschritt. Sie können es jederzeit wieder aktivieren.",
+      "pauseConfirm": "Pausieren",
+      "resumeTitle": "Deck fortsetzen",
+      "resumeDesc": "Dieses Deck wurde über 2 Wochen pausiert. Was möchten Sie mit überfälligen Karten tun?",
+      "resumeReset": "Überfällige auf heute zurücksetzen",
+      "resumeRetain": "Rückstand behalten",
+      "toastPaused": "Deck pausiert",
+      "toastResumed": "Deck fortgesetzt",
+      "toastResumedReset": "Deck fortgesetzt — überfällige Karten auf heute verschoben"
     },
     "cardList": {
       "back": "Zurück",

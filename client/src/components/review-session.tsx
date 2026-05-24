@@ -104,7 +104,10 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
   const loadReviewQueue = useCallback(() => {
     if (!settings || allCards.length === 0) return;
 
-    const activeCards = allCards.filter(c => c.isActive);
+    const inactiveDeckIds = new Set(
+      allDecks.filter((d: any) => d.isActive === false).map((d: any) => d.id)
+    );
+    const activeCards = allCards.filter(c => c.isActive && !inactiveDeckIds.has(c.deckId));
     const dueCards = activeCards.filter(c => isDueToday(c));
     const newCards = activeCards.filter(c => isNewCard(c));
 

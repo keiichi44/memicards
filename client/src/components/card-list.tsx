@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2, Copy, ArrowRightLeft, FolderInput, MoreVertical, Play, Eye, Pencil } from "lucide-react";
+import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2, Copy, ArrowRightLeft, FolderInput, MoreVertical, Play, Eye, Pencil, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +57,7 @@ import { exportCardsToCSV } from "@/lib/storage";
 import { isDueToday, isNewCard, getCardStatus, formatInterval } from "@/lib/sm2";
 import { cn } from "@/lib/utils";
 import { useProject } from "@/lib/project-context";
+import { useToast } from "@/hooks/use-toast";
 
 interface CardListProps {
   deckId: string;
@@ -65,6 +66,7 @@ interface CardListProps {
 
 export function CardList({ deckId, onBack }: CardListProps) {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const { activeProject, projects } = useProject();
   const [, setLocation] = useLocation();
   const [filter, setFilter] = useState<CardFilter["filter"]>("all");
@@ -81,6 +83,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
   const [renameLanguage, setRenameLanguage] = useState("");
   const [renameDescription, setRenameDescription] = useState("");
   const [renameError, setRenameError] = useState("");
+  const [isResumeDialogOpen, setIsResumeDialogOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     armenian: "",
@@ -212,6 +215,55 @@ export function CardList({ deckId, onBack }: CardListProps) {
     },
   });
 
+  const toggleActiveMutation = useMutation({
+    mutationFn: async (isActive: boolean) => {
+      const res = await apiRequest("PATCH", `/api/decks/${deckId}`, { isActive });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+    },
+  });
+
+  const rescheduleMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", `/api/decks/${deckId}/reschedule`, {});
+      return res.json();
+    },
+  });
+
+  const handleResumeDeck = () => {
+    if (!deck) return;
+    const deactivatedAt = deck.deactivatedAt ? new Date(deck.deactivatedAt) : null;
+    const now = new Date();
+    const daysPaused = deactivatedAt ? (now.getTime() - deactivatedAt.getTime()) / (1000 * 60 * 60 * 24) : 0;
+    if (daysPaused > 14) {
+      setIsResumeDialogOpen(true);
+    } else {
+      toggleActiveMutation.mutate(true, {
+        onSuccess: () => toast({ description: t("deckList.toastResumed") }),
+      });
+    }
+  };
+
+  const handleResumeRetain = () => {
+    setIsResumeDialogOpen(false);
+    toggleActiveMutation.mutate(true, {
+      onSuccess: () => toast({ description: t("deckList.toastResumed") }),
+    });
+  };
+
+  const handleResumeReset = () => {
+    setIsResumeDialogOpen(false);
+    toggleActiveMutation.mutate(true, {
+      onSuccess: () => {
+        rescheduleMutation.mutate(undefined, {
+          onSuccess: () => toast({ description: t("deckList.toastResumedReset") }),
+        });
+      },
+    });
+  };
+
   const openRenameDialog = () => {
     setRenameName(deck?.name || "");
     setRenameLanguage(deck?.language || "");
@@ -331,10 +383,22 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setLocation(`/deck/${deckId}/review`)} data-testid="button-study-deck" aria-label={t("cardList.study")}>
-            <Play className="h-4 w-4 md:mr-2" />
-            <span className="hidden md:inline">{t("cardList.study")}</span>
-          </Button>
+          {deck?.isActive === false ? (
+            <Button
+              variant="outline"
+              onClick={handleResumeDeck}
+              data-testid="button-resume-deck-page"
+              aria-label={t("deckList.resumeDeck")}
+            >
+              <Play className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">{t("deckList.resumeDeck")}</span>
+            </Button>
+          ) : (
+            <Button onClick={() => setLocation(`/deck/${deckId}/review`)} data-testid="button-study-deck" aria-label={t("cardList.study")}>
+              <Play className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">{t("cardList.study")}</span>
+            </Button>
+          )}
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" data-testid="button-add-card">
@@ -417,6 +481,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 onClick={() => setLocation(`/deck/${deckId}/practice`)}
+                disabled={deck?.isActive === false}
                 data-testid="button-practice-from-menu"
               >
                 <Eye className="h-4 w-4 mr-2" />
@@ -790,6 +855,26 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isResumeDialogOpen} onOpenChange={(open) => !open && setIsResumeDialogOpen(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("deckList.resumeTitle")}</DialogTitle>
+            <DialogDescription>{t("deckList.resumeDesc")}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsResumeDialogOpen(false)} data-testid="button-resume-cancel-page">
+              {t("common.cancel")}
+            </Button>
+            <Button variant="outline" onClick={handleResumeRetain} data-testid="button-resume-retain-page">
+              {t("deckList.resumeRetain")}
+            </Button>
+            <Button onClick={handleResumeReset} data-testid="button-resume-reset-page">
+              {t("deckList.resumeReset")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

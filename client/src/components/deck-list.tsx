@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Lightbulb, Play, Trash2, Edit2, Eye, Loader2, BookOpen, Search, X, Star } from "lucide-react";
+import { Plus, Lightbulb, Play, Trash2, Edit2, Eye, Loader2, BookOpen, Search, X, Star, Pause } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Onboarding } from "@/components/onboarding";
 import { AddDeckPicker } from "@/components/add-deck-picker";
@@ -43,6 +43,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isDueToday, isNewCard } from "@/lib/sm2";
 import { useProject } from "@/lib/project-context";
 import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 
 interface DeckWithCount extends Deck {
   cardCount: number;
@@ -61,10 +62,13 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const { t } = useTranslation();
   const { activeProject } = useProject();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [deletingDeck, setDeletingDeck] = useState<Deck | null>(null);
+  const [pausingDeck, setPausingDeck] = useState<DeckWithCount | null>(null);
+  const [resumingDeck, setResumingDeck] = useState<DeckWithCount | null>(null);
   const [newDeckName, setNewDeckName] = useState("");
   const [newDeckLanguage, setNewDeckLanguage] = useState("");
   const [newDeckDescription, setNewDeckDescription] = useState("");
@@ -116,9 +120,17 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
     setIsPickerOpen(true);
   };
 
-  const activeCards = allCards.filter(c => c.isActive);
-  const totalDue = activeCards.filter(c => isDueToday(c)).length;
-  const totalNew = activeCards.filter(c => isNewCard(c)).length;
+  const activeDecks = useMemo(() => decks.filter(d => d.isActive !== false), [decks]);
+
+  const activeDeckIds = useMemo(() => new Set(activeDecks.map(d => d.id)), [activeDecks]);
+
+  const activeProjectCards = useMemo(() =>
+    allCards.filter(c => activeDeckIds.has(c.deckId) && c.isActive),
+    [allCards, activeDeckIds]
+  );
+
+  const totalDue = activeProjectCards.filter(c => isDueToday(c)).length;
+  const totalNew = activeProjectCards.filter(c => isNewCard(c)).length;
 
   const deckMap = useMemo(() => {
     const map = new Map<string, DeckWithCount>();
@@ -201,6 +213,26 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
     },
   });
 
+  const toggleActiveMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const res = await apiRequest("PATCH", `/api/decks/${id}`, { isActive });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+    },
+  });
+
+  const rescheduleMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiRequest("POST", `/api/decks/${id}/reschedule`, {});
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cards"] });
+    },
+  });
+
   const handleCreateDeck = () => {
     if (!newDeckName.trim() || !newDeckLanguage.trim()) return;
     setDeckError("");
@@ -219,6 +251,56 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
   const handleDeleteDeck = () => {
     if (!deletingDeck) return;
     deleteMutation.mutate(deletingDeck.id);
+  };
+
+  const handlePauseDeck = () => {
+    if (!pausingDeck) return;
+    toggleActiveMutation.mutate({ id: pausingDeck.id, isActive: false }, {
+      onSuccess: () => {
+        toast({ description: t("deckList.toastPaused") });
+        setPausingDeck(null);
+      }
+    });
+  };
+
+  const handleResumeDeck = (deck: DeckWithCount) => {
+    const deactivatedAt = deck.deactivatedAt ? new Date(deck.deactivatedAt) : null;
+    const now = new Date();
+    const daysPaused = deactivatedAt ? (now.getTime() - deactivatedAt.getTime()) / (1000 * 60 * 60 * 24) : 0;
+
+    if (daysPaused > 14) {
+      setResumingDeck(deck);
+    } else {
+      toggleActiveMutation.mutate({ id: deck.id, isActive: true }, {
+        onSuccess: () => {
+          toast({ description: t("deckList.toastResumed") });
+        }
+      });
+    }
+  };
+
+  const handleResumeRetain = () => {
+    if (!resumingDeck) return;
+    toggleActiveMutation.mutate({ id: resumingDeck.id, isActive: true }, {
+      onSuccess: () => {
+        toast({ description: t("deckList.toastResumed") });
+        setResumingDeck(null);
+      }
+    });
+  };
+
+  const handleResumeReset = () => {
+    if (!resumingDeck) return;
+    toggleActiveMutation.mutate({ id: resumingDeck.id, isActive: true }, {
+      onSuccess: () => {
+        rescheduleMutation.mutate(resumingDeck.id, {
+          onSuccess: () => {
+            toast({ description: t("deckList.toastResumedReset") });
+            setResumingDeck(null);
+          }
+        });
+      }
+    });
   };
 
   const openEditDialog = (deck: Deck) => {
@@ -376,20 +458,44 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
       {decks.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {decks.map((deck) => {
+            const isInactive = deck.isActive === false;
             const deckCards = allCards.filter(c => c.deckId === deck.id);
             const newCount = deckCards.filter(c => isNewCard(c)).length;
 
             return (
               <Card
                 key={deck.id}
-                className="hover-elevate cursor-pointer"
+                className={cn(
+                  "hover-elevate cursor-pointer",
+                  isInactive && "bg-muted"
+                )}
                 onClick={() => onSelectDeck(deck.id)}
                 data-testid={`card-deck-${deck.id}`}
               >
-                <CardHeader className="pb-2">
+                <CardHeader className={cn("pb-2", isInactive && "opacity-60")}>
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-lg">{deck.name}</CardTitle>
-                    <div className="flex gap-1">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <CardTitle className="text-lg truncate">{deck.name}</CardTitle>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {isInactive && (
+                        <Badge variant="secondary" className="text-xs" data-testid={`badge-paused-${deck.id}`}>
+                          {t("deckList.pausedBadge")}
+                        </Badge>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={isInactive}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPausingDeck(deck);
+                        }}
+                        title={t("deckList.pauseDeck")}
+                        data-testid={`button-pause-deck-${deck.id}`}
+                      >
+                        <Pause className="h-4 w-4 text-muted-foreground" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -418,32 +524,47 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                     <p className="text-sm text-muted-foreground">{deck.description}</p>
                   )}
                 </CardHeader>
-                <CardContent>
+                <CardContent className={cn(isInactive && "opacity-60")}>
                   <div className="flex flex-wrap gap-2 mb-4">
                     <Badge variant="outline">{t("deckList.cards", { n: deck.cardCount })}</Badge>
-                    {deck.dueCount > 0 && <Badge variant="default">{t("deckList.due", { n: deck.dueCount })}</Badge>}
-                    {newCount > 0 && <Badge variant="secondary">{t("deckList.new_badge", { n: newCount })}</Badge>}
+                    {deck.dueCount > 0 && !isInactive && <Badge variant="default">{t("deckList.due", { n: deck.dueCount })}</Badge>}
+                    {newCount > 0 && !isInactive && <Badge variant="secondary">{t("deckList.new_badge", { n: newCount })}</Badge>}
                     {deck.starredCount > 0 && <Badge variant="outline" className="text-yellow-600">{t("deckList.starred", { n: deck.starredCount })}</Badge>}
                     {deck.inactiveCount > 0 && <Badge variant="outline" className="text-muted-foreground">{t("deckList.off", { n: deck.inactiveCount })}</Badge>}
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      className="flex-1"
-                      variant="outline"
-                      disabled={deck.dueCount === 0 && newCount === 0}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onStartReview(deck.id);
-                      }}
-                      data-testid={`button-review-deck-${deck.id}`}
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      {t("deckList.study")}
-                    </Button>
+                    {isInactive ? (
+                      <Button
+                        className="flex-1"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleResumeDeck(deck);
+                        }}
+                        data-testid={`button-resume-deck-${deck.id}`}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        {t("deckList.resumeDeck")}
+                      </Button>
+                    ) : (
+                      <Button
+                        className="flex-1"
+                        variant="outline"
+                        disabled={deck.dueCount === 0 && newCount === 0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onStartReview(deck.id);
+                        }}
+                        data-testid={`button-review-deck-${deck.id}`}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        {t("deckList.study")}
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
-                      disabled={deck.cardCount === 0}
+                      disabled={isInactive || deck.cardCount === 0}
                       onClick={(e) => {
                         e.stopPropagation();
                         onStartPractice(deck.id);
@@ -619,6 +740,56 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Pause confirmation dialog */}
+      <AlertDialog open={!!pausingDeck} onOpenChange={(open) => !open && setPausingDeck(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deckList.pauseTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deckList.pauseDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-pause-cancel">{t("deckList.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handlePauseDeck}
+              data-testid="button-pause-confirm"
+            >
+              {t("deckList.pauseConfirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Resume dialog (>14 days) */}
+      <AlertDialog open={!!resumingDeck} onOpenChange={(open) => !open && setResumingDeck(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deckList.resumeTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deckList.resumeDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel data-testid="button-resume-cancel">{t("deckList.cancel")}</AlertDialogCancel>
+            <Button
+              variant="outline"
+              onClick={handleResumeRetain}
+              data-testid="button-resume-retain"
+            >
+              {t("deckList.resumeRetain")}
+            </Button>
+            <Button
+              onClick={handleResumeReset}
+              data-testid="button-resume-reset"
+            >
+              {t("deckList.resumeReset")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Onboarding
         open={showOnboarding}
         onComplete={handleOnboardingComplete}

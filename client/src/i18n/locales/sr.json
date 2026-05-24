@@ -61,7 +61,20 @@
       "colStatus": "Status",
       "colInterval": "Interval",
       "colDeck": "Špil",
-      "unknownDeck": "Nepoznato"
+      "unknownDeck": "Nepoznato",
+      "pauseDeck": "Pauziraj špil",
+      "resumeDeck": "Nastavi špil",
+      "pausedBadge": "Pauzirano",
+      "pauseTitle": "Pauzirati ovaj špil?",
+      "pauseDesc": "Špil će biti skriven iz statistike i sesija učenja. Karte će zadržati napredak. Možete ga ponovo aktivirati u bilo kom trenutku.",
+      "pauseConfirm": "Pauziraj",
+      "resumeTitle": "Nastavi špil",
+      "resumeDesc": "Ovaj špil je pauziran više od 2 nedelje. Šta želite da uradite sa zaostalim kartama?",
+      "resumeReset": "Pomeri zaostale na danas",
+      "resumeRetain": "Zadrži zaostatak",
+      "toastPaused": "Špil pauziran",
+      "toastResumed": "Špil nastavljen",
+      "toastResumedReset": "Špil nastavljen — zaostale karte pomerene na danas"
     },
     "cardList": {
       "back": "Nazad",

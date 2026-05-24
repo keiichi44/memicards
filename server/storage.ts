@@ -22,6 +22,7 @@ export interface IStorage {
   createDeck(deck: InsertDeck): Promise<Deck>;
   updateDeck(id: string, deck: Partial<InsertDeck>): Promise<Deck | undefined>;
   deleteDeck(id: string): Promise<boolean>;
+  rescheduleOverdueCards(deckId: string): Promise<number>;
   
   getCards(deckId?: string): Promise<Card[]>;
   getCardsByProject(projectId: string, userId: string): Promise<Card[]>;
@@ -123,8 +124,24 @@ export class DatabaseStorage implements IStorage {
   }
   
   async updateDeck(id: string, deck: Partial<InsertDeck>): Promise<Deck | undefined> {
-    const [updated] = await db.update(decks).set(deck).where(eq(decks.id, id)).returning();
+    const updateData: Record<string, any> = { ...deck };
+    if (deck.isActive === false) {
+      updateData.deactivatedAt = new Date();
+    } else if (deck.isActive === true) {
+      updateData.deactivatedAt = null;
+    }
+    const [updated] = await db.update(decks).set(updateData).where(eq(decks.id, id)).returning();
     return updated || undefined;
+  }
+
+  async rescheduleOverdueCards(deckId: string): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const result = await db.update(cards)
+      .set({ nextReviewDate: now })
+      .where(and(eq(cards.deckId, deckId), lte(cards.nextReviewDate, today)));
+    return result.rowCount ?? 0;
   }
   
   async deleteDeck(id: string): Promise<boolean> {

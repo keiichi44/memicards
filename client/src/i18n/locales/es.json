@@ -65,7 +65,20 @@
       "colStatus": "Estado",
       "colInterval": "Intervalo",
       "colDeck": "Mazo",
-      "unknownDeck": "Desconocido"
+      "unknownDeck": "Desconocido",
+      "pauseDeck": "Pausar mazo",
+      "resumeDeck": "Reanudar mazo",
+      "pausedBadge": "Pausado",
+      "pauseTitle": "¿Pausar este mazo?",
+      "pauseDesc": "El mazo se ocultará de las estadísticas y sesiones de estudio. Las tarjetas conservarán su progreso. Puede reactivarlo en cualquier momento.",
+      "pauseConfirm": "Pausar",
+      "resumeTitle": "Reanudar mazo",
+      "resumeDesc": "Este mazo lleva más de 2 semanas pausado. ¿Qué desea hacer con las tarjetas vencidas?",
+      "resumeReset": "Reprogramar al día de hoy",
+      "resumeRetain": "Mantener atraso",
+      "toastPaused": "Mazo pausado",
+      "toastResumed": "Mazo reanudado",
+      "toastResumedReset": "Mazo reanudado — tarjetas vencidas reprogramadas para hoy"
     },
 
     "cardList": {

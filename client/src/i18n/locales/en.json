@@ -61,7 +61,20 @@
       "colStatus": "Status",
       "colInterval": "Interval",
       "colDeck": "Deck",
-      "unknownDeck": "Unknown"
+      "unknownDeck": "Unknown",
+      "pauseDeck": "Pause deck",
+      "resumeDeck": "Resume deck",
+      "pausedBadge": "Paused",
+      "pauseTitle": "Pause this deck?",
+      "pauseDesc": "This deck will be hidden from statistics and study sessions. Cards will keep their progress. You can re-enable it any time.",
+      "pauseConfirm": "Pause",
+      "resumeTitle": "Resume deck",
+      "resumeDesc": "This deck has been paused for over 2 weeks. What would you like to do with overdue cards?",
+      "resumeReset": "Reset overdue to today",
+      "resumeRetain": "Keep backlog as-is",
+      "toastPaused": "Deck paused",
+      "toastResumed": "Deck resumed",
+      "toastResumedReset": "Deck resumed — overdue cards rescheduled to today"
     },
     "cardList": {
       "back": "Back",

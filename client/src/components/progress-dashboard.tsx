@@ -6,15 +6,33 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Star, Target, TrendingUp, Calendar, BookOpen, Loader2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import type { Card as FlashCard, Review, Settings, DailyStats } from "@shared/schema";
+import type { Card as FlashCard, Deck, Review, Settings, DailyStats } from "@shared/schema";
 import { isDueToday, isNewCard, getCardStatus } from "@/lib/sm2";
 import { useProject } from "@/lib/project-context";
+
+interface DeckWithCount extends Deck {
+  cardCount: number;
+  dueCount: number;
+  starredCount: number;
+  inactiveCount: number;
+}
 
 export function ProgressDashboard() {
   const { t } = useTranslation();
   const { activeProject } = useProject();
 
-  const { data: cards = [], isLoading: cardsLoading } = useQuery<FlashCard[]>({
+  const { data: decks = [] } = useQuery<DeckWithCount[]>({
+    queryKey: ["/api/decks", { projectId: activeProject?.id }],
+    queryFn: async () => {
+      const url = activeProject?.id ? `/api/decks?projectId=${activeProject.id}` : "/api/decks";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch decks");
+      return res.json();
+    },
+    enabled: !!activeProject,
+  });
+
+  const { data: allCards = [], isLoading: cardsLoading } = useQuery<FlashCard[]>({
     queryKey: ["/api/cards", { projectId: activeProject?.id }],
     queryFn: async () => {
       const url = activeProject?.id ? `/api/cards?projectId=${activeProject.id}` : "/api/cards";
@@ -25,7 +43,20 @@ export function ProgressDashboard() {
     enabled: !!activeProject,
   });
 
-  const { data: reviews = [] } = useQuery<Review[]>({
+  const inactiveDeckIds = useMemo(() => {
+    const ids = new Set<string>();
+    decks.forEach(d => { if (d.isActive === false) ids.add(d.id); });
+    return ids;
+  }, [decks]);
+
+  const cards = useMemo(() =>
+    allCards.filter(c => !inactiveDeckIds.has(c.deckId)),
+    [allCards, inactiveDeckIds]
+  );
+
+  const activeCardIds = useMemo(() => new Set(cards.map(c => c.id)), [cards]);
+
+  const { data: allReviews = [] } = useQuery<Review[]>({
     queryKey: ["/api/reviews", { projectId: activeProject?.id }],
     queryFn: async () => {
       const url = activeProject?.id ? `/api/reviews?projectId=${activeProject.id}` : "/api/reviews";
@@ -35,6 +66,11 @@ export function ProgressDashboard() {
     },
     enabled: !!activeProject,
   });
+
+  const reviews = useMemo(() =>
+    allReviews.filter(r => activeCardIds.has(r.cardId)),
+    [allReviews, activeCardIds]
+  );
 
   const { data: settings } = useQuery<Settings>({
     queryKey: ["/api/settings", { projectId: activeProject?.id }],

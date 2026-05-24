@@ -309,6 +309,20 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/decks/:id/reschedule", requireAuth(), async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const deck = await storage.getDeck(req.params.id as string);
+      if (!deck || deck.userId !== userId) {
+        return res.status(404).json({ error: "Deck not found" });
+      }
+      const count = await storage.rescheduleOverdueCards(req.params.id as string);
+      res.json({ rescheduled: count });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to reschedule cards" });
+    }
+  });
+
   app.post("/api/decks/:id/duplicate", requireAuth(), async (req, res) => {
     try {
       const userId = getUserId(req);

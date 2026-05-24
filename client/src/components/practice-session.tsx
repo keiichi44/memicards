@@ -74,7 +74,10 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
   }, [isActiveSession, setInSession]);
 
   const loadCards = useCallback(() => {
-    const activeCards = allCards.filter(c => c.isActive);
+    const inactiveDeckIds = new Set(
+      allDecks.filter((d: any) => d.isActive === false).map((d: any) => d.id)
+    );
+    const activeCards = allCards.filter(c => c.isActive && !inactiveDeckIds.has(c.deckId));
     setShuffledCards(shuffleArray(activeCards));
     setCurrentIndex(0);
     setShowAnswer(false);
