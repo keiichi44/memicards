@@ -466,7 +466,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
               <Card
                 key={deck.id}
                 className={cn(
-                  "hover-elevate cursor-pointer",
+                  "hover-elevate cursor-pointer overflow-hidden",
                   isInactive && "bg-muted"
                 )}
                 onClick={() => onSelectDeck(deck.id)}
@@ -518,7 +518,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                     </div>
                   </div>
                   {deck.description && (
-                    <p className="text-sm text-muted-foreground">{deck.description}</p>
+                    <p className="text-sm text-muted-foreground truncate">{deck.description}</p>
                   )}
                 </CardHeader>
                 <CardContent className={cn(isInactive && "opacity-60")}>
