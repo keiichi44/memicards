@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2, Copy, ArrowRightLeft, FolderInput, MoreVertical, Play, Eye, Pencil, Pause, AlertCircle } from "lucide-react";
+import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2, Copy, ArrowRightLeft, FolderInput, MoreVertical, Play, Eye, Pencil, Pause, AlertCircle, ArrowLeftRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -233,6 +233,17 @@ export function CardList({ deckId, onBack }: CardListProps) {
     },
   });
 
+  const flipDeckMutation = useMutation({
+    mutationFn: async (isFlipped: boolean) => {
+      const res = await apiRequest("PATCH", `/api/decks/${deckId}`, { isFlipped });
+      return res.json();
+    },
+    onSuccess: (updatedDeck) => {
+      queryClient.setQueryData(["/api/decks", deckId], updatedDeck);
+      queryClient.invalidateQueries({ queryKey: ["/api/decks"] });
+    },
+  });
+
   const handleResumeDeck = () => {
     if (!deck) return;
     const deactivatedAt = deck.deactivatedAt ? new Date(deck.deactivatedAt) : null;
@@ -392,7 +403,14 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </Button>
           <div>
             <h2 className="text-xl font-semibold">{deck?.name || "Cards"}</h2>
-            <p className="text-sm text-muted-foreground">{t("cardList.cardsTotal", { n: cards.length })}</p>
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              {t("cardList.cardsTotal", { n: cards.length })}
+              {deck?.isFlipped && (
+                <Badge variant="secondary" className="text-xs" data-testid="badge-deck-flipped-page">
+                  {t("cardList.flippedBadge")}
+                </Badge>
+              )}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -523,6 +541,14 @@ export function CardList({ deckId, onBack }: CardListProps) {
                 {t("cardList.renameDeck")}
               </DropdownMenuItem>
               <DropdownMenuItem
+                onClick={() => flipDeckMutation.mutate(!(deck?.isFlipped ?? false))}
+                disabled={flipDeckMutation.isPending}
+                data-testid="button-flip-deck"
+              >
+                <ArrowLeftRight className="h-4 w-4 mr-2" />
+                {deck?.isFlipped ? t("cardList.unflipCards") : t("cardList.flipCards")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 onClick={() => duplicateMutation.mutate({ swap: false })}
                 disabled={duplicateMutation.isPending}
                 data-testid="button-duplicate-as-is"
@@ -564,6 +590,13 @@ export function CardList({ deckId, onBack }: CardListProps) {
           </DropdownMenu>
         </div>
       </div>
+
+      {deck?.isFlipped && (
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground" data-testid="banner-deck-flipped">
+          <ArrowLeftRight className="h-4 w-4 shrink-0 text-foreground/60" />
+          <span>{t("cardList.flippedStatus")}</span>
+        </div>
+      )}
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">

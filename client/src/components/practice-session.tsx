@@ -64,6 +64,10 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
     ? { [deck.id]: deck.language }
     : Object.fromEntries(allDecks.map(d => [d.id, d.language]));
 
+  const deckFlippedMap = deckId && deck
+    ? { [deck.id]: deck.isFlipped ?? false }
+    : Object.fromEntries(allDecks.map(d => [d.id, d.isFlipped ?? false]));
+
   const isActiveSession = shuffledCards.length > 0;
 
   useEffect(() => {
@@ -172,6 +176,7 @@ export function PracticeSession({ deckId, onBack }: PracticeSessionProps) {
       <Flashcard
         card={currentCard}
         languageName={deckLanguageMap[currentCard.deckId]}
+        isFlipped={deckFlippedMap[currentCard.deckId] ?? false}
         showAnswer={showAnswer}
         onFlip={() => setShowAnswer(!showAnswer)}
         practiceMode={true}

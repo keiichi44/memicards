@@ -286,7 +286,7 @@ export async function registerRoutes(
         }
       }
       const updated = await storage.updateDeck(req.params.id as string, parsed.data);
-      res.json(updated);
+      res.json(updated ?? deck);
     } catch (error) {
       console.error("[PATCH /api/decks] error:", error);
       res.status(500).json({ error: "Failed to update deck" });

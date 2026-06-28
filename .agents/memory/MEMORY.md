@@ -1,0 +1,3 @@
+- [Storage setValues allowlist](storage-setvalues-pattern.md) — updateDeck uses an explicit setValues allowlist; any new deck field MUST be added there or it silently drops on PATCH.
+- [Backend hot-reload gap](backend-hot-reload.md) — tsx runs without --watch; backend changes only take effect after the workflow is restarted via restart_workflow.
+- [PATCH empty-body failure chain](patch-empty-body-chain.md) — res.json(undefined) → empty HTTP body → client res.json() throws → mutation fails → onSuccess/invalidateQueries never fires; always use `updated ?? fallback` on PATCH routes.

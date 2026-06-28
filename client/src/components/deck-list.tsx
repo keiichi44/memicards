@@ -540,6 +540,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
                     {newCount > 0 && !isInactive && <Badge variant="secondary">{t("deckList.new_badge", { n: newCount })}</Badge>}
                     {deck.starredCount > 0 && <Badge variant="outline" className="text-yellow-600">{t("deckList.starred", { n: deck.starredCount })}</Badge>}
                     {deck.inactiveCount > 0 && <Badge variant="outline" className="text-muted-foreground">{t("deckList.off", { n: deck.inactiveCount })}</Badge>}
+                    {deck.isFlipped && <Badge variant="secondary" data-testid={`badge-flipped-${deck.id}`}>{t("deckList.flippedBadge")}</Badge>}
                   </div>
                   <div className="flex gap-2">
                     {isInactive ? (

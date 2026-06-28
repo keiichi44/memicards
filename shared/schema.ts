@@ -18,6 +18,7 @@ export const decks = pgTable("decks", {
   userId: text("user_id"),
   projectId: text("project_id"),
   isActive: boolean("is_active").default(true).notNull(),
+  isFlipped: boolean("is_flipped").default(false).notNull(),
   deactivatedAt: timestamp("deactivated_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

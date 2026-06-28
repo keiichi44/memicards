@@ -70,6 +70,10 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
     ? { [deck.id]: deck.language }
     : Object.fromEntries(allDecks.map(d => [d.id, d.language]));
 
+  const deckFlippedMap = deckId && deck
+    ? { [deck.id]: deck.isFlipped ?? false }
+    : Object.fromEntries(allDecks.map(d => [d.id, d.isFlipped ?? false]));
+
   const reviewMutation = useMutation({
     mutationFn: async ({ cardId, quality }: { cardId: string; quality: number }) => {
       const res = await apiRequest("POST", `/api/cards/${cardId}/review`, { quality });
@@ -250,6 +254,7 @@ export function ReviewSession({ deckId, onComplete, onBack }: ReviewSessionProps
         <Flashcard
           card={currentCard}
           languageName={deckLanguageMap[currentCard.deckId]}
+          isFlipped={deckFlippedMap[currentCard.deckId] ?? false}
           onRate={handleRate}
           onToggleStar={handleToggleStar}
           showAnswer={showAnswer}

@@ -14,6 +14,7 @@ const HINT_STORAGE_KEY = "review_hint_seen";
 interface FlashcardProps {
   card: FlashCard;
   languageName?: string;
+  isFlipped?: boolean;
   onRate?: (quality: QualityRating) => void;
   onToggleStar?: () => void;
   showAnswer: boolean;
@@ -21,7 +22,7 @@ interface FlashcardProps {
   practiceMode?: boolean;
 }
 
-export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, showAnswer, onFlip, practiceMode = false }: FlashcardProps) {
+export function Flashcard({ card, languageName = "Word", isFlipped = false, onRate, onToggleStar, showAnswer, onFlip, practiceMode = false }: FlashcardProps) {
   const { t } = useTranslation();
   const status = getCardStatus(card);
   const daysUntil = getDaysUntilReview(card);
@@ -136,18 +137,18 @@ export function Flashcard({ card, languageName = "Word", onRate, onToggleStar, s
 
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-6">
             <div className="w-full">
-              <p className="text-sm text-muted-foreground mb-2">{languageName}</p>
+              <p className="text-sm text-muted-foreground mb-2">{isFlipped ? t("cardList.translation") : languageName}</p>
               <p className="font-sans text-4xl md:text-5xl font-medium leading-relaxed" data-testid="text-armenian-word">
-                {card.armenian}
+                {isFlipped ? card.russian : card.armenian}
               </p>
             </div>
 
             {showAnswer && (
               <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
                 <div className="border-t pt-4">
-                  <p className="text-sm text-muted-foreground mb-2">{t("cardList.translation")}</p>
+                  <p className="text-sm text-muted-foreground mb-2">{isFlipped ? languageName : t("cardList.translation")}</p>
                   <p className="text-2xl md:text-3xl font-medium" data-testid="text-russian-translation">
-                    {card.russian}
+                    {isFlipped ? card.armenian : card.russian}
                   </p>
                 </div>
 

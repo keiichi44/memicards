@@ -130,6 +130,7 @@ export class DatabaseStorage implements IStorage {
       description?: string;
       projectId?: string | null;
       isActive?: boolean;
+      isFlipped?: boolean;
       deactivatedAt?: Date | null;
     } = {};
 
@@ -137,6 +138,7 @@ export class DatabaseStorage implements IStorage {
     if (deck.language !== undefined) setValues.language = deck.language;
     if (deck.description !== undefined) setValues.description = deck.description;
     if (deck.projectId !== undefined) setValues.projectId = deck.projectId;
+    if (deck.isFlipped !== undefined) setValues.isFlipped = deck.isFlipped;
     if (deck.isActive !== undefined) {
       setValues.isActive = deck.isActive;
       setValues.deactivatedAt = deck.isActive ? null : new Date();
