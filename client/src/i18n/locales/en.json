@@ -343,6 +343,13 @@
       "tabBatchImport": "Batch Import",
       "tabDecksLibrary": "Decks Library"
     },
+    "updates": {
+      "newFeaturesHeader": "New features available!",
+      "teaser": "Take a look at the recent updates",
+      "seenHeader": "Recent changes",
+      "dialogTitle": "Version {version} updates",
+      "close": "Close"
+    },
     "library": {
       "title": "Decks Library",
       "subtitle": "Browse and import ready-made decks into your project.",

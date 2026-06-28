@@ -2,6 +2,7 @@ import { useLocation, Link } from "wouter";
 import { Upload, BarChart3, Settings, Layers, Mail } from "lucide-react";
 import logoImg from "@assets/memi_1770479923554.png";
 import { useTranslation } from "react-i18next";
+import { UpdatesIndicator } from "@/components/updates-indicator";
 import {
   Sidebar,
   SidebarContent,
@@ -77,7 +78,8 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 space-y-2">
+        <UpdatesIndicator />
         <a
           href="mailto:feedback@memicards.org"
           className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"

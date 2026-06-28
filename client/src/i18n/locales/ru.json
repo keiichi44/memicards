@@ -359,6 +359,13 @@
       "tabBatchImport": "Пакетный импорт",
       "tabDecksLibrary": "Библиотека колод"
     },
+    "updates": {
+      "newFeaturesHeader": "Новое в приложении!",
+      "teaser": "Посмотрите, что изменилось",
+      "seenHeader": "Последние изменения",
+      "dialogTitle": "Обновления версии {version}",
+      "close": "Закрыть"
+    },
     "library": {
       "title": "Библиотека колод",
       "subtitle": "Готовые колоды для добавления в ваш проект.",

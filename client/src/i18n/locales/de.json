@@ -343,6 +343,13 @@
       "tabBatchImport": "Massenimport",
       "tabDecksLibrary": "Deck-Bibliothek"
     },
+    "updates": {
+      "newFeaturesHeader": "Neue Funktionen verfügbar!",
+      "teaser": "Schauen Sie sich die neuesten Updates an",
+      "seenHeader": "Letzte Änderungen",
+      "dialogTitle": "Updates für Version {version}",
+      "close": "Schließen"
+    },
     "library": {
       "title": "Deck-Bibliothek",
       "subtitle": "Fertige Decks durchsuchen und in Ihr Projekt importieren.",

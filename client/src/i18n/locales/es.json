@@ -359,6 +359,13 @@
       "tabBatchImport": "Importación por lotes",
       "tabDecksLibrary": "Biblioteca de mazos"
     },
+    "updates": {
+      "newFeaturesHeader": "¡Novedades disponibles!",
+      "teaser": "Descubra las últimas actualizaciones",
+      "seenHeader": "Cambios recientes",
+      "dialogTitle": "Actualizaciones de la versión {version}",
+      "close": "Cerrar"
+    },
     "library": {
       "title": "Biblioteca de mazos",
       "subtitle": "Explore e importe mazos ya preparados en su proyecto.",

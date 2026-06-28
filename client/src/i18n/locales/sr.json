@@ -343,6 +343,13 @@
       "tabBatchImport": "Grupni uvoz",
       "tabDecksLibrary": "Biblioteka špilova"
     },
+    "updates": {
+      "newFeaturesHeader": "Nove funkcije dostupne!",
+      "teaser": "Pogledajte najnovije izmene",
+      "seenHeader": "Nedavne promene",
+      "dialogTitle": "Izmene u verziji {version}",
+      "close": "Zatvori"
+    },
     "library": {
       "title": "Biblioteka špilova",
       "subtitle": "Pregledajte i uvezite gotove špilove u vaš projekat.",
