@@ -55,7 +55,9 @@ export function BottomNavBar() {
           })}
         </div>
       </nav>
-      <MobileUpdatesFloater />
+      <div className="md:hidden">
+        <MobileUpdatesFloater />
+      </div>
     </>
   );
 }
