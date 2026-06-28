@@ -52,4 +52,4 @@ CLERK_WEBHOOK_SECRET = "whsec_OkDl90GXTD5WrI1Rwjde0z4rySsWQHWO"
 
 [postMerge]
 path = "scripts/post-merge.sh"
-timeoutMs = 90000
+timeoutMs = 180000
