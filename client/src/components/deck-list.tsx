@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Lightbulb, Play, Trash2, Edit2, Eye, Loader2, BookOpen, Search, X, Star, Pause } from "lucide-react";
+import { Plus, Lightbulb, Play, Trash2, Edit2, Eye, Loader2, BookOpen, Search, X, Star, Pause, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Onboarding } from "@/components/onboarding";
 import { AddDeckPicker } from "@/components/add-deck-picker";
@@ -78,7 +78,7 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
 
   const onboardingKey = activeProject ? `onboarding_done_${activeProject.id}` : null;
 
-  const { data: decks = [], isLoading: decksLoading } = useQuery<DeckWithCount[]>({
+  const { data: decks = [], isLoading: decksLoading, isError: decksError, refetch: refetchDecks } = useQuery<DeckWithCount[]>({
     queryKey: ["/api/decks", { projectId: activeProject?.id }],
     queryFn: async () => {
       const url = activeProject?.id ? `/api/decks?projectId=${activeProject.id}` : "/api/decks";
@@ -314,6 +314,18 @@ export function DeckList({ onSelectDeck, onStartReview, onStartPractice }: DeckL
     return (
       <div className="flex items-center justify-center min-h-[200px]">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (decksError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[200px] gap-4 text-muted-foreground" data-testid="error-load-decks">
+        <AlertCircle className="h-8 w-8" />
+        <p className="text-sm">{t("deckList.errorLoadDecks")}</p>
+        <Button variant="outline" size="sm" onClick={() => refetchDecks()} data-testid="button-retry-decks">
+          {t("deckList.retry")}
+        </Button>
       </div>
     );
   }

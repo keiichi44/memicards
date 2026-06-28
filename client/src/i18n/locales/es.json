@@ -78,7 +78,9 @@
       "resumeRetain": "Mantener atraso",
       "toastPaused": "Mazo pausado",
       "toastResumed": "Mazo reanudado",
-      "toastResumedReset": "Mazo reanudado — tarjetas vencidas reprogramadas para hoy"
+      "toastResumedReset": "Mazo reanudado — tarjetas vencidas reprogramadas para hoy",
+      "errorLoadDecks": "No se pudieron cargar los mazos",
+      "retry": "Reintentar"
     },
 
     "cardList": {
@@ -125,7 +127,9 @@
       "moveSelect": "Seleccione un proyecto",
       "moveButton": "Mover",
       "moveError": "No se pudo mover el mazo",
-      "failedToRenameDeck": "No se pudo renombrar el mazo"
+      "failedToRenameDeck": "No se pudo renombrar el mazo",
+      "errorLoadCards": "No se pudieron cargar las tarjetas",
+      "retry": "Reintentar"
     },
 
     "flashcard": {

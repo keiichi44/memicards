@@ -74,7 +74,9 @@
       "resumeRetain": "Zadrži zaostatak",
       "toastPaused": "Špil pauziran",
       "toastResumed": "Špil nastavljen",
-      "toastResumedReset": "Špil nastavljen — zaostale karte pomerene na danas"
+      "toastResumedReset": "Špil nastavljen — zaostale karte pomerene na danas",
+      "errorLoadDecks": "Nije moguće učitati špilove",
+      "retry": "Pokušaj ponovo"
     },
     "cardList": {
       "back": "Nazad",
@@ -120,7 +122,9 @@
       "moveSelect": "Izaberite projekat",
       "moveButton": "Premesti",
       "moveError": "Nije uspelo premeštanje špila",
-      "failedToRenameDeck": "Nije uspelo preimenovanje špila"
+      "failedToRenameDeck": "Nije uspelo preimenovanje špila",
+      "errorLoadCards": "Nije moguće učitati karte",
+      "retry": "Pokušaj ponovo"
     },
     "flashcard": {
       "hintTitle": "Kako koristiti kartu",

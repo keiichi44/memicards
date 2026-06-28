@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2, Copy, ArrowRightLeft, FolderInput, MoreVertical, Play, Eye, Pencil, Pause } from "lucide-react";
+import { ArrowLeft, Plus, Star, Search, Filter, Edit2, Trash2, Download, Loader2, Copy, ArrowRightLeft, FolderInput, MoreVertical, Play, Eye, Pencil, Pause, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -97,7 +97,7 @@ export function CardList({ deckId, onBack }: CardListProps) {
     queryKey: ["/api/decks", deckId],
   });
 
-  const { data: cards = [], isLoading } = useQuery<FlashCard[]>({
+  const { data: cards = [], isLoading, isError: cardsError, refetch: refetchCards } = useQuery<FlashCard[]>({
     queryKey: ["/api/cards", deckId],
     queryFn: async () => {
       const res = await fetch(`/api/cards?deckId=${deckId}`);
@@ -366,6 +366,18 @@ export function CardList({ deckId, onBack }: CardListProps) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (cardsError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[200px] gap-4 text-muted-foreground" data-testid="error-load-cards">
+        <AlertCircle className="h-8 w-8" />
+        <p className="text-sm">{t("cardList.errorLoadCards")}</p>
+        <Button variant="outline" size="sm" onClick={() => refetchCards()} data-testid="button-retry-cards">
+          {t("cardList.retry")}
+        </Button>
       </div>
     );
   }

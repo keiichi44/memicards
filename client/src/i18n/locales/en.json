@@ -74,7 +74,9 @@
       "resumeRetain": "Keep backlog as-is",
       "toastPaused": "Deck paused",
       "toastResumed": "Deck resumed",
-      "toastResumedReset": "Deck resumed — overdue cards rescheduled to today"
+      "toastResumedReset": "Deck resumed — overdue cards rescheduled to today",
+      "errorLoadDecks": "Couldn't load your decks",
+      "retry": "Try again"
     },
     "cardList": {
       "back": "Back",
@@ -120,7 +122,9 @@
       "moveSelect": "Select a project",
       "moveButton": "Move",
       "moveError": "Failed to move deck",
-      "failedToRenameDeck": "Failed to rename deck"
+      "failedToRenameDeck": "Failed to rename deck",
+      "errorLoadCards": "Couldn't load cards",
+      "retry": "Try again"
     },
     "flashcard": {
       "hintTitle": "How to use the card",

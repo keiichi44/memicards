@@ -74,7 +74,9 @@
       "resumeRetain": "Rückstand behalten",
       "toastPaused": "Deck pausiert",
       "toastResumed": "Deck fortgesetzt",
-      "toastResumedReset": "Deck fortgesetzt — überfällige Karten auf heute verschoben"
+      "toastResumedReset": "Deck fortgesetzt — überfällige Karten auf heute verschoben",
+      "errorLoadDecks": "Decks konnten nicht geladen werden",
+      "retry": "Erneut versuchen"
     },
     "cardList": {
       "back": "Zurück",
@@ -120,7 +122,9 @@
       "moveSelect": "Projekt auswählen",
       "moveButton": "Verschieben",
       "moveError": "Deck konnte nicht verschoben werden",
-      "failedToRenameDeck": "Deck konnte nicht umbenannt werden"
+      "failedToRenameDeck": "Deck konnte nicht umbenannt werden",
+      "errorLoadCards": "Karten konnten nicht geladen werden",
+      "retry": "Erneut versuchen"
     },
     "flashcard": {
       "hintTitle": "So verwenden Sie die Karte",
